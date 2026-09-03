@@ -217,7 +217,7 @@ Called by the Next.js registration handler after Better Auth creates the user. C
   "widget": {
     "id": "wgt_i9j0k1l2-...",
     "organization_id": "org_e5f6g7h8-...",
-    "widget_key": "rd_pub_aBcDeFgHiJkLmNoPqRsTuVwXyZ012345678901234",
+    "widget_key": "rd_live_aBcDeFgHiJkLmNoPqRsTuVwXyZ012345678901234",
     "primary_color": "#4F46E5",
     "bot_display_name": "Support Assistant",
     "welcome_message": "Hi! How can I help you today?",
@@ -245,14 +245,14 @@ Retrieve the authenticated owner's organization profile and widget configuration
     "created_at": "2026-09-04T10:30:00Z"
   },
   "widget": {
-    "widget_key": "rd_pub_aBcDeFgH...",
+    "widget_key": "rd_live_aBcDeFgH...",
     "primary_color": "#4F46E5",
     "bot_display_name": "Support Assistant",
     "welcome_message": "Hi! How can I help you today?",
     "widget_placement": "bottom-right",
     "has_grace_key": false
   },
-  "embed_snippet": "<script src=\"https://resolvdesk.com/widget.js\" data-widget-key=\"rd_pub_aBcDeFgH...\"></script>"
+  "embed_snippet": "<script src=\"https://resolvdesk.com/widget.js\" data-widget-key=\"rd_live_aBcDeFgH...\"></script>"
 }
 ```
 
@@ -267,10 +267,10 @@ Rotate the public widget key. Creates a new primary key and moves the current ke
 **Success Response** (`200 OK`):
 ```json
 {
-  "new_widget_key": "rd_pub_xYz987654321...",
-  "previous_widget_key": "rd_pub_aBcDeFgH...",
+  "new_widget_key": "rd_live_xYz987654321...",
+  "previous_widget_key": "rd_live_aBcDeFgH...",
   "grace_expires_at": "2026-09-05T10:30:00Z",
-  "embed_snippet": "<script src=\"https://resolvdesk.com/widget.js\" data-widget-key=\"rd_pub_xYz987654321...\"></script>"
+  "embed_snippet": "<script src=\"https://resolvdesk.com/widget.js\" data-widget-key=\"rd_live_xYz987654321...\"></script>"
 }
 ```
 
@@ -290,3 +290,29 @@ Get the authenticated owner's profile.
   "organization_id": "org_e5f6g7h8-..."
 }
 ```
+
+---
+
+### GET `/api/v1/widget/config`
+
+Fetch public widget branding and configuration for an embed snippet. Operates **without visitor authentication** using the public widget key. Supports active primary keys and keys in the 24-hour grace period.
+
+**Query Parameters**:
+- `key` (string, required) — The public widget key (`rd_live_...`)
+
+**Success Response** (`200 OK`):
+```json
+{
+  "widget_key": "rd_live_aBcDeFgH...",
+  "bot_display_name": "Support Assistant",
+  "welcome_message": "Hi! How can I help you today?",
+  "primary_color": "#4F46E5",
+  "widget_placement": "bottom-right",
+  "is_active": true
+}
+```
+
+**Error Responses**:
+- `400 Bad Request` — Missing or malformed `key` query parameter
+- `404 Not Found` — `{"detail": "Widget configuration not found or inactive"}` (unknown key or expired grace key)
+

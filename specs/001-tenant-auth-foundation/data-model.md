@@ -31,7 +31,7 @@ erDiagram
     WIDGET_CONFIGURATION {
         uuid id PK "Immutable UUID primary key"
         uuid organization_id FK_UK "Unique FK to Organization"
-        string widget_key UK "Primary public key (rd_pub_...)"
+        string widget_key UK "Primary public key (rd_live_...)"
         string previous_widget_key "Nullable, rotated key in grace period"
         datetime grace_expires_at "Nullable, 24h after rotation"
         string primary_color "Default: #4F46E5"
@@ -101,7 +101,7 @@ Embeddable chat widget settings for an Organization. One-to-one relationship wit
 |---|---|---|---|
 | `id` | `UUID` | PK, default `uuid4` | |
 | `organization_id` | `UUID` | FK → `organization.id`, UNIQUE, NOT NULL | Ensures 1:1 with org |
-| `widget_key` | `VARCHAR(64)` | UNIQUE, NOT NULL, indexed | Primary public key (`rd_pub_` + `secrets.token_urlsafe(32)`) |
+| `widget_key` | `VARCHAR(64)` | UNIQUE, NOT NULL, indexed | Primary public key (`rd_live_` + `secrets.token_urlsafe(32)`) |
 | `previous_widget_key` | `VARCHAR(64)` | NULLABLE | Rotated key in 24h grace period |
 | `grace_expires_at` | `TIMESTAMPTZ` | NULLABLE | Set to `now() + 24h` on rotation; NULL when no grace active |
 | `primary_color` | `VARCHAR(9)` | NOT NULL, default `'#4F46E5'` | Hex color code |
@@ -112,7 +112,7 @@ Embeddable chat widget settings for an Organization. One-to-one relationship wit
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL, default `now()` | Auto-updated on mutation |
 
 **Validation Rules**:
-- `widget_key`: Auto-generated, never user-editable. Format: `rd_pub_` + 43 chars (from `secrets.token_urlsafe(32)`).
+- `widget_key`: Auto-generated, never user-editable. Format: `rd_live_` + 43 chars (from `secrets.token_urlsafe(32)`).
 - `primary_color`: Must match hex color regex `^#[0-9A-Fa-f]{6}$`.
 - `bot_display_name`: 1–100 characters.
 - `welcome_message`: 1–500 characters.

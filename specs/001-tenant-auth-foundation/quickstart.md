@@ -99,18 +99,17 @@ Expected output: All test cases pass with zero failures.
      -H "Authorization: Bearer <AUTH_TOKEN>" \
      -H "Content-Type: application/json" \
      -d '{
-       "organization_name": "Jane'\''s Shoe Store",
-       "slug": "janes-shoe-store",
-       "owner_id": "<USER_ID>",
-       "owner_email": "jane@shoestore.com",
-       "owner_name": "Jane Doe"
+       "user_id": "<USER_ID>",
+       "email": "jane@shoestore.com",
+       "full_name": "Jane Doe",
+       "organization_name": "Jane'\''s Shoe Store"
      }' | jq .
    ```
    *Expected Outcome*: HTTP 201 Created with JSON matching [Registration Complete Contract](./contracts/api.md#post-apiv1registrationcomplete):
+   - `owner.id` equals `<USER_ID>`
    - `organization.id` generated (UUID)
-   - `organization.slug` equals `"janes-shoe-store"`
-   - `widget.public_key` starts with `rd_live_`
-   - `widget.is_active` is `true`
+   - `organization.display_name` equals `"Jane's Shoe Store"`
+   - `widget.widget_key` starts with `rd_live_`
 
 ---
 
