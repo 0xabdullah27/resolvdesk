@@ -1,16 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: Uninitialized -> 1.0.0
-- Principles defined:
-  - I. Strict Multi-Tenant Isolation
-  - II. Grounded AI & Zero Hallucination
-  - III. Continuous Human Safety Net
-  - IV. Frictionless & Secure Widget
-  - V. Layered Architecture & Boundary Defense
+- Version change: 1.0.0 -> 1.1.0
+- Principles added:
+  - VI. Provider-Agnostic AI Layer
 - Added sections:
-  - Security & Data Privacy Constraints
-  - Quality Gates & Testing Standards
-  - Governance
+  - Infrastructure & Data Layer Constraints
+- Modified sections: None
 - Removed sections: None
 - Follow-up TODOs: None
 -->
@@ -34,6 +29,15 @@ The embeddable customer chat widget MUST operate without requiring visitor authe
 ### V. Layered Architecture & Boundary Defense
 All backend services MUST strictly adhere to a three-layer boundary: **router** (HTTP handling and status codes) -> **service** (domain business logic and validation) -> **repo** (database and vector queries only). Client input MUST be validated at the schema boundary before entering business logic. Multi-table or multi-step mutations MUST be wrapped in transactional units.
 
+### VI. Provider-Agnostic AI Layer
+The application MUST communicate with the AI layer through a single, unified API standard (OpenAI-compatible interface). Model switches or provider migrations MUST be executed solely by updating the target API Endpoint and API Key configuration variables. Zero application code changes and zero system downtime are required for a provider or model swap. No business logic, service layer, or repository MUST contain hard-coded references to any specific AI provider SDK or model name.
+
+## Infrastructure & Data Layer Constraints
+- **Relational Database**: PostgreSQL (hosted on Neon) is the canonical relational store. All ORM interactions MUST use SQLModel with async sessions via asyncpg.
+- **Schema Migrations**: All schema changes MUST be managed through Alembic migration files. Direct `CREATE`/`ALTER` statements against the production database without a tracked migration are prohibited.
+- **Connection Management**: Database connections MUST use async connection pooling. Synchronous blocking DB calls in async service or router code are prohibited.
+- **Vector Store**: A dedicated vector database is the canonical store for document embeddings. Embeddings MUST NOT be stored as columns in the relational PostgreSQL schema.
+
 ## Security & Data Privacy Constraints
 - **Session Security**: Authentication tokens for business owners MUST be stored in httpOnly, Secure cookies; never in client-accessible storage (localStorage/sessionStorage).
 - **Client Route Protection**: Privileged routes MUST be protected at the server boundary (e.g., server middleware) before rendering or serving protected resources.
@@ -50,4 +54,4 @@ All backend services MUST strictly adhere to a three-layer boundary: **router** 
 - Any amendment requires formal documentation, impact assessment, and a corresponding version increment following semantic versioning (MAJOR for removals/redefinitions, MINOR for additions, PATCH for clarifications).
 - All pull requests, code reviews, and automated agent workflows MUST verify compliance against these principles. Use `AGENTS.md` for runtime operational instructions.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
+**Version**: 1.1.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
