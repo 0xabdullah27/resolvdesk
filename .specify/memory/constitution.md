@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 -> 1.1.0
-- Principles added:
-  - VI. Provider-Agnostic AI Layer
-- Added sections:
-  - Infrastructure & Data Layer Constraints
-- Modified sections: None
+- Version change: 1.1.0 -> 1.2.0
+- Principles added: None
+- Added rules:
+  - Infrastructure: Cross-Store Atomicity (document deletion must be atomic across relational DB + vector store)
+  - Security: Owner Data Export Right (CSV/JSON export at any time)
+- Modified sections: Infrastructure & Data Layer Constraints, Security & Data Privacy Constraints
 - Removed sections: None
 - Follow-up TODOs: None
 -->
@@ -37,11 +37,13 @@ The application MUST communicate with the AI layer through a single, unified API
 - **Schema Migrations**: All schema changes MUST be managed through Alembic migration files. Direct `CREATE`/`ALTER` statements against the production database without a tracked migration are prohibited.
 - **Connection Management**: Database connections MUST use async connection pooling. Synchronous blocking DB calls in async service or router code are prohibited.
 - **Vector Store**: A dedicated vector database is the canonical store for document embeddings. Embeddings MUST NOT be stored as columns in the relational PostgreSQL schema.
+- **Cross-Store Atomicity**: Any operation that mutates both the relational store and the vector store (e.g., document deletion) MUST be treated as a single logical unit. If the vector embedding deletion fails, the relational record MUST NOT be committed as deleted, and vice versa. Silent partial-delete states that orphan embeddings or leave stale data queryable are prohibited.
 
 ## Security & Data Privacy Constraints
 - **Session Security**: Authentication tokens for business owners MUST be stored in httpOnly, Secure cookies; never in client-accessible storage (localStorage/sessionStorage).
 - **Client Route Protection**: Privileged routes MUST be protected at the server boundary (e.g., server middleware) before rendering or serving protected resources.
 - **Data Lifecycle**: Visitor conversations are retained for 90 days after inactivity; tickets are retained for 1 year after resolution. Account deletion MUST remove all associated organization artifacts within 24 hours.
+- **Owner Data Export Right**: The Owner MUST be able to export all of their Organization's data (Documents metadata, Conversations, Tickets) at any time in CSV and JSON formats. This right MUST remain available regardless of account status.
 - **Streaming by Default**: Visitor chat responses SHOULD be streamed progressively to minimize perceived latency and uphold responsiveness targets (< 2s time-to-first-token).
 
 ## Quality Gates & Testing Standards
@@ -54,4 +56,4 @@ The application MUST communicate with the AI layer through a single, unified API
 - Any amendment requires formal documentation, impact assessment, and a corresponding version increment following semantic versioning (MAJOR for removals/redefinitions, MINOR for additions, PATCH for clarifications).
 - All pull requests, code reviews, and automated agent workflows MUST verify compliance against these principles. Use `AGENTS.md` for runtime operational instructions.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
+**Version**: 1.2.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
