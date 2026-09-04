@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.exceptions import ResolvDeskException
 from app.core.logging import CorrelationIdMiddleware, logger
+from app.routers.conversations import router as conversations_router
 from app.routers.documents import router as documents_router
 from app.routers.organizations import router as organizations_router
 from app.routers.registration import router as registration_router
@@ -38,6 +39,10 @@ tags_metadata = [
     {
         "name": "Widget",
         "description": "Public unauthenticated visitor widget configuration",
+    },
+    {
+        "name": "Conversations",
+        "description": "Authenticated owner conversation inbox, transcript inspection, and analytics",
     },
     {
         "name": "Health",
@@ -125,3 +130,4 @@ app.include_router(registration_router, prefix="/api/v1/registration", tags=["Re
 app.include_router(organizations_router, prefix="/api/v1", tags=["Organizations"])
 app.include_router(documents_router)
 app.include_router(widget_router, prefix="/api/v1/widget", tags=["Widget"])
+app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["Conversations"])

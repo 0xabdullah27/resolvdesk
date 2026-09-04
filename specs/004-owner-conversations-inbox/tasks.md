@@ -21,8 +21,8 @@
 
 **Purpose**: Create Pydantic v2 data transfer schemas for conversation inbox, transcripts, and analytics.
 
-- [ ] T001 [P] Implement Pydantic schemas (`ConversationListItem`, `ConversationListResponse`, `ConversationDetailResponse`, `ConversationStatsResponse`) in `backend/app/schemas/conversation.py`
-- [ ] T002 [P] Export new schemas in `backend/app/schemas/__init__.py`
+- [X] T001 [P] Implement Pydantic schemas (`ConversationListItem`, `ConversationListResponse`, `ConversationDetailResponse`, `ConversationStatsResponse`) in `backend/app/schemas/conversation.py`
+- [X] T002 [P] Export new schemas in `backend/app/schemas/__init__.py`
 
 ---
 
@@ -32,10 +32,10 @@
 
 **⚠️ CRITICAL**: No router endpoints can be mounted until this phase is complete.
 
-- [ ] T003 [P] Implement `list_conversations_with_metadata` with correlated subqueries for message counts, latest message preview, and pagination in `backend/app/repos/conversation_repo.py`
-- [ ] T004 [P] Implement `get_conversation_with_messages` strictly filtering by `organization_id` in `backend/app/repos/conversation_repo.py`
-- [ ] T005 [P] Implement `get_conversation_stats` computing total conversations, total messages, escalated count, and 24h activity in `backend/app/repos/conversation_repo.py`
-- [ ] T006 Implement `OwnerConversationService` orchestrating inbox listing, detail transcript retrieval, and analytics in `backend/app/services/owner_conversation_service.py`
+- [X] T003 [P] Implement `list_conversations_with_metadata` with correlated subqueries for message counts, latest message preview, and pagination in `backend/app/repos/conversation_repo.py`
+- [X] T004 [P] Implement `get_conversation_with_messages` strictly filtering by `organization_id` in `backend/app/repos/conversation_repo.py`
+- [X] T005 [P] Implement `get_conversation_stats` computing total conversations, total messages, escalated count, and 24h activity in `backend/app/repos/conversation_repo.py`
+- [X] T006 Implement `OwnerConversationService` orchestrating inbox listing, detail transcript retrieval, and analytics in `backend/app/services/owner_conversation_service.py`
 
 **Checkpoint**: Foundation ready — router and endpoint implementations can begin.
 
@@ -49,13 +49,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Contract test for `GET /api/v1/conversations` (pagination parameters, response shape, 401 unauthorized on missing/invalid token) in `backend/tests/contract/test_owner_conversations_contract.py`
-- [ ] T008 [P] [US1] Integration test verifying tenant-isolated conversation listing (Owner A cannot see Owner B's conversations) in `backend/tests/integration/test_owner_conversations_isolation.py`
+- [X] T007 [P] [US1] Contract test for `GET /api/v1/conversations` (pagination parameters, response shape, 401 unauthorized on missing/invalid token) in `backend/tests/contract/test_owner_conversations_contract.py`
+- [X] T008 [P] [US1] Integration test verifying tenant-isolated conversation listing (Owner A cannot see Owner B's conversations) in `backend/tests/integration/test_owner_conversations_isolation.py`
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implement `GET /api/v1/conversations` paginated endpoint with `CurrentOwner` dependency in `backend/app/routers/conversations.py`
-- [ ] T010 [US1] Register `conversations_router` in `backend/app/main.py` under prefix `/api/v1/conversations` with tag `["Conversations"]`
+- [X] T009 [US1] Implement `GET /api/v1/conversations` paginated endpoint with `CurrentOwner` dependency in `backend/app/routers/conversations.py`
+- [X] T010 [US1] Register `conversations_router` in `backend/app/main.py` under prefix `/api/v1/conversations` with tag `["Conversations"]`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently (Owner Inbox MVP complete).
 
@@ -69,12 +69,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T011 [P] [US2] Contract test for `GET /api/v1/conversations/{conversation_id}` (200 success, 404 not found, 422 invalid UUID) in `backend/tests/contract/test_owner_conversations_contract.py`
-- [ ] T012 [P] [US2] Integration test verifying cross-tenant transcript 404 defense and chronological message ordering in `backend/tests/integration/test_owner_conversations_isolation.py`
+- [X] T011 [P] [US2] Contract test for `GET /api/v1/conversations/{conversation_id}` (200 success, 404 not found, 422 invalid UUID) in `backend/tests/contract/test_owner_conversations_contract.py`
+- [X] T012 [P] [US2] Integration test verifying cross-tenant transcript 404 defense and chronological message ordering in `backend/tests/integration/test_owner_conversations_isolation.py`
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Implement `GET /api/v1/conversations/{conversation_id}` endpoint in `backend/app/routers/conversations.py`
+- [X] T013 [US2] Implement `GET /api/v1/conversations/{conversation_id}` endpoint in `backend/app/routers/conversations.py`
 
 **Checkpoint**: User Stories 1 and 2 are fully functional and integrated.
 
@@ -88,12 +88,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [P] [US3] Contract test for `GET /api/v1/conversations/stats` (response shape, 401 unauthorized) in `backend/tests/contract/test_owner_conversations_contract.py`
-- [ ] T015 [P] [US3] Integration test verifying accurate tenant statistics calculation against seeded database records in `backend/tests/integration/test_owner_conversations_isolation.py`
+- [X] T014 [P] [US3] Contract test for `GET /api/v1/conversations/stats` (response shape, 401 unauthorized) in `backend/tests/contract/test_owner_conversations_contract.py`
+- [X] T015 [P] [US3] Integration test verifying accurate tenant statistics calculation against seeded database records in `backend/tests/integration/test_owner_conversations_isolation.py`
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Implement `GET /api/v1/conversations/stats` endpoint in `backend/app/routers/conversations.py`
+- [X] T016 [US3] Implement `GET /api/v1/conversations/stats` endpoint in `backend/app/routers/conversations.py`
 
 **Checkpoint**: User Stories 1, 2, and 3 are fully functional.
 
@@ -107,12 +107,12 @@
 
 ### Tests for User Story 4
 
-- [ ] T017 [P] [US4] Contract test for `is_escalated` boolean query parameter in `backend/tests/contract/test_owner_conversations_contract.py`
-- [ ] T018 [P] [US4] Integration test verifying escalation filter accuracy in `backend/tests/integration/test_owner_conversations_isolation.py`
+- [X] T017 [P] [US4] Contract test for `is_escalated` boolean query parameter in `backend/tests/contract/test_owner_conversations_contract.py`
+- [X] T018 [P] [US4] Integration test verifying escalation filter accuracy in `backend/tests/integration/test_owner_conversations_isolation.py`
 
 ### Implementation for User Story 4
 
-- [ ] T019 [US4] Add `is_escalated: Optional[bool] = None` query filter handling to `backend/app/routers/conversations.py` and `backend/app/services/owner_conversation_service.py`
+- [X] T019 [US4] Add `is_escalated: Optional[bool] = None` query filter handling to `backend/app/routers/conversations.py` and `backend/app/services/owner_conversation_service.py`
 
 ---
 
@@ -120,9 +120,9 @@
 
 **Purpose**: End-to-end verification, test execution, and Git synchronization.
 
-- [ ] T020 [P] Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
-- [ ] T021 [P] Verify OpenAPI documentation and Swagger schema at `/docs`
-- [ ] T022 Update Git with conventional commit and push branch `004-owner-conversations-inbox`
+- [X] T020 [P] Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
+- [X] T021 [P] Verify OpenAPI documentation and Swagger schema at `/docs`
+- [X] T022 Update Git with conventional commit and push branch `004-owner-conversations-inbox`
 
 ---
 
