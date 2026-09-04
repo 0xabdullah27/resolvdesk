@@ -58,3 +58,7 @@ by default — don't wait to be asked.
   path as if it were the only path.
 - Prefer fewer, well-separated files/functions over one large file
   that mixes concerns, even for small features.
+
+## Git & Version Control
+
+- Always update Git (stage, commit with a descriptive conventional commit message, and push to the remote branch) whenever changes are made to code, configuration, or documentation. Do not leave uncommitted or unpushed work pending.
