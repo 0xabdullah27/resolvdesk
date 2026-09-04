@@ -18,6 +18,7 @@ The Knowledge Base Document Ingestion Pipeline enables business owners to upload
 ### Session 2026-09-04
 
 - Q: How should the system handle an upload when a document with the exact same filename already exists for that organization? → A: Reject with `409 Conflict` indicating a document with this filename already exists, requiring the owner to delete the existing document before uploading a replacement.
+- Q: How should the system handle an uploaded file that contains zero readable text (such as an empty file or an image-only scanned PDF)? → A: Reject immediately at upload with `422 Unprocessable Content` ("Document contains no readable text").
 
 ---
 
@@ -80,6 +81,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 2. **Given** an unsupported file extension (e.g. `.exe`, `.jpg`, `.zip`), **When** upload is attempted, **Then** the system rejects the request with `415 Unsupported Media Type`.
 3. **Given** an organization that already has 50 active documents, **When** attempting a 51st upload, **Then** the system returns `400 Bad Request` citing the 50-document limit.
 4. **Given** an existing document with filename "catalog.pdf", **When** an owner attempts to upload another file named "catalog.pdf", **Then** the system rejects the upload with `409 Conflict` stating that a document with this filename already exists.
+5. **Given** an uploaded file containing zero readable text (e.g. 0-byte file or image-only scanned PDF), **When** upload is attempted, **Then** the system immediately rejects the upload with `422 Unprocessable Content` ("Document contains no readable text").
 
 ---
 
@@ -100,6 +102,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 | **FR-011** | Storage Persistence | Extracted text chunks MUST retain their source document title, chunk index, and token length. |
 | **FR-012** | Background Ingestion | Processing of multi-page documents MUST execute asynchronously so the upload endpoint responds immediately without blocking the HTTP client. |
 | **FR-013** | Filename Uniqueness | System MUST enforce document filename/title uniqueness per Organization, rejecting duplicate uploads with `409 Conflict`. |
+| **FR-014** | Content Validity | System MUST reject empty files or documents yielding zero extractable text immediately with `422 Unprocessable Content`. |
 
 ---
 
