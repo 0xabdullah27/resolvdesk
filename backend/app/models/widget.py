@@ -16,6 +16,12 @@ class WidgetConfigurationBase(SQLModel):
     bot_display_name: str = Field(default="Support Assistant", max_length=100, nullable=False)
     welcome_message: str = Field(default="Hi! How can I help you today?", max_length=500, nullable=False)
     widget_placement: str = Field(default="bottom-right", max_length=20, nullable=False)
+    allowed_origins: str = Field(
+        default="*",
+        max_length=500,
+        nullable=False,
+        description="Comma-separated allowed origins (e.g. 'mystore.com, localhost:3000'). '*' allows any domain.",
+    )
 
 
 class WidgetConfiguration(WidgetConfigurationBase, table=True):

@@ -44,6 +44,15 @@ class EmbeddingService:
         """Determines if the configured provider is Cohere."""
         return "cohere.com" in self.api_base or self.model_name.startswith("embed-")
 
+    async def get_embedding(
+        self,
+        text: str,
+        input_type: str = "search_query",
+    ) -> List[float]:
+        """Generates a dense vector embedding for a single text."""
+        results = await self.get_embeddings([text], input_type=input_type)
+        return results[0] if results else []
+
     async def get_embeddings(
         self,
         texts: List[str],

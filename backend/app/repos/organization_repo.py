@@ -68,3 +68,13 @@ class OrganizationRepo:
         statement = select(Organization).where(Organization.id == organization_id)
         result = await session.exec(statement)
         return result.first()
+
+    @staticmethod
+    async def get_owner_by_organization_id(
+        session: AsyncSession,
+        organization_id: uuid.UUID,
+    ) -> Optional[Owner]:
+        """Fetch organization owner strictly by organization_id."""
+        statement = select(Owner).where(Owner.organization_id == organization_id)
+        result = await session.exec(statement)
+        return result.first()

@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from typing import Optional
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -75,6 +76,7 @@ class WidgetService:
     async def get_public_config(
         session: AsyncSession,
         key: str,
+        request_origin: Optional[str] = None,
     ) -> PublicWidgetConfigResponse:
         """Resolves public branding config for unauthenticated visitor embed."""
         if not key or not key.strip():
@@ -90,11 +92,20 @@ class WidgetService:
                 detail="Widget configuration not found or inactive.",
             )
 
+        # Enforce domain whitelisting
+        from app.services.chat_service import is_origin_allowed
+        if not is_origin_allowed(request_origin, getattr(widget, "allowed_origins", "*")):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Domain not authorized for this widget.",
+            )
+
         return PublicWidgetConfigResponse(
             widget_key=key,  # Return the queried key that authorized this view
             bot_display_name=widget.bot_display_name,
             welcome_message=widget.welcome_message,
             primary_color=widget.primary_color,
             widget_placement=widget.widget_placement,
+            allowed_origins=widget.allowed_origins,
             is_active=True,
         )

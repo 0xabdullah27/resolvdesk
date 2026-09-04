@@ -22,6 +22,7 @@ class WidgetRepo:
         bot_display_name: str = "Support Assistant",
         welcome_message: str = "Hi! How can I help you today?",
         widget_placement: str = "bottom-right",
+        allowed_origins: str = "*",
     ) -> WidgetConfiguration:
         config = WidgetConfiguration(
             organization_id=organization_id,
@@ -30,6 +31,7 @@ class WidgetRepo:
             bot_display_name=bot_display_name,
             welcome_message=welcome_message,
             widget_placement=widget_placement,
+            allowed_origins=allowed_origins,
         )
         session.add(config)
         await session.flush()

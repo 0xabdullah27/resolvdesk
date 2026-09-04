@@ -51,3 +51,16 @@ class CrossStoreSyncException(ResolvDeskException):
         message: str = "Failed to purge vector embeddings. Deletion aborted to maintain cross-store consistency.",
     ):
         super().__init__(message=message, status_code=500)
+
+
+class RateLimitExceededException(ResolvDeskException):
+    """Raised when client IP exceeds sliding-window rate limits (429)."""
+
+    def __init__(
+        self,
+        message: str = "Rate limit exceeded. Please slow down and try again in a moment.",
+        retry_after: int = 60,
+    ):
+        super().__init__(message=message, status_code=429)
+        self.retry_after = retry_after
+        self.headers = {"Retry-After": str(retry_after)}
