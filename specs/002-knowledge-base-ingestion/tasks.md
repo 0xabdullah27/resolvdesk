@@ -3,7 +3,7 @@
 **Input**: Design documents from `/specs/002-knowledge-base-ingestion/`  
 **Prerequisites**: [plan.md](./plan.md) (required), [spec.md](./spec.md) (required), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/api.md](./contracts/api.md), [quickstart.md](./quickstart.md)
 
-**Scope**: Strictly **Backend-First**. Establishes file parsers (PDF, DOCX, TXT, Markdown `.md`), token-based semantic chunker (500 tokens / 50 overlap), provider-agnostic embeddings client, Qdrant vector store integration with strict tenant isolation, background ingestion lifecycle, and atomic cross-store deletion.
+**Scope**: Strictly **Backend-First**. Establishes multi-format file parsers (PDF, DOCX, TXT, Markdown `.md`), token-based semantic chunker (500 tokens / 50 overlap), provider-agnostic embeddings client, Qdrant vector store integration with strict tenant isolation, background ingestion lifecycle, and atomic cross-store deletion.
 
 **Tests**: Included per Constitution quality gates (Principle I tenant isolation, contract verification, schema validation, cross-store atomicity).
 
@@ -22,8 +22,8 @@
 **Purpose**: Add required backend dependencies and vector store / embedding environment configuration.
 
 - [ ] T001 Add `pypdf`, `python-docx`, `python-multipart`, `tiktoken`, and `qdrant-client` dependencies to `backend/pyproject.toml`
-- [ ] T002 [P] Configure Qdrant and OpenAI-compatible embedding settings in `backend/app/core/config.py`
-- [ ] T003 [P] Define custom exceptions for capacity limits (400), payload limits (413), and unsupported formats (415) in `backend/app/core/exceptions.py`
+- [ ] T002 [P] Configure Qdrant (`QDRANT_URL`, `QDRANT_API_KEY`, `QDRANT_COLLECTION_NAME`) and OpenAI-compatible embedding settings (`EMBEDDING_API_BASE`, `EMBEDDING_API_KEY`, `EMBEDDING_MODEL_NAME`, `EMBEDDING_DIMENSION`) in `backend/app/core/config.py`
+- [ ] T003 [P] Define custom exceptions for capacity (400), duplicate filename (409), payload limits (413), unsupported formats (415), zero text / length bounds (422), and cross-store sync failures (500) in `backend/app/core/exceptions.py`
 
 ---
 
@@ -33,10 +33,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Implement `Document` SQLModel entity and enums (`DocumentStatus`, `DocumentType`) in `backend/app/models/document.py`
+- [ ] T004 [P] Implement `Document` SQLModel entity with `(organization_id, title)` unique constraint and enums (`DocumentStatus`, `DocumentType` with `MD`) in `backend/app/models/document.py`
 - [ ] T005 [P] Register `Document` in `backend/app/models/__init__.py`
-- [ ] T006 Create and apply Alembic migration for documents table in `backend/alembic/versions/002_create_documents_table.py`
-- [ ] T007 [P] Implement Qdrant vector store client initialization, collection ensure, and payload indexing in `backend/app/repos/vector_repo.py`
+- [ ] T006 Create and apply Alembic migration for documents table with `uq_documents_org_title` unique constraint in `backend/alembic/versions/002_create_documents_table.py`
+- [ ] T007 [P] Implement Qdrant vector store client initialization, collection ensure (1536 cosine), and payload keyword index creation (`organization_id`, `document_id`) in `backend/app/repos/vector_repo.py`
 - [ ] T008 Implement PostgreSQL `DocumentRepository` with strict `organization_id` tenant filtering in `backend/app/repos/document_repo.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
@@ -51,7 +51,7 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Unit tests for PDF, DOCX, TXT, and Markdown parsers (verifying header structure preservation in Markdown) in `backend/tests/unit/test_document_parsers.py`
+- [ ] T009 [P] [US1] Unit tests for PDF, DOCX, TXT, and Markdown parsers (verifying structural header preservation `#`, `##` in Markdown) in `backend/tests/unit/test_document_parsers.py`
 - [ ] T010 [P] [US1] Unit tests for token chunker verifying 500-token target, 50-token overlap, and boundary splitting in `backend/tests/unit/test_chunker.py`
 - [ ] T011 [P] [US1] Contract test for document upload endpoint `POST /api/v1/documents/upload` in `backend/tests/contract/test_documents_contract.py`
 - [ ] T012 [P] [US1] Contract test for raw text ingestion endpoint `POST /api/v1/documents/raw` in `backend/tests/contract/test_documents_contract.py`
@@ -59,15 +59,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Define Pydantic request and response schemas (`DocumentRead`, `DocumentListResponse`, `RawDocumentCreate`) in `backend/app/schemas/document.py`
+- [ ] T014 [P] [US1] Define Pydantic request and response schemas (`DocumentRead`, `DocumentListResponse`, `RawDocumentCreate` with 1 - 100,000 char validation) in `backend/app/schemas/document.py`
 - [ ] T015 [P] [US1] Implement in-memory PDF text parser using `pypdf` in `backend/app/services/parsers/pdf_parser.py`
 - [ ] T016 [P] [US1] Implement DOCX text parser using `python-docx` in `backend/app/services/parsers/docx_parser.py`
 - [ ] T017 [P] [US1] Implement TXT and Markdown (`.md`) text parser preserving markdown headers and structure in `backend/app/services/parsers/text_parser.py`
 - [ ] T018 [P] [US1] Implement parser registry dispatcher in `backend/app/services/parsers/__init__.py`
-- [ ] T019 [P] [US1] Implement token chunking service using `tiktoken` in `backend/app/services/chunker_service.py`
-- [ ] T020 [P] [US1] Implement provider-agnostic OpenAI-compatible embedding client using `httpx.AsyncClient` in `backend/app/services/embedding_service.py`
-- [ ] T021 [US1] Implement background ingestion pipeline service coordinating extract, chunk, embed, and Qdrant upsert in `backend/app/services/ingestion_service.py`
-- [ ] T022 [US1] Implement document upload endpoint `POST /api/v1/documents/upload` with background task execution in `backend/app/routers/documents.py`
+- [ ] T019 [P] [US1] Implement token chunking service using `tiktoken` (500 tokens / 50 overlap) in `backend/app/services/chunker_service.py`
+- [ ] T020 [P] [US1] Implement provider-agnostic OpenAI-compatible embedding client with chunk batching using `httpx.AsyncClient` in `backend/app/services/embedding_service.py`
+- [ ] T021 [US1] Implement background ingestion pipeline service coordinating extract, chunk, embed, and Qdrant upsert with status tracking in `backend/app/services/ingestion_service.py`
+- [ ] T022 [US1] Implement document upload endpoint `POST /api/v1/documents/upload` with fast synchronous validation and background task execution in `backend/app/routers/documents.py`
 - [ ] T023 [US1] Implement raw text snippet endpoint `POST /api/v1/documents/raw` in `backend/app/routers/documents.py`
 - [ ] T024 [US1] Mount documents router in `backend/app/main.py`
 
@@ -110,7 +110,7 @@
 ### Implementation for User Story 3
 
 - [ ] T032 [US3] Implement vector point purge by `document_id` and `organization_id` in `backend/app/repos/vector_repo.py`
-- [ ] T033 [US3] Implement atomic cross-store deletion orchestrator in `backend/app/services/document_service.py`
+- [ ] T033 [US3] Implement atomic cross-store deletion orchestrator rolling back PostgreSQL delete on Qdrant failure in `backend/app/services/document_service.py`
 - [ ] T034 [US3] Implement `DELETE /api/v1/documents/{document_id}` endpoint in `backend/app/routers/documents.py`
 
 **Checkpoint**: User Stories 1, 2, and 3 are fully functional.
@@ -125,14 +125,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T035 [P] [US4] Contract tests for 413, 415, 400, 409 Conflict (duplicate title), and 422 Unprocessable Content (zero text, 100k length bound) in `backend/tests/contract/test_documents_contract.py`
+- [ ] T035 [P] [US4] Contract tests for 413 Payload Too Large, 415 Unsupported Media Type, 400 Capacity Limit, 409 Conflict (duplicate title), and 422 Unprocessable Content (zero text, 100k length bound) in `backend/tests/contract/test_documents_contract.py`
 - [ ] T036 [P] [US4] Unit test for organization document count constraint check in `backend/tests/unit/test_document_service.py`
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Implement file size, format, zero-readable-text, and duplicate title validation in `backend/app/routers/documents.py` and `backend/app/services/document_service.py`
+- [ ] T037 [US4] Implement fast synchronous file size, format, zero-readable-text, and duplicate title validation in `backend/app/routers/documents.py` and `backend/app/services/document_service.py`
 - [ ] T038 [US4] Implement organization document capacity check (max 50) in `backend/app/services/document_service.py`
-- [ ] T039 [US4] Register custom exception handlers for 400, 409, 413, 415, and 422 in `backend/app/main.py`
+- [ ] T039 [US4] Register custom exception handlers for 400, 409, 413, 415, 422, and 500 in `backend/app/main.py`
 
 ---
 
