@@ -13,6 +13,14 @@ The Knowledge Base Document Ingestion Pipeline enables business owners to upload
 
 ---
 
+## Clarifications
+
+### Session 2026-09-04
+
+- Q: How should the system handle an upload when a document with the exact same filename already exists for that organization? → A: Reject with `409 Conflict` indicating a document with this filename already exists, requiring the owner to delete the existing document before uploading a replacement.
+
+---
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Multi-Format Document Upload & Ingestion (Priority: P1) 🎯 MVP
@@ -71,6 +79,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 1. **Given** a file exceeding 10 MB, **When** the upload is attempted, **Then** the system rejects the request with `413 Payload Too Large`.
 2. **Given** an unsupported file extension (e.g. `.exe`, `.jpg`, `.zip`), **When** upload is attempted, **Then** the system rejects the request with `415 Unsupported Media Type`.
 3. **Given** an organization that already has 50 active documents, **When** attempting a 51st upload, **Then** the system returns `400 Bad Request` citing the 50-document limit.
+4. **Given** an existing document with filename "catalog.pdf", **When** an owner attempts to upload another file named "catalog.pdf", **Then** the system rejects the upload with `409 Conflict` stating that a document with this filename already exists.
 
 ---
 
@@ -90,6 +99,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 | **FR-010** | Metadata Preview | Document inspection MUST return metadata and a 500-character initial content preview. |
 | **FR-011** | Storage Persistence | Extracted text chunks MUST retain their source document title, chunk index, and token length. |
 | **FR-012** | Background Ingestion | Processing of multi-page documents MUST execute asynchronously so the upload endpoint responds immediately without blocking the HTTP client. |
+| **FR-013** | Filename Uniqueness | System MUST enforce document filename/title uniqueness per Organization, rejecting duplicate uploads with `409 Conflict`. |
 
 ---
 
