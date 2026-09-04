@@ -27,6 +27,37 @@ FALLBACK_RESPONSE = (
 SIMILARITY_THRESHOLD = 0.55
 
 
+def is_origin_allowed(request_origin: Optional[str], allowed_origins_str: str) -> bool:
+    """Verifies if incoming request Origin/Referer matches the widget's allowed domains."""
+    if not allowed_origins_str or allowed_origins_str.strip() == "*":
+        return True
+
+    if not request_origin:
+        # If origins are restricted and no origin header was supplied, deny access
+        return False
+
+    from urllib.parse import urlparse
+    parsed = urlparse(request_origin)
+    origin_host = (parsed.netloc or parsed.path).lower()
+    host_only = origin_host.split(":")[0]
+
+    allowed_list = [o.strip().lower() for o in allowed_origins_str.split(",") if o.strip()]
+    for allowed in allowed_list:
+        if allowed == "*":
+            return True
+        allowed_parsed = urlparse(allowed if "://" in allowed else f"http://{allowed}")
+        allowed_host = (allowed_parsed.netloc or allowed_parsed.path).lower()
+        allowed_host_only = allowed_host.split(":")[0]
+
+        if origin_host == allowed_host or host_only == allowed_host_only or request_origin.lower() == allowed:
+            return True
+        # Support wildcard subdomains: *.example.com
+        if allowed_host_only.startswith("*.") and host_only.endswith(allowed_host_only[1:]):
+            return True
+
+    return False
+
+
 class ChatService:
     """Orchestrates public visitor chat sessions, tenant-isolated RAG retrieval, and real-time SSE streaming."""
 
@@ -34,13 +65,21 @@ class ChatService:
         self,
         session: AsyncSession,
         widget_key: str,
+        request_origin: Optional[str] = None,
     ) -> Tuple[WidgetConfiguration, Organization]:
-        """Validates widget key (including grace period) and verifies organization owner status."""
+        """Validates widget key (including grace period), verifies owner status, and enforces domain whitelisting."""
         widget = await WidgetRepo.get_by_public_key(session, widget_key)
         if not widget:
             raise ResolvDeskException(
                 message="Invalid or expired widget key.",
                 status_code=404,
+            )
+
+        # Enforce domain whitelisting
+        if not is_origin_allowed(request_origin, getattr(widget, "allowed_origins", "*")):
+            raise ResolvDeskException(
+                message="Domain not authorized for this widget.",
+                status_code=403,
             )
 
         owner = await OrganizationRepo.get_owner_by_organization_id(session, widget.organization_id)
@@ -104,6 +143,7 @@ class ChatService:
         widget_key: str,
         message: str,
         conversation_id: Optional[uuid.UUID] = None,
+        request_origin: Optional[str] = None,
     ) -> AsyncGenerator[str, None]:
         """Primary generator yielding SSE formatted events (start, token, done).
 
@@ -111,8 +151,12 @@ class ChatService:
         """
         async with async_session_factory() as session:
             try:
-                # 1. Validate widget & tenant status
-                widget, org = await self.validate_widget_access(session, widget_key)
+                # 1. Validate widget, tenant status, and domain origin
+                widget, org = await self.validate_widget_access(
+                    session=session,
+                    widget_key=widget_key,
+                    request_origin=request_origin,
+                )
 
                 # 2. Get or create conversation session
                 conversation = await self.get_or_create_conversation(
@@ -227,9 +271,14 @@ class ChatService:
         session: AsyncSession,
         widget_key: str,
         conversation_id: uuid.UUID,
+        request_origin: Optional[str] = None,
     ) -> ConversationHistoryResponse:
-        """Retrieves past conversation turns ensuring tenant isolation with the widget key."""
-        widget, org = await self.validate_widget_access(session, widget_key)
+        """Retrieves past conversation turns ensuring tenant isolation and domain authorization."""
+        widget, org = await self.validate_widget_access(
+            session=session,
+            widget_key=widget_key,
+            request_origin=request_origin,
+        )
 
         conv = await ConversationRepository.get_conversation(
             session=session,

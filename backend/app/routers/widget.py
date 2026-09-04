@@ -1,5 +1,6 @@
 import uuid
-from fastapi import APIRouter, Depends, Query, status
+from typing import Optional
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import StreamingResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -13,6 +14,11 @@ from app.services.widget_service import WidgetService
 router = APIRouter()
 
 
+def extract_client_origin(request: Request) -> Optional[str]:
+    """Helper to extract origin or referer header from incoming request."""
+    return request.headers.get("origin") or request.headers.get("referer")
+
+
 @router.get(
     "/config",
     response_model=PublicWidgetConfigResponse,
@@ -21,10 +27,12 @@ router = APIRouter()
     description="Resolves public widget branding for customer website visitors without requiring visitor authentication.",
 )
 async def get_public_widget_config(
+    request: Request,
     key: str = Query(..., description="The public widget key (rd_live_...)"),
     session: AsyncSession = Depends(get_db),
 ) -> PublicWidgetConfigResponse:
-    return await WidgetService.get_public_config(session=session, key=key)
+    origin = extract_client_origin(request)
+    return await WidgetService.get_public_config(session=session, key=key, request_origin=origin)
 
 
 @router.post(
@@ -36,15 +44,23 @@ async def get_public_widget_config(
 )
 async def stream_chat_message(
     body: ChatRequest,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ):
-    # Pre-validate widget access before initiating the stream so 403/404 errors return cleanly as HTTP responses
-    await chat_service.validate_widget_access(session, body.widget_key)
+    origin = extract_client_origin(request)
+
+    # Pre-validate widget access & domain whitelisting before initiating the stream
+    await chat_service.validate_widget_access(
+        session=session,
+        widget_key=body.widget_key,
+        request_origin=origin,
+    )
 
     generator = chat_service.stream_chat(
         widget_key=body.widget_key,
         message=body.message,
         conversation_id=body.conversation_id,
+        request_origin=origin,
     )
 
     return StreamingResponse(
@@ -67,11 +83,14 @@ async def stream_chat_message(
 )
 async def get_conversation_history(
     conversation_id: uuid.UUID,
+    request: Request,
     widget_key: str = Query(..., description="The public widget key"),
     session: AsyncSession = Depends(get_db),
 ) -> ConversationHistoryResponse:
+    origin = extract_client_origin(request)
     return await chat_service.get_conversation_history(
         session=session,
         widget_key=widget_key,
         conversation_id=conversation_id,
+        request_origin=origin,
     )
