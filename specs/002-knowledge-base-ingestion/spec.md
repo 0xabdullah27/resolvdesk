@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-The Knowledge Base Document Ingestion Pipeline enables business owners to upload their business guides, FAQs, product catalogs, and policies (PDF, DOCX, TXT, or direct text input) into their organization's knowledge base. The system extracts clean text, partitions the content into overlapping semantic chunks (~500 tokens with 50-token overlap), generates vector embeddings via an OpenAI-compatible interface, and indexes them in a tenant-isolated vector store. The owner can inspect processing progress (`uploading` → `processing` → `ready` | `failed`), preview content, and atomically delete documents across both relational and vector stores.
+The Knowledge Base Document Ingestion Pipeline enables business owners to upload their business guides, FAQs, product catalogs, and policies (PDF, DOCX, TXT, Markdown (.md), or direct text input) into their organization's knowledge base. The system extracts clean text, partitions the content into overlapping semantic chunks (~500 tokens with 50-token overlap), generates vector embeddings via an OpenAI-compatible interface, and indexes them in a tenant-isolated vector store. The owner can inspect processing progress (`uploading` → `processing` → `ready` | `failed`), preview content, and atomically delete documents across both relational and vector stores.
 
 ---
 
@@ -17,14 +17,14 @@ The Knowledge Base Document Ingestion Pipeline enables business owners to upload
 
 ### User Story 1 - Multi-Format Document Upload & Ingestion (Priority: P1) 🎯 MVP
 
-A store owner uploads their store policies (PDF, Word doc, plain text, or pasted manual text). The system validates the file format, extracts readable text, splits it into semantic chunks, generates vector embeddings, and stores them tagged with the organization's unique ID.
+A store owner uploads their store policies (PDF, Word doc, plain text, Markdown (.md) file, or pasted manual text). The system validates the file format, extracts readable text, splits it into semantic chunks, generates vector embeddings, and stores them tagged with the organization's unique ID.
 
 **Why this priority**: Without ingesting and embedding documents, the AI assistant has zero knowledge to answer customer questions. This is the foundational capability of the entire platform.
 
-**Independent Test**: Upload a sample PDF or TXT file via `POST /api/v1/documents/upload`; verify that text is extracted, chunked, and embedded into the vector store; verify the document transitions to `ready` status.
+**Independent Test**: Upload a sample PDF, TXT, or Markdown file via `POST /api/v1/documents/upload`; verify that text is extracted, chunked, and embedded into the vector store; verify the document transitions to `ready` status.
 
 **Acceptance Scenarios**:
-1. **Given** an authenticated business owner with an active organization, **When** they upload a valid `.txt`, `.docx`, or text-readable `.pdf` file up to 10 MB, **Then** the system accepts the upload, creates a `Document` record in `uploading`/`processing` state, extracts text, generates vector embeddings for each chunk, and marks the document `ready`.
+1. **Given** an authenticated business owner with an active organization, **When** they upload a valid `.txt`, `.md`, `.docx`, or text-readable `.pdf` file up to 10 MB, **Then** the system accepts the upload, creates a `Document` record in `uploading`/`processing` state, extracts text, generates vector embeddings for each chunk, and marks the document `ready`.
 2. **Given** an authenticated owner, **When** they submit a raw text snippet (title and content) directly via the API/dashboard, **Then** the system creates a manual document entry and ingests it through the identical chunking and embedding pipeline.
 3. **Given** an invalid or corrupted file, **When** text extraction fails, **Then** the system marks the document status as `failed` with a user-friendly error message, leaving no corrupted vector entries.
 
@@ -78,8 +78,8 @@ The system protects against oversized uploads, unsupported formats, and storage 
 
 | ID | Category | Requirement |
 |---|---|---|
-| **FR-001** | Formats | System MUST support `.pdf`, `.docx`, `.txt`, and raw text manual entries. |
-| **FR-002** | Extraction | System MUST extract clean plain text from supported document formats without requiring external cloud OCR services for v1. |
+| **FR-001** | Formats | System MUST support `.pdf`, `.docx`, `.txt`, `.md` (Markdown), and raw text manual entries. |
+| **FR-002** | Extraction | System MUST extract clean plain text from supported document formats (preserving header hierarchies and structure in Markdown) without requiring external cloud OCR services for v1. |
 | **FR-003** | Chunking | System MUST partition extracted text into chunks of approximately 500 tokens with 50-token overlapping boundaries. |
 | **FR-004** | Embedding | System MUST generate dense vector embeddings using an OpenAI-compatible embedding endpoint configured via environment variables. |
 | **FR-005** | Indexing | System MUST store chunk vectors in a dedicated vector store (Qdrant), strictly tagged with `organization_id` and `document_id` payload metadata. |
@@ -100,7 +100,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 | **SC-001** | Ingestion Speed | A 10-page text document reaches `ready` status within 30 seconds. |
 | **SC-002** | Tenant Filtering Accuracy | 100% of vector queries strictly filter by `organization_id` with 0 cross-tenant chunk leakage. |
 | **SC-003** | Cross-Store Consistency | Zero orphan vector chunks remain after a document is deleted. |
-| **SC-004** | File Format Compatibility | Successfully extracts text from standard PDF, DOCX, and TXT files. |
+| **SC-004** | File Format Compatibility | Successfully extracts text from standard PDF, DOCX, TXT, and Markdown (.md) files. |
 | **SC-005** | Automated Test Coverage | Unit and integration test suites cover upload validation, text extraction, chunking, and tenant isolation. |
 
 ---
