@@ -21,9 +21,9 @@
 
 **Purpose**: Add LLM configuration settings and rate limiter infrastructure.
 
-- [ ] T001 Add `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` settings to `backend/app/core/config.py`
-- [ ] T002 Add `sse-starlette` dependency (or native async generator streaming support) to `backend/pyproject.toml`
-- [ ] T003 [P] Implement in-memory sliding-window IP rate limiter (30 requests/minute per client IP) in `backend/app/core/rate_limiter.py`
+- [X] T001 Add `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` settings to `backend/app/core/config.py`
+- [X] T002 Add `sse-starlette` dependency (or native async generator streaming support) to `backend/pyproject.toml`
+- [X] T003 [P] Implement in-memory sliding-window IP rate limiter (30 requests/minute per client IP) in `backend/app/core/rate_limiter.py`
 
 ---
 
@@ -33,11 +33,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Implement `Conversation` and `Message` SQLModel entities with foreign keys and indexes in `backend/app/models/conversation.py`
-- [ ] T005 [P] Register `Conversation` and `Message` in `backend/app/models/__init__.py`
-- [ ] T006 Create and apply Alembic migration for conversations and messages in `backend/alembic/versions/003_create_conversations_and_messages.py`
-- [ ] T007 [P] Implement `ConversationRepository` supporting session creation, message append, and chronological history retrieval (last 10 messages) in `backend/app/repos/conversation_repo.py`
-- [ ] T008 [P] Define Pydantic schemas (`ChatRequest`, `ChatMessageRead`, `ConversationHistoryResponse`) in `backend/app/schemas/chat.py`
+- [X] T004 [P] Implement `Conversation` and `Message` SQLModel entities with foreign keys and indexes in `backend/app/models/conversation.py`
+- [X] T005 [P] Register `Conversation` and `Message` in `backend/app/models/__init__.py`
+- [X] T006 Create and apply Alembic migration for conversations and messages in `backend/alembic/versions/003_create_conversations_and_messages.py`
+- [X] T007 [P] Implement `ConversationRepository` supporting session creation, message append, and chronological history retrieval (last 10 messages) in `backend/app/repos/conversation_repo.py`
+- [X] T008 [P] Define Pydantic schemas (`ChatRequest`, `ChatMessageRead`, `ConversationHistoryResponse`) in `backend/app/schemas/chat.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -51,14 +51,14 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Contract test for `POST /api/v1/widget/chat` SSE stream and event shapes (`start`, `token`, `done`) in `backend/tests/contract/test_chat_contract.py`
-- [ ] T010 [P] [US1] Integration test for complete visitor chat flow (widget key -> Qdrant retrieval -> LLM streaming -> message persistence) in `backend/tests/integration/test_chat_rag.py`
+- [X] T009 [P] [US1] Contract test for `POST /api/v1/widget/chat` SSE stream and event shapes (`start`, `token`, `done`) in `backend/tests/contract/test_chat_contract.py`
+- [X] T010 [P] [US1] Integration test for complete visitor chat flow (widget key -> Qdrant retrieval -> LLM streaming -> message persistence) in `backend/tests/integration/test_chat_rag.py`
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement provider-agnostic OpenAI-compatible LLM streaming client using `httpx.AsyncClient` in `backend/app/services/llm_service.py`
-- [ ] T012 [US1] Implement RAG chat orchestration service in `backend/app/services/chat_service.py` coordinating widget key validation, Qdrant vector retrieval (`organization_id` filter), prompt assembly, and SSE token streaming
-- [ ] T013 [US1] Implement `POST /api/v1/widget/chat` SSE streaming endpoint in `backend/app/routers/widget.py`
+- [X] T011 [US1] Implement provider-agnostic OpenAI-compatible LLM streaming client using `httpx.AsyncClient` in `backend/app/services/llm_service.py`
+- [X] T012 [US1] Implement RAG chat orchestration service in `backend/app/services/chat_service.py` coordinating widget key validation, Qdrant vector retrieval (`organization_id` filter), prompt assembly, and SSE token streaming
+- [X] T013 [US1] Implement `POST /api/v1/widget/chat` SSE streaming endpoint in `backend/app/routers/widget.py`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently (Backend Chat MVP complete).
 
@@ -72,13 +72,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Unit test verifying anti-hallucination prompt construction and confidence threshold gate in `backend/tests/unit/test_grounding.py`
-- [ ] T015 [P] [US2] Integration test verifying unindexed or off-topic questions return the standard fallback in `backend/tests/integration/test_chat_rag.py`
+- [X] T014 [P] [US2] Unit test verifying anti-hallucination prompt construction and confidence threshold gate in `backend/tests/unit/test_grounding.py`
+- [X] T015 [P] [US2] Integration test verifying unindexed or off-topic questions return the standard fallback in `backend/tests/integration/test_chat_rag.py`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement similarity confidence threshold check (< 0.55 or 0 chunks) to immediately return polite fallback in `backend/app/services/chat_service.py`
-- [ ] T017 [US2] Implement rigid system prompt template enforcing strict grounding and scope redirection in `backend/app/services/chat_service.py`
+- [X] T016 [US2] Implement similarity confidence threshold check (< 0.55 or 0 chunks) to immediately return polite fallback in `backend/app/services/chat_service.py`
+- [X] T017 [US2] Implement rigid system prompt template enforcing strict grounding and scope redirection in `backend/app/services/chat_service.py`
 
 **Checkpoint**: User Stories 1 and 2 are fully functional and integrated.
 
@@ -92,13 +92,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T018 [P] [US3] Contract test for `GET /api/v1/widget/conversations/{conversation_id}` history re-hydration in `backend/tests/contract/test_chat_contract.py`
-- [ ] T019 [P] [US3] Integration test verifying multi-turn pronoun resolution across multiple messages in `backend/tests/integration/test_chat_rag.py`
+- [X] T018 [P] [US3] Contract test for `GET /api/v1/widget/conversations/{conversation_id}` history re-hydration in `backend/tests/contract/test_chat_contract.py`
+- [X] T019 [P] [US3] Integration test verifying multi-turn pronoun resolution across multiple messages in `backend/tests/integration/test_chat_rag.py`
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Implement conversation history context injection (last 10 messages) into the LLM prompt in `backend/app/services/chat_service.py`
-- [ ] T021 [US3] Implement `GET /api/v1/widget/conversations/{conversation_id}` endpoint in `backend/app/routers/widget.py`
+- [X] T020 [US3] Implement conversation history context injection (last 10 messages) into the LLM prompt in `backend/app/services/chat_service.py`
+- [X] T021 [US3] Implement `GET /api/v1/widget/conversations/{conversation_id}` endpoint in `backend/app/routers/widget.py`
 
 **Checkpoint**: User Stories 1, 2, and 3 are fully functional.
 
@@ -112,14 +112,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T022 [P] [US4] Contract tests for rate limiting (429), message length bounds (422), invalid widget key (404), and suspended organization (403) in `backend/tests/contract/test_chat_contract.py`
-- [ ] T023 [P] [US4] Unit test for sliding-window rate limiter in `backend/tests/unit/test_rate_limiter.py`
+- [X] T022 [P] [US4] Contract tests for rate limiting (429), message length bounds (422), invalid widget key (404), and suspended organization (403) in `backend/tests/contract/test_chat_contract.py`
+- [X] T023 [P] [US4] Unit test for sliding-window rate limiter in `backend/tests/unit/test_rate_limiter.py`
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] Integrate sliding-window rate limiter dependency on chat endpoint in `backend/app/routers/widget.py`
-- [ ] T025 [US4] Add schema validation for 1,000-character maximum and non-empty string in `backend/app/schemas/chat.py`
-- [ ] T026 [US4] Support widget key grace period lookup and suspended organization checks in `backend/app/services/chat_service.py`
+- [X] T024 [US4] Integrate sliding-window rate limiter dependency on chat endpoint in `backend/app/routers/widget.py`
+- [X] T025 [US4] Add schema validation for 1,000-character maximum and non-empty string in `backend/app/schemas/chat.py`
+- [X] T026 [US4] Support widget key grace period lookup and suspended organization checks in `backend/app/services/chat_service.py`
 
 ---
 
@@ -127,9 +127,9 @@
 
 **Purpose**: End-to-end verification, test execution, and cleanup.
 
-- [ ] T027 [P] Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
-- [ ] T028 [P] Verify OpenAPI documentation and Swagger schema at `/docs`
-- [ ] T029 Update Git with conventional commit and push branch `003-ai-answer-engine`
+- [X] T027 [P] Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
+- [X] T028 [P] Verify OpenAPI documentation and Swagger schema at `/docs`
+- [X] T029 Update Git with conventional commit and push branch `003-ai-answer-engine`
 
 ---
 

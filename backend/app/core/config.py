@@ -16,9 +16,15 @@ class Settings(BaseSettings):
     def ASYNC_DATABASE_URL(self) -> str:
         url = self.DATABASE_URL
         if url.startswith("postgresql://"):
-            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        if url.startswith("postgres://"):
-            return url.replace("postgres://", "postgresql+asyncpg://", 1)
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+        # Sanitize query parameters for asyncpg
+        if "sslmode=require" in url:
+            url = url.replace("sslmode=require", "ssl=require")
+        import re
+        url = re.sub(r"[&?]channel_binding=[^&]*", "", url)
         return url
 
     # Better Auth & JWKS
@@ -55,12 +61,21 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
 
+    # LLM Provider-Agnostic Settings (OpenAI-compatible)
+    LLM_BASE_URL: str = "https://api.openai.com/v1"
+    LLM_API_KEY: Union[str, None] = None
+    LLM_MODEL: str = "gpt-4o-mini"
+
     # Ingestion Constraints & Limits
     MAX_DOCUMENT_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
     MAX_DOCUMENTS_PER_ORG: int = 50
     MAX_RAW_TEXT_CHARS: int = 100_000
     CHUNK_SIZE_TOKENS: int = 500
     CHUNK_OVERLAP_TOKENS: int = 50
+
+    # Rate Limiting
+    RATE_LIMIT_CHAT_PER_MINUTE: int = 30
+    RATE_LIMIT_WINDOW_SECONDS: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",

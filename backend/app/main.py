@@ -71,10 +71,15 @@ app.add_middleware(
 @app.exception_handler(ResolvDeskException)
 async def resolvdesk_exception_handler(request: Request, exc: ResolvDeskException):
     logger.warning("Domain exception on %s [%d]: %s", request.url.path, exc.status_code, exc.message)
+    headers = getattr(exc, "headers", None)
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.message},
+        headers=headers,
     )
+
+
+from fastapi.encoders import jsonable_encoder
 
 
 @app.exception_handler(RequestValidationError)
@@ -82,7 +87,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     logger.warning("Validation error on %s: %s", request.url.path, exc.errors())
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={"detail": exc.errors()},
+        content={"detail": jsonable_encoder(exc.errors())},
     )
 
 
