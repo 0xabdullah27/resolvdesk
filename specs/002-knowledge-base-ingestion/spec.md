@@ -19,6 +19,7 @@ The Knowledge Base Document Ingestion Pipeline enables business owners to upload
 
 - Q: How should the system handle an upload when a document with the exact same filename already exists for that organization? → A: Reject with `409 Conflict` indicating a document with this filename already exists, requiring the owner to delete the existing document before uploading a replacement.
 - Q: How should the system handle an uploaded file that contains zero readable text (such as an empty file or an image-only scanned PDF)? → A: Reject immediately at upload with `422 Unprocessable Content` ("Document contains no readable text").
+- Q: What should the maximum character limit be for raw text snippets submitted directly via POST /api/v1/documents/raw? → A: 100,000 characters (~20,000 words), enforced at the schema validation layer.
 
 ---
 
@@ -34,7 +35,7 @@ A store owner uploads their store policies (PDF, Word doc, plain text, Markdown 
 
 **Acceptance Scenarios**:
 1. **Given** an authenticated business owner with an active organization, **When** they upload a valid `.txt`, `.md`, `.docx`, or text-readable `.pdf` file up to 10 MB, **Then** the system accepts the upload, creates a `Document` record in `uploading`/`processing` state, extracts text, generates vector embeddings for each chunk, and marks the document `ready`.
-2. **Given** an authenticated owner, **When** they submit a raw text snippet (title and content) directly via the API/dashboard, **Then** the system creates a manual document entry and ingests it through the identical chunking and embedding pipeline.
+2. **Given** an authenticated owner, **When** they submit a raw text snippet (title and content between 1 and 100,000 characters) directly via the API/dashboard, **Then** the system creates a manual document entry and ingests it through the identical chunking and embedding pipeline.
 3. **Given** an invalid or corrupted file, **When** text extraction fails, **Then** the system marks the document status as `failed` with a user-friendly error message, leaving no corrupted vector entries.
 
 ---
@@ -82,6 +83,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 3. **Given** an organization that already has 50 active documents, **When** attempting a 51st upload, **Then** the system returns `400 Bad Request` citing the 50-document limit.
 4. **Given** an existing document with filename "catalog.pdf", **When** an owner attempts to upload another file named "catalog.pdf", **Then** the system rejects the upload with `409 Conflict` stating that a document with this filename already exists.
 5. **Given** an uploaded file containing zero readable text (e.g. 0-byte file or image-only scanned PDF), **When** upload is attempted, **Then** the system immediately rejects the upload with `422 Unprocessable Content` ("Document contains no readable text").
+6. **Given** a raw text snippet exceeding 100,000 characters, **When** submitted via `POST /api/v1/documents/raw`, **Then** the system rejects the request with `422 Unprocessable Content` citing the maximum character length violation.
 
 ---
 
@@ -103,6 +105,7 @@ The system protects against oversized uploads, unsupported formats, and storage 
 | **FR-012** | Background Ingestion | Processing of multi-page documents MUST execute asynchronously so the upload endpoint responds immediately without blocking the HTTP client. |
 | **FR-013** | Filename Uniqueness | System MUST enforce document filename/title uniqueness per Organization, rejecting duplicate uploads with `409 Conflict`. |
 | **FR-014** | Content Validity | System MUST reject empty files or documents yielding zero extractable text immediately with `422 Unprocessable Content`. |
+| **FR-015** | Raw Snippet Bounds | System MUST enforce a maximum length of 100,000 characters for raw text snippet submissions. |
 
 ---
 
