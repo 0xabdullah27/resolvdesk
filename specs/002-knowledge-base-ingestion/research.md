@@ -111,7 +111,7 @@
 
 ### Decision
 - When an owner uploads a file:
-  1. Fast synchronous validation: file size (<= 10MB), file extension (`.pdf`, `.docx`, `.txt`, `.md`), organization document count (< 50).
+  1. Fast synchronous validation: file size (<= 10MB), supported file extension (`.pdf`, `.docx`, `.txt`, `.md`), duplicate filename check (`409 Conflict`), non-empty readable text check (`422 Unprocessable Content`), and organization document count (< 50).
   2. Persist `Document` in PostgreSQL with status `uploading` / `processing`.
   3. Dispatch ingestion task via FastAPI `BackgroundTasks` (or async worker).
   4. Respond immediately to caller with `202 Accepted` (or `201 Created`) with document ID and status `processing`.

@@ -124,3 +124,24 @@ Expected Response: `204 No Content`
 Verify deletion:
 - `GET /api/v1/documents/7b8893d2-3162-4ef8-9e5c-cb613da66141` returns `404 Not Found`.
 - Vector collection points for that `document_id` are completely purged from Qdrant.
+
+---
+
+### Scenario D: Edge Case & Validation Scenarios
+
+1. **Duplicate Filename (`409 Conflict`)**:
+   Uploading `policy.md` a second time:
+   ```bash
+   curl -i -X POST "http://localhost:8000/api/v1/documents/upload" \
+     -H "Authorization: Bearer dev-test-token" \
+     -F "file=@policy.md;type=text/markdown"
+   ```
+   Returns `HTTP/1.1 409 Conflict` (`A document with filename 'policy.md' already exists for this organization.`).
+
+2. **Empty File / Zero Readable Text (`422 Unprocessable Content`)**:
+   Uploading a 0-byte file:
+   Returns `HTTP/1.1 422 Unprocessable Content` (`Document contains no readable text.`).
+
+3. **Raw Text Overflow (`422 Unprocessable Content`)**:
+   Submitting raw text snippet with > 100,000 characters:
+   Returns `HTTP/1.1 422 Unprocessable Content` (`Snippet content exceeds the maximum allowed length of 100,000 characters.`).

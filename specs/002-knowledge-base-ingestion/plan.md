@@ -36,6 +36,9 @@ The Knowledge Base Document Ingestion Pipeline enables business owners to upload
 **Constraints**:
 - Max file size: 10 MB (`413 Payload Too Large`).
 - Max capacity: 50 documents per Organization (`400 Bad Request`).
+- Duplicate filename per organization: Rejected with `409 Conflict` (FR-013).
+- Zero readable text / empty files: Rejected immediately with `422 Unprocessable Content` (FR-014).
+- Raw text snippet boundary: 100,000 characters max (`422 Unprocessable Content`) (FR-015).
 - Semantic chunking: 500 tokens with 50-token overlap.
 - Cross-Store Atomicity: Rollback relational delete if vector purge fails.
 
@@ -80,11 +83,11 @@ backend/
 ├── app/
 │   ├── core/
 │   │   ├── config.py             # Add Qdrant and Embedding settings
-│   │   └── exceptions.py         # Custom capacity and validation exceptions
+│   │   └── exceptions.py         # Custom exceptions: 400, 409, 413, 415, 422, 500
 │   ├── models/
-│   │   └── document.py           # SQLModel Document entity & Enums
+│   │   └── document.py           # SQLModel Document entity, Enums & (org_id, title) unique constraint
 │   ├── schemas/
-│   │   └── document.py           # Pydantic schemas (DocumentRead, RawDocumentCreate, etc.)
+│   │   └── document.py           # Pydantic schemas (DocumentRead, RawDocumentCreate with 100k bound)
 │   ├── repos/
 │   │   ├── document_repo.py      # PostgreSQL async CRUD with tenant isolation
 │   │   └── vector_repo.py        # Qdrant client interactions (upsert, purge, tenant filter)
@@ -105,7 +108,7 @@ backend/
     │   ├── test_document_parsers.py # Unit tests for PDF, DOCX, TXT, MD extraction
     │   └── test_chunker.py          # Unit tests for 500/50 token chunking
     ├── contract/
-    │   └── test_documents_contract.py # API validation, 413, 415, 400 status codes
+    │   └── test_documents_contract.py # API validation: 400, 409, 413, 415, 422 status codes
     └── integration/
         └── test_document_ingestion.py # Full pipeline, Qdrant indexing, atomic deletion
 ```
