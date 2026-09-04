@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from typing import Optional
 from fastapi import HTTPException, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
