@@ -39,8 +39,20 @@ class EmbeddingService:
         self.dimension = dimension or settings.EMBEDDING_DIMENSION
         self.batch_size = 32
 
-    async def get_embeddings(self, texts: List[str]) -> List[List[float]]:
-        """Generates dense vector embeddings for a list of texts in batches."""
+    @property
+    def is_cohere(self) -> bool:
+        """Determines if the configured provider is Cohere."""
+        return "cohere.com" in self.api_base or self.model_name.startswith("embed-")
+
+    async def get_embeddings(
+        self,
+        texts: List[str],
+        input_type: str = "search_document",
+    ) -> List[List[float]]:
+        """Generates dense vector embeddings for a list of texts in batches.
+        
+        Supports both OpenAI-compatible endpoints (/v1/embeddings) and Cohere (/v2/embed).
+        """
         if not texts:
             return []
 
@@ -53,23 +65,48 @@ class EmbeddingService:
         async with httpx.AsyncClient(timeout=30.0) as client:
             for i in range(0, len(texts), self.batch_size):
                 batch = texts[i : i + self.batch_size]
-                url = f"{self.api_base}/embeddings"
                 headers = {
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 }
-                payload = {
-                    "input": batch,
-                    "model": self.model_name,
-                }
+
+                if self.is_cohere:
+                    # Cohere v2 API endpoint & payload format
+                    base = self.api_base if self.api_base.endswith("/v2") else f"{self.api_base}/v2"
+                    url = f"{base}/embed"
+                    payload = {
+                        "model": self.model_name,
+                        "texts": batch,
+                        "input_type": input_type,
+                        "embedding_types": ["float"],
+                    }
+                else:
+                    # OpenAI-compatible API endpoint & payload format
+                    url = f"{self.api_base}/embeddings"
+                    payload = {
+                        "input": batch,
+                        "model": self.model_name,
+                    }
 
                 try:
                     response = await client.post(url, json=payload, headers=headers)
                     response.raise_for_status()
                     data = response.json()
-                    # OpenAI standard format: data["data"][i]["embedding"] sorted by index
-                    sorted_items = sorted(data["data"], key=lambda x: x["index"])
-                    batch_embeddings = [item["embedding"] for item in sorted_items]
+
+                    if self.is_cohere:
+                        # Cohere v2 returns {"embeddings": {"float": [[...], [...]]}}
+                        embeddings_data = data.get("embeddings", {})
+                        if isinstance(embeddings_data, dict) and "float" in embeddings_data:
+                            batch_embeddings = embeddings_data["float"]
+                        elif isinstance(embeddings_data, list):
+                            batch_embeddings = embeddings_data
+                        else:
+                            raise ValueError(f"Unexpected Cohere embeddings format: {data}")
+                    else:
+                        # OpenAI standard format: data["data"][i]["embedding"] sorted by index
+                        sorted_items = sorted(data["data"], key=lambda x: x["index"])
+                        batch_embeddings = [item["embedding"] for item in sorted_items]
+
                     all_embeddings.extend(batch_embeddings)
                 except httpx.HTTPError as e:
                     logger.error("embedding_api_call_failed", error=str(e), url=url)
