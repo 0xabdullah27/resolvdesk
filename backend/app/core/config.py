@@ -44,6 +44,24 @@ class Settings(BaseSettings):
     WIDGET_GRACE_PERIOD_HOURS: int = 24
     DEV_AUTH_BYPASS: bool = True
 
+    # Vector Database (Qdrant)
+    QDRANT_URL: str = ":memory:"
+    QDRANT_API_KEY: Union[str, None] = None
+    QDRANT_COLLECTION_NAME: str = "resolvdesk_documents"
+
+    # Provider-Agnostic Embeddings (OpenAI-compatible)
+    EMBEDDING_API_BASE: str = "https://api.openai.com/v1"
+    EMBEDDING_API_KEY: str = "mock-key"
+    EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 1536
+
+    # Ingestion Constraints & Limits
+    MAX_DOCUMENT_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+    MAX_DOCUMENTS_PER_ORG: int = 50
+    MAX_RAW_TEXT_CHARS: int = 100_000
+    CHUNK_SIZE_TOKENS: int = 500
+    CHUNK_OVERLAP_TOKENS: int = 50
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

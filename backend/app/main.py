@@ -7,7 +7,9 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.core.exceptions import ResolvDeskException
 from app.core.logging import CorrelationIdMiddleware, logger
+from app.routers.documents import router as documents_router
 from app.routers.organizations import router as organizations_router
 from app.routers.registration import router as registration_router
 from app.routers.widget import router as widget_router
@@ -28,6 +30,10 @@ tags_metadata = [
     {
         "name": "Organizations",
         "description": "Authenticated organization profile management and widget key rotation",
+    },
+    {
+        "name": "Knowledge Base",
+        "description": "Document ingestion, parsing, chunking, and tenant-isolated vector indexing",
     },
     {
         "name": "Widget",
@@ -62,11 +68,20 @@ app.add_middleware(
 
 
 # Exception Handlers
+@app.exception_handler(ResolvDeskException)
+async def resolvdesk_exception_handler(request: Request, exc: ResolvDeskException):
+    logger.warning("Domain exception on %s [%d]: %s", request.url.path, exc.status_code, exc.message)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message},
+    )
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.warning("Validation error on %s: %s", request.url.path, exc.errors())
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": exc.errors()},
     )
 
@@ -103,4 +118,5 @@ async def health_check():
 # Mount Routers
 app.include_router(registration_router, prefix="/api/v1/registration", tags=["Registration"])
 app.include_router(organizations_router, prefix="/api/v1", tags=["Organizations"])
+app.include_router(documents_router)
 app.include_router(widget_router, prefix="/api/v1/widget", tags=["Widget"])
