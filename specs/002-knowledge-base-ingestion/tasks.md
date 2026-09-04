@@ -119,20 +119,20 @@
 
 ## Phase 6: User Story 4 - File Validation, Capacity Limits & Edge Cases (Priority: P3)
 
-**Goal**: Enforce 10 MB file size limit (`413 Payload Too Large`), unsupported format rejection (`415 Unsupported Media Type`), and 50 documents per organization limit (`400 Bad Request`).
+**Goal**: Enforce 10 MB file size limit (`413`), unsupported format rejection (`415`), 50 documents per organization limit (`400`), duplicate filename rejection (`409 Conflict`), and zero-readable-text / 100k-char snippet bounds (`422 Unprocessable Content`).
 
-**Independent Test**: Attempt uploading an 11 MB file (returns 413), an unsupported `.exe` (returns 415), or a 51st document (returns 400); verify clear, actionable error details.
+**Independent Test**: Attempt uploading an 11 MB file (413), an unsupported `.exe` (415), a duplicate filename (409), a zero-text file (422), a raw snippet >100k chars (422), or a 51st document (400); verify clear, actionable error details.
 
 ### Tests for User Story 4
 
-- [ ] T035 [P] [US4] Contract tests for 413 Payload Too Large, 415 Unsupported Media Type, and 400 Capacity Limit in `backend/tests/contract/test_documents_contract.py`
+- [ ] T035 [P] [US4] Contract tests for 413, 415, 400, 409 Conflict (duplicate title), and 422 Unprocessable Content (zero text, 100k length bound) in `backend/tests/contract/test_documents_contract.py`
 - [ ] T036 [P] [US4] Unit test for organization document count constraint check in `backend/tests/unit/test_document_service.py`
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Implement file size and format pre-validation middleware/dependency in `backend/app/routers/documents.py`
+- [ ] T037 [US4] Implement file size, format, zero-readable-text, and duplicate title validation in `backend/app/routers/documents.py` and `backend/app/services/document_service.py`
 - [ ] T038 [US4] Implement organization document capacity check (max 50) in `backend/app/services/document_service.py`
-- [ ] T039 [US4] Register custom exception handlers for 413, 415, and 400 in `backend/app/main.py`
+- [ ] T039 [US4] Register custom exception handlers for 400, 409, 413, 415, and 422 in `backend/app/main.py`
 
 ---
 

@@ -100,6 +100,7 @@ class Document(DocumentBase, table=True):
 - `id`: Primary Key (UUID)
 - `organization_id`: Foreign Key (`organizations.id`), Indexed. Mandatory in every query filter (`WHERE organization_id = :org_id`).
 - `status`: Indexed for status queries and background task polling.
+- Unique Constraint: `UniqueConstraint("organization_id", "title", name="uq_documents_org_title")` enforcing filename/title uniqueness per tenant (FR-013).
 - Composite Index: `(organization_id, created_at DESC)` for efficient paginated document listings.
 
 ### State Transitions

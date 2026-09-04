@@ -57,6 +57,20 @@ Uploads a document file (`.pdf`, `.docx`, `.txt`, `.md`) for background extracti
 }
 ```
 
+#### `409 Conflict` (Duplicate Filename)
+```json
+{
+  "detail": "A document with filename 'return-policy.md' already exists for this organization."
+}
+```
+
+#### `422 Unprocessable Content` (Zero Readable Text)
+```json
+{
+  "detail": "Document contains no readable text."
+}
+```
+
 ---
 
 ## 2. Ingest Raw Text Snippet
@@ -90,6 +104,20 @@ Submits a direct text snippet (FAQ, policy note, guidelines) without uploading a
   "content_preview": "Our retail locations are closed on Thanksgiving and Christmas Day. Support chat remains active 24/7.",
   "created_at": "2026-09-04T08:31:00.000Z",
   "updated_at": "2026-09-04T08:31:00.000Z"
+}
+```
+
+#### `409 Conflict` (Duplicate Title)
+```json
+{
+  "detail": "A document with title 'Store Holiday Hours' already exists for this organization."
+}
+```
+
+#### `422 Unprocessable Content` (Length or Empty Validation)
+```json
+{
+  "detail": "Snippet content exceeds the maximum allowed length of 100,000 characters."
 }
 ```
 
