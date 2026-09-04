@@ -42,3 +42,9 @@ out/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local database & temp logs
+*.db
+*.sqlite*
+logs.md
+
