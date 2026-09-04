@@ -21,12 +21,12 @@
 
 **Purpose**: Backend project initialization, environment settings, database connection, and migrations framework.
 
-- [ ] T001 Add FastAPI, SQLModel, asyncpg, Alembic, and PyJWT dependencies to backend uv project in `backend/pyproject.toml`
-- [ ] T002 [P] Configure environment settings and Pydantic Settings in `backend/app/core/config.py`
-- [ ] T003 [P] Setup asyncpg database engine, sessionmaker, and connection pooling in `backend/app/core/database.py`
-- [ ] T004 [P] Configure Alembic async migrations environment in `backend/alembic.ini` and `backend/alembic/env.py`
-- [ ] T005 [P] Setup test suite fixtures, test database session, and HTTP test client in `backend/tests/conftest.py`
-- [ ] T006 Add Better Auth dependency to Next.js 16 project in `frontend/package.json`
+- [X] T001 Add FastAPI, SQLModel, asyncpg, Alembic, and PyJWT dependencies to backend uv project in `backend/pyproject.toml`
+- [X] T002 [P] Configure environment settings and Pydantic Settings in `backend/app/core/config.py`
+- [X] T003 [P] Setup asyncpg database engine, sessionmaker, and connection pooling in `backend/app/core/database.py`
+- [X] T004 [P] Configure Alembic async migrations environment in `backend/alembic.ini` and `backend/alembic/env.py`
+- [X] T005 [P] Setup test suite fixtures, test database session, and HTTP test client in `backend/tests/conftest.py`
+- [X] T006 Add Better Auth dependency to Next.js 16 project in `frontend/package.json`
 
 ---
 
@@ -36,13 +36,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T007 [P] Implement SQLModel entities for Organization, Owner, and Widget in `backend/app/models/organization.py`, `backend/app/models/owner.py`, and `backend/app/models/widget.py`
-- [ ] T008 Generate and apply initial database schema migration in `backend/alembic/versions/001_initial_auth_tables.py`
-- [ ] T009 [P] Setup Better Auth server configuration with JWT and JWKS plugins in `frontend/lib/auth.ts`
-- [ ] T010 [P] Implement Next.js catch-all route handler exposing Better Auth and JWKS endpoint in `frontend/app/api/auth/[...all]/route.ts`
-- [ ] T011 Implement PyJWKClient JWT signature verification dependency with key caching in `backend/app/core/auth.py`
-- [ ] T012 [P] Implement development authentication test token generator (FR-012) in `backend/app/core/auth.py`
-- [ ] T013 Setup FastAPI application with CORS middleware, error handlers, and router mounting in `backend/app/main.py`
+- [X] T007 [P] Implement SQLModel entities for Organization, Owner, and Widget in `backend/app/models/organization.py`, `backend/app/models/owner.py`, and `backend/app/models/widget.py`
+- [X] T008 Generate and apply initial database schema migration in `backend/alembic/versions/001_initial_auth_tables.py`
+- [X] T009 [P] Setup Better Auth server configuration with JWT and JWKS plugins in `frontend/lib/auth.ts`
+- [X] T010 [P] Implement Next.js catch-all route handler exposing Better Auth and JWKS endpoint in `frontend/app/api/auth/[...all]/route.ts`
+- [X] T011 Implement PyJWKClient JWT signature verification dependency with key caching in `backend/app/core/auth.py`
+- [X] T012 [P] Implement development authentication test token generator (FR-012) in `backend/app/core/auth.py`
+- [X] T013 Setup FastAPI application with CORS middleware, error handlers, and router mounting in `backend/app/main.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -56,16 +56,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T014 [P] [US1] Contract test for registration complete endpoint in `backend/tests/contract/test_registration_contract.py`
-- [ ] T015 [P] [US1] Integration test for atomic multi-table rollback on provisioning failure in `backend/tests/integration/test_registration_atomicity.py`
+- [X] T014 [P] [US1] Contract test for registration complete endpoint in `backend/tests/contract/test_registration_contract.py`
+- [X] T015 [P] [US1] Integration test for atomic multi-table rollback on provisioning failure in `backend/tests/integration/test_registration_atomicity.py`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Define Pydantic request and response schemas for registration in `backend/app/schemas/registration.py`
-- [ ] T017 [P] [US1] Implement organization and owner database queries in `backend/app/repos/organization_repo.py`
-- [ ] T018 [P] [US1] Implement widget database queries in `backend/app/repos/widget_repo.py`
-- [ ] T019 [US1] Implement RegistrationService orchestrating atomic multi-table transaction in `backend/app/services/registration_service.py`
-- [ ] T020 [US1] Implement registration endpoint `POST /api/v1/registration/complete` in `backend/app/routers/registration.py`
+- [X] T016 [P] [US1] Define Pydantic request and response schemas for registration in `backend/app/schemas/registration.py`
+- [X] T017 [P] [US1] Implement organization and owner database queries in `backend/app/repos/organization_repo.py`
+- [X] T018 [P] [US1] Implement widget database queries in `backend/app/repos/widget_repo.py`
+- [X] T019 [US1] Implement RegistrationService orchestrating atomic multi-table transaction in `backend/app/services/registration_service.py`
+- [X] T020 [US1] Implement registration endpoint `POST /api/v1/registration/complete` in `backend/app/routers/registration.py`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently (Backend MVP complete).
 
@@ -79,14 +79,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Unit tests for JWT signature verification, claims parsing, and expired token rejection in `backend/tests/unit/test_jwt_auth.py`
-- [ ] T022 [P] [US2] Contract test for authenticated owner profile endpoint `GET /api/v1/me` in `backend/tests/contract/test_me_contract.py`
+- [X] T021 [P] [US2] Unit tests for JWT signature verification, claims parsing, and expired token rejection in `backend/tests/unit/test_jwt_auth.py`
+- [X] T022 [P] [US2] Contract test for authenticated owner profile endpoint `GET /api/v1/me` in `backend/tests/contract/test_me_contract.py`
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Define Pydantic schema for owner profile response in `backend/app/schemas/organization.py`
-- [ ] T024 [US2] Implement owner profile repository query by `user_id` in `backend/app/repos/organization_repo.py`
-- [ ] T025 [US2] Implement authenticated owner current profile endpoint `GET /api/v1/me` in `backend/app/routers/organizations.py`
+- [X] T023 [P] [US2] Define Pydantic schema for owner profile response in `backend/app/schemas/organization.py`
+- [X] T024 [US2] Implement owner profile repository query by `user_id` in `backend/app/repos/organization_repo.py`
+- [X] T025 [US2] Implement authenticated owner current profile endpoint `GET /api/v1/me` in `backend/app/routers/organizations.py`
 
 **Checkpoint**: User Stories 1 and 2 are fully functional and integrated on the backend.
 
@@ -100,17 +100,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Integration test verifying strict multi-tenant query isolation (`WHERE organization_id = ...`) and cross-tenant 403 rejection in `backend/tests/integration/test_tenant_isolation.py`
-- [ ] T027 [P] [US3] Contract test for widget key rotation and public widget config endpoints in `backend/tests/contract/test_widget_contract.py`
+- [X] T026 [P] [US3] Integration test verifying strict multi-tenant query isolation (`WHERE organization_id = ...`) and cross-tenant 403 rejection in `backend/tests/integration/test_tenant_isolation.py`
+- [X] T027 [P] [US3] Contract test for widget key rotation and public widget config endpoints in `backend/tests/contract/test_widget_contract.py`
 
 ### Implementation for User Story 3
 
-- [ ] T028 [P] [US3] Define Pydantic schemas for organization profile, key rotation, and widget config in `backend/app/schemas/organization.py` and `backend/app/schemas/widget.py`
-- [ ] T029 [US3] Implement OrganizationService for profile retrieval and tenant validation in `backend/app/services/organization_service.py`
-- [ ] T030 [P] [US3] Implement WidgetService supporting key generation and 24-hour grace rotation in `backend/app/services/widget_service.py`
-- [ ] T031 [US3] Implement organization profile endpoint `GET /api/v1/organization/profile` in `backend/app/routers/organizations.py`
-- [ ] T032 [US3] Implement key rotation endpoint `POST /api/v1/organization/widget/rotate-key` in `backend/app/routers/organizations.py`
-- [ ] T033 [US3] Implement unauthenticated public widget configuration endpoint `GET /api/v1/widget/config` in `backend/app/routers/widget.py`
+- [X] T028 [P] [US3] Define Pydantic schemas for organization profile, key rotation, and widget config in `backend/app/schemas/organization.py` and `backend/app/schemas/widget.py`
+- [X] T029 [US3] Implement OrganizationService for profile retrieval and tenant validation in `backend/app/services/organization_service.py`
+- [X] T030 [P] [US3] Implement WidgetService supporting key generation and 24-hour grace rotation in `backend/app/services/widget_service.py`
+- [X] T031 [US3] Implement organization profile endpoint `GET /api/v1/organization/profile` in `backend/app/routers/organizations.py`
+- [X] T032 [US3] Implement key rotation endpoint `POST /api/v1/organization/widget/rotate-key` in `backend/app/routers/organizations.py`
+- [X] T033 [US3] Implement unauthenticated public widget configuration endpoint `GET /api/v1/widget/config` in `backend/app/routers/widget.py`
 
 **Checkpoint**: User Stories 1, 2, and 3 are functional and strictly isolated on the backend.
 
@@ -124,11 +124,11 @@
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Integration test verifying suspended or revoked owner credentials cannot access protected FastAPI endpoints in `backend/tests/integration/test_session_invalidation.py`
+- [X] T034 [P] [US4] Integration test verifying suspended or revoked owner credentials cannot access protected FastAPI endpoints in `backend/tests/integration/test_session_invalidation.py`
 
 ### Implementation for User Story 4
 
-- [ ] T035 [US4] Implement owner account status verification (`status == 'active'`) in FastAPI auth dependency `backend/app/core/auth.py`
+- [X] T035 [US4] Implement owner account status verification (`status == 'active'`) in FastAPI auth dependency `backend/app/core/auth.py`
 
 **Checkpoint**: All 4 User Stories have backend enforcement.
 
@@ -138,10 +138,10 @@
 
 **Purpose**: System-wide hardening, structured logging, OpenAPI documentation, and end-to-end quickstart validation.
 
-- [ ] T036 [P] Implement structured logging with tenant context and request correlation ID in `backend/app/core/logging.py`
-- [ ] T037 [P] Configure OpenAPI documentation tags, security schemes, and error schemas in `backend/app/main.py`
-- [ ] T038 Run backend automated test suite and verify all scenarios in `specs/001-tenant-auth-foundation/quickstart.md`
-- [ ] T039 Update backend setup and verification instructions in `README.md`
+- [X] T036 [P] Implement structured logging with tenant context and request correlation ID in `backend/app/core/logging.py`
+- [X] T037 [P] Configure OpenAPI documentation tags, security schemes, and error schemas in `backend/app/main.py`
+- [X] T038 Run backend automated test suite and verify all scenarios in `specs/001-tenant-auth-foundation/quickstart.md`
+- [X] T039 Update backend setup and verification instructions in `README.md`
 
 ---
 
