@@ -10,7 +10,7 @@ from app.schemas.document import DocumentListResponse, DocumentRead, RawDocument
 from app.services.document_service import document_service
 from app.services.ingestion_service import ingestion_service
 
-router = APIRouter(prefix="/api/v1/documents", tags=["documents"])
+router = APIRouter()
 
 
 @router.post(

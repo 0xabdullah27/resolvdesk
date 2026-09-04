@@ -128,6 +128,6 @@ async def health_check():
 # Mount Routers
 app.include_router(registration_router, prefix="/api/v1/registration", tags=["Registration"])
 app.include_router(organizations_router, prefix="/api/v1", tags=["Organizations"])
-app.include_router(documents_router)
+app.include_router(documents_router, prefix="/api/v1/documents", tags=["Knowledge Base"])
 app.include_router(widget_router, prefix="/api/v1/widget", tags=["Widget"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["Conversations"])
