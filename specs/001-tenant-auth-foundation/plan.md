@@ -108,13 +108,12 @@ backend/
 └── pyproject.toml
 
 frontend/
-├── src/
-│   ├── app/
-│   │   └── api/
-│   │       └── auth/
-│   │           └── [...all]/ # Minimal Better Auth route handler (exposes /jwks and /token for live E2E tests)
-│   └── lib/
-│       └── auth.ts          # Better Auth server configuration with JWT & JWKS plugins
+├── app/
+│   └── api/
+│       └── auth/
+│           └── [...all]/ # Minimal Better Auth route handler (exposes /jwks and /token for live E2E tests)
+├── lib/
+│   └── auth.ts          # Better Auth server configuration with JWT & JWKS plugins
 ├── package.json
 └── tsconfig.json
 ```

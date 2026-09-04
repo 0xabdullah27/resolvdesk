@@ -21,12 +21,12 @@
 
 **Purpose**: Backend project initialization, environment settings, database connection, and migrations framework.
 
-- [ ] T001 Initialize backend environment with uv and FastAPI dependencies in `backend/pyproject.toml`
+- [ ] T001 Add FastAPI, SQLModel, asyncpg, Alembic, and PyJWT dependencies to backend uv project in `backend/pyproject.toml`
 - [ ] T002 [P] Configure environment settings and Pydantic Settings in `backend/app/core/config.py`
 - [ ] T003 [P] Setup asyncpg database engine, sessionmaker, and connection pooling in `backend/app/core/database.py`
 - [ ] T004 [P] Configure Alembic async migrations environment in `backend/alembic.ini` and `backend/alembic/env.py`
 - [ ] T005 [P] Setup test suite fixtures, test database session, and HTTP test client in `backend/tests/conftest.py`
-- [ ] T006 Initialize minimal Next.js 16 auth authority provider dependencies in `frontend/package.json`
+- [ ] T006 Add Better Auth dependency to Next.js 16 project in `frontend/package.json`
 
 ---
 
@@ -38,8 +38,8 @@
 
 - [ ] T007 [P] Implement SQLModel entities for Organization, Owner, and Widget in `backend/app/models/organization.py`, `backend/app/models/owner.py`, and `backend/app/models/widget.py`
 - [ ] T008 Generate and apply initial database schema migration in `backend/alembic/versions/001_initial_auth_tables.py`
-- [ ] T009 [P] Setup Better Auth server configuration with JWT and JWKS plugins in `frontend/src/lib/auth.ts`
-- [ ] T010 [P] Implement Next.js catch-all route handler exposing Better Auth and JWKS endpoint in `frontend/src/app/api/auth/[...all]/route.ts`
+- [ ] T009 [P] Setup Better Auth server configuration with JWT and JWKS plugins in `frontend/lib/auth.ts`
+- [ ] T010 [P] Implement Next.js catch-all route handler exposing Better Auth and JWKS endpoint in `frontend/app/api/auth/[...all]/route.ts`
 - [ ] T011 Implement PyJWKClient JWT signature verification dependency with key caching in `backend/app/core/auth.py`
 - [ ] T012 [P] Implement development authentication test token generator (FR-012) in `backend/app/core/auth.py`
 - [ ] T013 Setup FastAPI application with CORS middleware, error handlers, and router mounting in `backend/app/main.py`
