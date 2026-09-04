@@ -27,7 +27,27 @@ def record_factory(*args, **kwargs):
 
 
 logging.setLogRecordFactory(record_factory)
-logger = logging.getLogger("resolvdesk")
+class StructuredLoggerAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        reserved = {"exc_info", "stack_info", "stacklevel", "extra"}
+        extra = kwargs.get("extra", {})
+        custom_kwargs = {k: v for k, v in list(kwargs.items()) if k not in reserved}
+        for k in custom_kwargs:
+            kwargs.pop(k)
+        if custom_kwargs:
+            extra.update(custom_kwargs)
+            msg = f"{msg} | {custom_kwargs}"
+        kwargs["extra"] = extra
+        return msg, kwargs
+
+
+def get_logger(name: str = "resolvdesk") -> StructuredLoggerAdapter:
+    """Returns a structured logger adapter supporting keyword fields."""
+    base_logger = logging.getLogger(name)
+    return StructuredLoggerAdapter(base_logger, {})
+
+
+logger = get_logger("resolvdesk")
 
 
 class CorrelationIdMiddleware(BaseHTTPMiddleware):

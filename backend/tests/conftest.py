@@ -87,6 +87,14 @@ test_session_factory = async_sessionmaker(
 )
 
 
+import app.models  # noqa: F401 - registers all SQLModel entities in metadata
+import app.core.database
+
+# Patch app.core.database to use test engine and session factory
+app.core.database.engine = test_engine
+app.core.database.async_session_factory = test_session_factory
+
+
 @pytest_asyncio.fixture(autouse=True)
 async def prepare_database():
     """Create all tables before each test and drop after."""

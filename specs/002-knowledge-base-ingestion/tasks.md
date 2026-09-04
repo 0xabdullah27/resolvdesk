@@ -21,9 +21,9 @@
 
 **Purpose**: Add required backend dependencies and vector store / embedding environment configuration.
 
-- [ ] T001 Add `pypdf`, `python-docx`, `python-multipart`, `tiktoken`, and `qdrant-client` dependencies to `backend/pyproject.toml`
-- [ ] T002 [P] Configure Qdrant (`QDRANT_URL`, `QDRANT_API_KEY`, `QDRANT_COLLECTION_NAME`) and OpenAI-compatible embedding settings (`EMBEDDING_API_BASE`, `EMBEDDING_API_KEY`, `EMBEDDING_MODEL_NAME`, `EMBEDDING_DIMENSION`) in `backend/app/core/config.py`
-- [ ] T003 [P] Define custom exceptions for capacity (400), duplicate filename (409), payload limits (413), unsupported formats (415), zero text / length bounds (422), and cross-store sync failures (500) in `backend/app/core/exceptions.py`
+- [X] T001 Add `pypdf`, `python-docx`, `python-multipart`, `tiktoken`, and `qdrant-client` dependencies to `backend/pyproject.toml`
+- [X] T002 [P] Configure Qdrant (`QDRANT_URL`, `QDRANT_API_KEY`, `QDRANT_COLLECTION_NAME`) and OpenAI-compatible embedding settings (`EMBEDDING_API_BASE`, `EMBEDDING_API_KEY`, `EMBEDDING_MODEL_NAME`, `EMBEDDING_DIMENSION`) in `backend/app/core/config.py`
+- [X] T003 [P] Define custom exceptions for capacity (400), duplicate filename (409), payload limits (413), unsupported formats (415), zero text / length bounds (422), and cross-store sync failures (500) in `backend/app/core/exceptions.py`
 
 ---
 
@@ -33,11 +33,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Implement `Document` SQLModel entity with `(organization_id, title)` unique constraint and enums (`DocumentStatus`, `DocumentType` with `MD`) in `backend/app/models/document.py`
-- [ ] T005 [P] Register `Document` in `backend/app/models/__init__.py`
-- [ ] T006 Create and apply Alembic migration for documents table with `uq_documents_org_title` unique constraint in `backend/alembic/versions/002_create_documents_table.py`
-- [ ] T007 [P] Implement Qdrant vector store client initialization, collection ensure (1536 cosine), and payload keyword index creation (`organization_id`, `document_id`) in `backend/app/repos/vector_repo.py`
-- [ ] T008 Implement PostgreSQL `DocumentRepository` with strict `organization_id` tenant filtering in `backend/app/repos/document_repo.py`
+- [X] T004 [P] Implement `Document` SQLModel entity with `(organization_id, title)` unique constraint and enums (`DocumentStatus`, `DocumentType` with `MD`) in `backend/app/models/document.py`
+- [X] T005 [P] Register `Document` in `backend/app/models/__init__.py`
+- [X] T006 Create and apply Alembic migration for documents table with `uq_documents_org_title` unique constraint in `backend/alembic/versions/002_create_documents_table.py`
+- [X] T007 [P] Implement Qdrant vector store client initialization, collection ensure (1536 cosine), and payload keyword index creation (`organization_id`, `document_id`) in `backend/app/repos/vector_repo.py`
+- [X] T008 Implement PostgreSQL `DocumentRepository` with strict `organization_id` tenant filtering in `backend/app/repos/document_repo.py`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -51,25 +51,25 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Unit tests for PDF, DOCX, TXT, and Markdown parsers (verifying structural header preservation `#`, `##` in Markdown) in `backend/tests/unit/test_document_parsers.py`
-- [ ] T010 [P] [US1] Unit tests for token chunker verifying 500-token target, 50-token overlap, and boundary splitting in `backend/tests/unit/test_chunker.py`
-- [ ] T011 [P] [US1] Contract test for document upload endpoint `POST /api/v1/documents/upload` in `backend/tests/contract/test_documents_contract.py`
-- [ ] T012 [P] [US1] Contract test for raw text ingestion endpoint `POST /api/v1/documents/raw` in `backend/tests/contract/test_documents_contract.py`
-- [ ] T013 [P] [US1] Integration test for complete upload -> extract -> chunk -> embed -> Qdrant indexing flow in `backend/tests/integration/test_document_ingestion.py`
+- [X] T009 [P] [US1] Unit tests for PDF, DOCX, TXT, and Markdown parsers (verifying structural header preservation `#`, `##` in Markdown) in `backend/tests/unit/test_document_parsers.py`
+- [X] T010 [P] [US1] Unit tests for token chunker verifying 500-token target, 50-token overlap, and boundary splitting in `backend/tests/unit/test_chunker.py`
+- [X] T011 [P] [US1] Contract test for document upload endpoint `POST /api/v1/documents/upload` in `backend/tests/contract/test_documents_contract.py`
+- [X] T012 [P] [US1] Contract test for raw text ingestion endpoint `POST /api/v1/documents/raw` in `backend/tests/contract/test_documents_contract.py`
+- [X] T013 [P] [US1] Integration test for complete upload -> extract -> chunk -> embed -> Qdrant indexing flow in `backend/tests/integration/test_document_ingestion.py`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Define Pydantic request and response schemas (`DocumentRead`, `DocumentListResponse`, `RawDocumentCreate` with 1 - 100,000 char validation) in `backend/app/schemas/document.py`
-- [ ] T015 [P] [US1] Implement in-memory PDF text parser using `pypdf` in `backend/app/services/parsers/pdf_parser.py`
-- [ ] T016 [P] [US1] Implement DOCX text parser using `python-docx` in `backend/app/services/parsers/docx_parser.py`
-- [ ] T017 [P] [US1] Implement TXT and Markdown (`.md`) text parser preserving markdown headers and structure in `backend/app/services/parsers/text_parser.py`
-- [ ] T018 [P] [US1] Implement parser registry dispatcher in `backend/app/services/parsers/__init__.py`
-- [ ] T019 [P] [US1] Implement token chunking service using `tiktoken` (500 tokens / 50 overlap) in `backend/app/services/chunker_service.py`
-- [ ] T020 [P] [US1] Implement provider-agnostic OpenAI-compatible embedding client with chunk batching using `httpx.AsyncClient` in `backend/app/services/embedding_service.py`
-- [ ] T021 [US1] Implement background ingestion pipeline service coordinating extract, chunk, embed, and Qdrant upsert with status tracking in `backend/app/services/ingestion_service.py`
-- [ ] T022 [US1] Implement document upload endpoint `POST /api/v1/documents/upload` with fast synchronous validation and background task execution in `backend/app/routers/documents.py`
-- [ ] T023 [US1] Implement raw text snippet endpoint `POST /api/v1/documents/raw` in `backend/app/routers/documents.py`
-- [ ] T024 [US1] Mount documents router in `backend/app/main.py`
+- [X] T014 [P] [US1] Define Pydantic request and response schemas (`DocumentRead`, `DocumentListResponse`, `RawDocumentCreate` with 1 - 100,000 char validation) in `backend/app/schemas/document.py`
+- [X] T015 [P] [US1] Implement in-memory PDF text parser using `pypdf` in `backend/app/services/parsers/pdf_parser.py`
+- [X] T016 [P] [US1] Implement DOCX text parser using `python-docx` in `backend/app/services/parsers/docx_parser.py`
+- [X] T017 [P] [US1] Implement TXT and Markdown (`.md`) text parser preserving markdown headers and structure in `backend/app/services/parsers/text_parser.py`
+- [X] T018 [P] [US1] Implement parser registry dispatcher in `backend/app/services/parsers/__init__.py`
+- [X] T019 [P] [US1] Implement token chunking service using `tiktoken` (500 tokens / 50 overlap) in `backend/app/services/chunker_service.py`
+- [X] T020 [P] [US1] Implement provider-agnostic OpenAI-compatible embedding client with chunk batching using `httpx.AsyncClient` in `backend/app/services/embedding_service.py`
+- [X] T021 [US1] Implement background ingestion pipeline service coordinating extract, chunk, embed, and Qdrant upsert with status tracking in `backend/app/services/ingestion_service.py`
+- [X] T022 [US1] Implement document upload endpoint `POST /api/v1/documents/upload` with fast synchronous validation and background task execution in `backend/app/routers/documents.py`
+- [X] T023 [US1] Implement raw text snippet endpoint `POST /api/v1/documents/raw` in `backend/app/routers/documents.py`
+- [X] T024 [US1] Mount documents router in `backend/app/main.py`
 
 **Checkpoint**: User Story 1 is fully functional and testable independently (Backend MVP complete).
 
@@ -83,14 +83,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Contract test for `GET /api/v1/documents` and `GET /api/v1/documents/{id}` in `backend/tests/contract/test_documents_contract.py`
-- [ ] T026 [P] [US2] Integration test verifying strict multi-tenant isolation prevents cross-organization document inspection in `backend/tests/integration/test_document_ingestion.py`
+- [X] T025 [P] [US2] Contract test for `GET /api/v1/documents` and `GET /api/v1/documents/{id}` in `backend/tests/contract/test_documents_contract.py`
+- [X] T026 [P] [US2] Integration test verifying strict multi-tenant isolation prevents cross-organization document inspection in `backend/tests/integration/test_document_ingestion.py`
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Implement paginated listing and single document query with tenant filtering in `backend/app/services/document_service.py`
-- [ ] T028 [US2] Implement `GET /api/v1/documents` endpoint in `backend/app/routers/documents.py`
-- [ ] T029 [US2] Implement `GET /api/v1/documents/{document_id}` endpoint returning metadata and 500-character preview in `backend/app/routers/documents.py`
+- [X] T027 [US2] Implement paginated listing and single document query with tenant filtering in `backend/app/services/document_service.py`
+- [X] T028 [US2] Implement `GET /api/v1/documents` endpoint in `backend/app/routers/documents.py`
+- [X] T029 [US2] Implement `GET /api/v1/documents/{document_id}` endpoint returning metadata and 500-character preview in `backend/app/routers/documents.py`
 
 **Checkpoint**: User Stories 1 and 2 are fully functional and integrated.
 
@@ -104,14 +104,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Contract test for `DELETE /api/v1/documents/{id}` in `backend/tests/contract/test_documents_contract.py`
-- [ ] T031 [P] [US3] Integration test for atomic cross-store deletion and rollback on vector purge failure in `backend/tests/integration/test_document_ingestion.py`
+- [X] T030 [P] [US3] Contract test for `DELETE /api/v1/documents/{id}` in `backend/tests/contract/test_documents_contract.py`
+- [X] T031 [P] [US3] Integration test for atomic cross-store deletion and rollback on vector purge failure in `backend/tests/integration/test_document_ingestion.py`
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Implement vector point purge by `document_id` and `organization_id` in `backend/app/repos/vector_repo.py`
-- [ ] T033 [US3] Implement atomic cross-store deletion orchestrator rolling back PostgreSQL delete on Qdrant failure in `backend/app/services/document_service.py`
-- [ ] T034 [US3] Implement `DELETE /api/v1/documents/{document_id}` endpoint in `backend/app/routers/documents.py`
+- [X] T032 [US3] Implement vector point purge by `document_id` and `organization_id` in `backend/app/repos/vector_repo.py`
+- [X] T033 [US3] Implement atomic cross-store deletion orchestrator rolling back PostgreSQL delete on Qdrant failure in `backend/app/services/document_service.py`
+- [X] T034 [US3] Implement `DELETE /api/v1/documents/{document_id}` endpoint in `backend/app/routers/documents.py`
 
 **Checkpoint**: User Stories 1, 2, and 3 are fully functional.
 
@@ -125,14 +125,14 @@
 
 ### Tests for User Story 4
 
-- [ ] T035 [P] [US4] Contract tests for 413 Payload Too Large, 415 Unsupported Media Type, 400 Capacity Limit, 409 Conflict (duplicate title), and 422 Unprocessable Content (zero text, 100k length bound) in `backend/tests/contract/test_documents_contract.py`
-- [ ] T036 [P] [US4] Unit test for organization document count constraint check in `backend/tests/unit/test_document_service.py`
+- [X] T035 [P] [US4] Contract tests for 413 Payload Too Large, 415 Unsupported Media Type, 400 Capacity Limit, 409 Conflict (duplicate title), and 422 Unprocessable Content (zero text, 100k length bound) in `backend/tests/contract/test_documents_contract.py`
+- [X] T036 [P] [US4] Unit test for organization document count constraint check in `backend/tests/unit/test_document_service.py`
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Implement fast synchronous file size, format, zero-readable-text, and duplicate title validation in `backend/app/routers/documents.py` and `backend/app/services/document_service.py`
-- [ ] T038 [US4] Implement organization document capacity check (max 50) in `backend/app/services/document_service.py`
-- [ ] T039 [US4] Register custom exception handlers for 400, 409, 413, 415, 422, and 500 in `backend/app/main.py`
+- [X] T037 [US4] Implement fast synchronous file size, format, zero-readable-text, and duplicate title validation in `backend/app/routers/documents.py` and `backend/app/services/document_service.py`
+- [X] T038 [US4] Implement organization document capacity check (max 50) in `backend/app/services/document_service.py`
+- [X] T039 [US4] Register custom exception handlers for 400, 409, 413, 415, 422, and 500 in `backend/app/main.py`
 
 ---
 
@@ -140,9 +140,9 @@
 
 **Purpose**: End-to-end verification, test execution, and cleanup.
 
-- [ ] T040 Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
-- [ ] T041 Verify OpenAPI documentation and Swagger schema at `/docs`
-- [ ] T042 Update Git with conventional commit and push branch `002-knowledge-base-ingestion`
+- [X] T040 Run full automated test suite (`uv run pytest tests/ -v`) and verify 100% pass rate
+- [X] T041 Verify OpenAPI documentation and Swagger schema at `/docs`
+- [X] T042 Update Git with conventional commit and push branch `002-knowledge-base-ingestion`
 
 ---
 
