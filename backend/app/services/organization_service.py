@@ -71,7 +71,10 @@ class OrganizationService:
                 bot_display_name=widget.bot_display_name,
                 welcome_message=widget.welcome_message,
                 widget_placement=widget.widget_placement,
+                allowed_origins=widget.allowed_origins,
                 has_grace_key=has_grace,
+                grace_expires_at=widget.grace_expires_at,
+                embed_snippet=embed_snippet,
             ),
             embed_snippet=embed_snippet,
         )

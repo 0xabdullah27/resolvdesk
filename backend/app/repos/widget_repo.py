@@ -83,3 +83,39 @@ class WidgetRepo:
         session.add(widget)
         await session.flush()
         return widget
+
+    @staticmethod
+    async def update_config(
+        session: AsyncSession,
+        organization_id: uuid.UUID,
+        bot_display_name: Optional[str] = None,
+        welcome_message: Optional[str] = None,
+        primary_color: Optional[str] = None,
+        widget_placement: Optional[str] = None,
+        allowed_origins: Optional[str] = None,
+    ) -> Optional[WidgetConfiguration]:
+        """Tenant-isolated update: query strictly filters WHERE organization_id = ..."""
+        statement = select(WidgetConfiguration).where(
+            WidgetConfiguration.organization_id == organization_id
+        )
+        result = await session.exec(statement)
+        widget = result.first()
+        if not widget:
+            return None
+
+        if bot_display_name is not None:
+            widget.bot_display_name = bot_display_name
+        if welcome_message is not None:
+            widget.welcome_message = welcome_message
+        if primary_color is not None:
+            widget.primary_color = primary_color
+        if widget_placement is not None:
+            widget.widget_placement = widget_placement
+        if allowed_origins is not None:
+            widget.allowed_origins = allowed_origins
+
+        widget.updated_at = datetime.datetime.now(datetime.timezone.utc)
+        session.add(widget)
+        await session.flush()
+        return widget
+
