@@ -8,6 +8,13 @@
 
 **Input**: User requested to build the next feature on the roadmap: Conversations Inbox and Ticket Management UI for business owners to monitor visitor chat logs, inspect escalated tickets, review citations, and track real-time support volume.
 
+## Clarifications
+
+### Session 2026-09-06
+- Q: Should the business owner be able to update an escalated ticket's status (`open` → `in_progress` → `resolved`) directly within the Conversations Inbox? → A: Option A — Owners can interactively transition ticket status (`open` → `in_progress` → `resolved`) via a status dropdown/selector in the detail pane with optimistic updates.
+- Q: How should the conversation list update when new incoming customer chats arrive while the business owner is actively viewing a transcript? → A: Option A — Silently prepend new conversations to the top of the sidebar list with a "New" badge, preserving the currently active conversation and scroll position without disruption.
+- Q: How should the business owner interact with the customer's email address on an escalated ticket in the transcript detail pane? → A: Option A — Display customer email with a one-click "Copy Email" button (with visual confirmation feedback) and a clickable `mailto:` launcher link for instant external follow-up.
+
 ---
 
 ## User Scenarios & Testing *(mandatory)*
@@ -29,20 +36,21 @@ As a business owner, I want to see an organized list of all customer conversatio
 
 ---
 
-### User Story 2 - Filter Escalated Support Tickets and Review Contact Details (Priority: P2)
+### User Story 2 - Filter Escalated Support Tickets and Update Status (Priority: P2)
 
-As a business owner, I want to quickly filter for conversations that were escalated to human support and view the customer's contact email, issue summary, and document citations, so that I can follow up with customers who need human assistance.
+As a business owner, I want to quickly filter for conversations that were escalated to human support, view the customer's contact email and citations, and update the ticket resolution status (`open` → `in_progress` → `resolved`), so that I can manage and track customer issues to resolution.
 
-**Why this priority**: Human escalation is the core safety net of the platform; business owners must be able to isolate high-priority escalated tickets from regular automated chats immediately.
+**Why this priority**: Human escalation is the core safety net of the platform; business owners must be able to isolate high-priority escalated tickets, contact customers, and track resolution state directly.
 
-**Independent Test**: Can be verified by toggling the "Escalated Only" filter tab, confirming that only conversations with escalation flags are listed, selecting an escalated chat, and verifying the customer's email address, escalation badge, and reference citations are prominently displayed.
+**Independent Test**: Can be verified by toggling the "Escalated Only" filter tab, selecting an escalated chat, verifying customer email and citations, and changing the ticket status from `open` to `resolved`.
 
 **Acceptance Scenarios**:
 
 1. **Given** the conversation list, **When** the owner clicks the "Escalated" filter tab, **Then** the list updates to display only conversations where human assistance or a support ticket was requested.
-2. **Given** an escalated conversation, **When** viewing its transcript, **Then** an escalation banner is visible at the top of the transcript pane displaying the customer's contact email, creation timestamp, and escalation status.
-3. **Given** assistant messages that referenced knowledge base documents, **When** viewing the transcript, **Then** citation pills/badges indicating the source documents are visible beneath each grounded assistant message.
-4. **Given** the filter is toggled back to "All Conversations", **Then** both automated chats and escalated chats are displayed in chronological order.
+2. **Given** an escalated conversation, **When** viewing its transcript, **Then** an escalation banner is visible at the top of the transcript pane displaying the customer's contact email with a one-click "Copy Email" button, a clickable `mailto:` link, creation timestamp, and an interactive status selector (`open`, `in_progress`, `resolved`).
+3. **Given** an owner viewing an escalated ticket, **When** they select a new status (e.g., `in_progress` or `resolved`), **Then** the status updates immediately with optimistic feedback, persists to the backend, and updates the list item's status indicator.
+4. **Given** assistant messages that referenced knowledge base documents, **When** viewing the transcript, **Then** citation pills/badges indicating the source documents are visible beneath each grounded assistant message.
+5. **Given** the filter is toggled back to "All Conversations", **Then** both automated chats and escalated chats are displayed in chronological order.
 
 ---
 
@@ -57,7 +65,7 @@ As a business owner, I want to see aggregate support overview statistics (total 
 **Acceptance Scenarios**:
 
 1. **Given** the conversations dashboard, **When** the owner views the page header, **Then** they see key metric indicators: Total Conversations, Total Messages, Escalated Tickets, and 24h Active Volume.
-2. **Given** new incoming customer chats from the website widget, **When** the owner clicks the "Refresh" button or a background polling cycle fires, **Then** the list smoothly updates with new conversations without resetting the active transcript pane.
+2. **Given** new incoming customer chats from the website widget, **When** background polling fires or the owner clicks "Refresh", **Then** the new conversations are silently prepended to the top of the list with a "New" badge while maintaining the currently active conversation and scroll position without disruption.
 3. **Given** a search query typed into the search box, **When** the owner types keywords, **Then** the conversation list dynamically filters by matching preview snippets or customer identifiers.
 
 ---
@@ -82,9 +90,9 @@ As a business owner, I want to see aggregate support overview statistics (total 
 - **FR-004**: System MUST allow search filtering within the conversation list by keyword in the preview snippet.
 - **FR-005**: System MUST retrieve and display the full chronological transcript of the selected conversation, distinguishing between `visitor`, `assistant`, and `system` message roles.
 - **FR-006**: System MUST render document citation badges beneath assistant responses that retrieved knowledge base context.
-- **FR-007**: System MUST display an Escalation Details Card for escalated conversations, showing the customer's contact email address, timestamp, and status.
+- **FR-007**: System MUST display an Escalation Details Card for escalated conversations, displaying the customer's contact email with an instant one-click copy button (with confirmation feedback) and a clickable `mailto:` link, escalation timestamp, and an interactive status selector enabling forward transitions (`open` → `in_progress` → `resolved`) with optimistic UI feedback and backend persistence.
 - **FR-008**: System MUST display aggregate conversation metric cards (Total Conversations, Total Messages, Escalation Count, 24h Active Volume) consuming the organization stats API.
-- **FR-009**: System MUST provide a manual "Refresh" button and periodic background polling (every 30 seconds) to detect new incoming customer inquiries.
+- **FR-009**: System MUST provide a manual "Refresh" button and periodic background polling (every 30 seconds) to detect new incoming customer inquiries, prepending newly arrived conversations with a subtle "New" badge while preserving the active transcript pane and scroll state.
 - **FR-010**: System MUST display dedicated loading skeletons (`loading.tsx` and component skeleton states) during initial data fetching.
 - **FR-011**: System MUST implement error boundaries (`error.tsx` and inline retry cards) to gracefully handle fetch or network failures.
 - **FR-012**: System MUST consume centralized semantic design tokens (`bg-background`, `text-foreground`, `border-border`, `bg-card`, `text-muted-foreground`) with zero hard-coded color utilities, supporting dark and light themes seamlessly.
