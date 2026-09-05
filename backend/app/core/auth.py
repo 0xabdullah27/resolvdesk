@@ -23,13 +23,13 @@ security_scheme = HTTPBearer(auto_error=False)
 
 
 def verify_jwt(token: str) -> Dict[str, Any]:
-    """Decodes and validates RSA-signed JWT using Better Auth JWKS public keys."""
+    """Decodes and validates RSA- or EdDSA-signed JWT using Better Auth JWKS public keys."""
     try:
         signing_key = jwks_client.get_signing_key_from_jwt(token)
         payload = jwt.decode(
             token,
             signing_key.key,
-            algorithms=["RS256"],
+            algorithms=["RS256", "EdDSA"],
             options={"verify_aud": False, "verify_iss": False},
         )
         return payload
@@ -51,7 +51,7 @@ async def get_current_user_id(
     request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
 ) -> str:
-    """Dependency that extracts and returns verified user_id (sub claim).
+    """Dependency that extracts and returns verified user_id (sub or id claim).
 
     Supports development bypass headers when DEV_AUTH_BYPASS is active.
     """
@@ -70,7 +70,7 @@ async def get_current_user_id(
 
     token = credentials.credentials
     payload = verify_jwt(token)
-    user_id: Optional[str] = payload.get("sub")
+    user_id: Optional[str] = payload.get("sub") or payload.get("id")
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

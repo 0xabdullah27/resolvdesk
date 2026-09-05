@@ -32,6 +32,12 @@ export const auth = betterAuth({
       jwks: {
         jwksPath: "/.well-known/jwks.json",
       },
+      definePayload: ({ user }: { user: any }) => ({
+        sub: user.id,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      }),
     }),
     nextCookies(),
   ],
