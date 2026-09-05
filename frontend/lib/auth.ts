@@ -10,6 +10,11 @@ const pool = new Pool({ connectionString });
 
 export const auth = betterAuth({
   database: pool,
+  advanced: {
+    database: {
+      generateId: () => crypto.randomUUID(),
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
