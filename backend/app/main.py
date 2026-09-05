@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.exceptions import ResolvDeskException
 from app.core.logging import CorrelationIdMiddleware, logger
+from app.routers.analytics import router as analytics_router
 from app.routers.conversations import router as conversations_router
 from app.routers.documents import router as documents_router
 from app.routers.organizations import router as organizations_router
@@ -138,3 +139,4 @@ app.include_router(organizations_router, prefix="/api/v1", tags=["Organizations"
 app.include_router(documents_router, prefix="/api/v1/documents", tags=["Knowledge Base"])
 app.include_router(widget_router, prefix="/api/v1/widget", tags=["Widget"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["Conversations"])
+app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
