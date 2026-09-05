@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain *(3 clarifications pending)*
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,7 +31,8 @@
 
 ## Notes
 
-- 3 items marked incomplete requiring user clarification:
-  1. FR-006: Domain configuration UX toggle.
-  2. FR-007: Live preview interactive test chat capability.
-  3. FR-008: Preset brand color swatches.
+- All clarifications resolved:
+  1. FR-006: Dedicated toggle between "Allow on all websites (*)" and "Specific domains".
+  2. FR-007: Visual preview simulation only (collapsible/expandable bubble & header/greeting preview).
+  3. FR-008: Curated 6-color preset palette (#4F46E5, #2563EB, #059669, #7C3AED, #EA580C, #0F172A) + native color picker + custom hex.
+- Specification is 100% complete and ready for `/speckit-plan`.

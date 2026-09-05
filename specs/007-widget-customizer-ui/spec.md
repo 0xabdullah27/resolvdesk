@@ -74,9 +74,9 @@ As a business owner, I want to easily copy the HTML embed snippet and securely r
 - **FR-003**: System MUST validate that `bot_display_name` is between 1 and 100 characters and `welcome_message` is between 1 and 500 characters.
 - **FR-004**: System MUST validate that `primary_color` is a valid 6-character hexadecimal color code (e.g. `#4F46E5`).
 - **FR-005**: System MUST allow owners to configure widget placement to either `bottom-right` or `bottom-left`.
-- **FR-006**: System MUST allow owners to configure allowed domains [NEEDS CLARIFICATION: Should the form provide a distinct radio toggle between 'Allow on all websites (*)' vs 'Restricted domains list', or just a single text input?].
-- **FR-007**: System MUST render an interactive preview component [NEEDS CLARIFICATION: Should the live preview support sending simulated test chat messages in the preview window, or remain visual-only showing the greeting message?].
-- **FR-008**: System MUST provide a curated palette of accessible brand color presets alongside a native color picker and custom hex input [NEEDS CLARIFICATION: Which preset color swatches should be offered by default?].
+- **FR-006**: System MUST allow owners to configure allowed domains using a distinct toggle between "Allow on all websites (*)" and "Specific domains" (revealing a domain list input that automatically strips protocols and slashes).
+- **FR-007**: System MUST render an interactive visual preview component that dynamically reflects the owner's chosen name, greeting, placement, and primary color, with interactive toggle between collapsed floating bubble and open chat window.
+- **FR-008**: System MUST provide a curated 6-color preset palette (`#4F46E5` Indigo, `#2563EB` Blue, `#059669` Emerald, `#7C3AED` Violet, `#EA580C` Orange, `#0F172A` Slate Dark) alongside a native HTML5 color picker and custom hex input.
 - **FR-009**: System MUST display the live embed `<script>` code block with one-click clipboard copy functionality.
 - **FR-010**: System MUST provide a key rotation modal that requires explicit confirmation and displays the 24-hour dual-key grace window status.
 - **FR-011**: All frontend components MUST strictly adhere to semantic CSS tokens (`bg-card`, `text-foreground`, `border-border`, `text-primary`) without hard-coded color palette classes per Constitution Principle VII.
