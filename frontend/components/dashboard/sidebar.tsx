@@ -63,7 +63,7 @@ export function DashboardSidebar({
           className="flex items-center gap-2.5 font-heading text-base font-bold text-sidebar-foreground"
           onClick={onNavigate}
         >
-          <div className="flex size-7 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Bot className="size-4" />
           </div>
           <span className="tracking-tight">ResolvDesk</span>
