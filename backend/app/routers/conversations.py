@@ -9,6 +9,8 @@ from app.schemas.conversation import (
     ConversationDetailResponse,
     ConversationListResponse,
     ConversationStatsResponse,
+    TicketStatusUpdateRequest,
+    TicketStatusUpdateResponse,
 )
 from app.services.owner_conversation_service import owner_conversation_service
 
@@ -71,4 +73,25 @@ async def get_conversation_transcript(
         session=session,
         conversation_id=conversation_id,
         organization_id=current_owner.organization_id,
+    )
+
+
+@router.patch(
+    "/{conversation_id}/ticket",
+    response_model=TicketStatusUpdateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update ticket resolution status",
+    description="Updates the resolution status of an escalated ticket (open, in_progress, resolved) with strict tenant isolation.",
+)
+async def update_ticket_status(
+    conversation_id: uuid.UUID,
+    body: TicketStatusUpdateRequest,
+    current_owner: CurrentOwner,
+    session: AsyncSession = Depends(get_db),
+) -> TicketStatusUpdateResponse:
+    return await owner_conversation_service.update_ticket_status(
+        session=session,
+        conversation_id=conversation_id,
+        organization_id=current_owner.organization_id,
+        status=body.status,
     )

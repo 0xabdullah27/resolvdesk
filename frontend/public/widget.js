@@ -444,9 +444,35 @@
       ".rd-bubble {",
       "  padding: 12px 16px;",
       "  border-radius: 14px;",
-      "  font-size: 14.5px;",
-      "  line-height: 1.5;",
+      "  font-size: 14px;",
+      "  line-height: 1.55;",
       "  word-break: break-word;",
+      "  white-space: pre-wrap;",
+      "}",
+      ".rd-bubble strong {",
+      "  font-weight: 600;",
+      "}",
+      ".rd-bubble em {",
+      "  font-style: italic;",
+      "}",
+      ".rd-bubble code {",
+      "  background: rgba(0, 0, 0, 0.08);",
+      "  padding: 2px 5px;",
+      "  border-radius: 4px;",
+      "  font-size: 13px;",
+      "  font-family: monospace;",
+      "}",
+      ".rd-dark .rd-bubble code {",
+      "  background: rgba(255, 255, 255, 0.12);",
+      "}",
+      ".rd-bubble a.rd-link {",
+      "  color: inherit;",
+      "  text-decoration: underline;",
+      "  text-underline-offset: 2px;",
+      "  font-weight: 500;",
+      "}",
+      ".rd-assistant .rd-bubble a.rd-link {",
+      "  color: var(--rd-primary);",
       "}",
       ".rd-visitor .rd-bubble {",
       "  background: var(--rd-primary);",
@@ -1020,6 +1046,23 @@
       return div.innerHTML;
     }
 
+    function formatMarkdown(str) {
+      if (!str) return "";
+      var escaped = escapeHtml(str);
+      // Bold: **text**
+      escaped = escaped.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
+      // Italic: *text* (excluding already matched bold)
+      escaped = escaped.replace(/(^|[^\*])\*([^\*\n]+?)\*([^\*]|$)/g, "$1<em>$2</em>$3");
+      // Inline code: `code`
+      escaped = escaped.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+      // Links: [text](url)
+      escaped = escaped.replace(
+        /\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s\)]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer" class="rd-link">$1</a>'
+      );
+      return escaped;
+    }
+
     function scrollToBottom() {
       messageContainer.scrollTop = messageContainer.scrollHeight;
     }
@@ -1031,7 +1074,11 @@
 
       var bubble = document.createElement("div");
       bubble.className = "rd-bubble";
-      bubble.textContent = content;
+      if (role === "visitor") {
+        bubble.textContent = content;
+      } else {
+        bubble.innerHTML = formatMarkdown(content);
+      }
       row.appendChild(bubble);
 
       // Render citations if provided
@@ -1260,7 +1307,7 @@
                 assistantBubble.textContent = "";
               }
               accumulatedText += data.token;
-              assistantBubble.textContent = accumulatedText;
+              assistantBubble.innerHTML = formatMarkdown(accumulatedText);
               scrollToBottom();
             } else if (event === "citation" && Array.isArray(data.citations)) {
               accumulatedCitations = data.citations;
@@ -1283,6 +1330,7 @@
             if (!accumulatedText) {
               accumulatedText = assistantBubble.textContent || "No response received.";
             }
+            assistantBubble.innerHTML = formatMarkdown(accumulatedText);
 
             // Render citations
             if (accumulatedCitations.length > 0) {

@@ -32,12 +32,18 @@ class ChatRequest(BaseModel):
         return stripped
 
 
+class CitationItem(BaseModel):
+    document_id: str
+    title: str
+
+
 class ChatMessageRead(BaseModel):
     """Read schema for a single conversational turn."""
     id: uuid.UUID
     role: str
     content: str
     created_at: datetime
+    citations: Optional[List[CitationItem]] = None
 
 
 class ConversationHistoryResponse(BaseModel):

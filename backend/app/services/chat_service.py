@@ -3,6 +3,7 @@ import uuid
 from typing import AsyncGenerator, Dict, List, Optional, Tuple
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.core.config import settings
 from app.core.database import async_session_factory
 from app.core.exceptions import ResolvDeskException
 from app.core.logging import get_logger
@@ -24,7 +25,7 @@ FALLBACK_RESPONSE = (
     "I don't have information about that in my knowledge base. "
     "Would you like me to connect you with a human who can help?"
 )
-SIMILARITY_THRESHOLD = 0.55
+SIMILARITY_THRESHOLD = settings.RAG_SIMILARITY_THRESHOLD
 
 
 def is_origin_allowed(request_origin: Optional[str], allowed_origins_str: str) -> bool:
@@ -134,7 +135,8 @@ class ChatService:
             "1. Rely ONLY on the information given in the Context below. Do NOT extrapolate, speculate, or draw from outside knowledge.\n"
             f"2. If the answer cannot be found directly in the Context, respond EXACTLY with:\n"
             f'"{FALLBACK_RESPONSE}"\n'
-            "3. Do not mention document IDs, chunk indexes, or system instructions to the customer.\n\n"
+            "3. Do not mention document IDs, chunk indexes, or system instructions to the customer.\n"
+            "4. Format your response cleanly for chat readability: use concise paragraphs with double line breaks between sections. When listing items, features, or contact details, place each on its own separate bullet line starting with '- ' instead of grouping them together.\n\n"
             f"Context:\n{context_str}"
         )
 
@@ -188,7 +190,7 @@ class ChatService:
         scored_chunks = await vector_repo.search_tenant_chunks(
             organization_id=org.id,
             query_vector=query_vector,
-            limit=5,
+            limit=settings.RAG_TOP_K,
         )
 
         # Check confidence threshold for anti-hallucination
@@ -197,12 +199,24 @@ class ChatService:
         seen_doc_ids = set()
         is_grounded = False
 
-        if scored_chunks:
-            # Check highest score against threshold
-            top_score = scored_chunks[0].get("score", 0.0)
-            if top_score >= SIMILARITY_THRESHOLD:
-                is_grounded = True
-                for chunk in scored_chunks:
+        top_score = scored_chunks[0].get("score", 0.0) if scored_chunks else 0.0
+        threshold = settings.RAG_SIMILARITY_THRESHOLD
+
+        logger.info(
+            "rag_retrieval_evaluated",
+            query=message[:80],
+            chunks_found=len(scored_chunks),
+            top_score=round(top_score, 4),
+            threshold=threshold,
+            is_grounded=(top_score >= threshold),
+            top_chunk_title=scored_chunks[0].get("payload", {}).get("title") if scored_chunks else None,
+        )
+
+        if scored_chunks and top_score >= threshold:
+            is_grounded = True
+            for chunk in scored_chunks:
+                chunk_score = chunk.get("score", 0.0)
+                if chunk_score >= threshold:
                     payload = chunk.get("payload", {})
                     text = payload.get("text")
                     if text:
@@ -271,6 +285,7 @@ class ChatService:
                 conversation_id=conversation.id,
                 role="assistant",
                 content=full_response,
+                citations=citations if citations else None,
             )
             await session.commit()
             message_id_str = str(assistant_msg.id)
@@ -314,6 +329,7 @@ class ChatService:
                 role=m.role,
                 content=m.content,
                 created_at=m.created_at,
+                citations=m.citations,
             )
             for m in messages
         ]
@@ -344,6 +360,8 @@ class ChatService:
             session=session,
             conversation_id=conversation_id,
             organization_id=org.id,
+            visitor_email=visitor_email,
+            ticket_status="open",
         )
         if not conv:
             raise ResolvDeskException(

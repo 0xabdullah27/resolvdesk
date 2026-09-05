@@ -11,6 +11,7 @@ from app.schemas.conversation import (
     ConversationListItem,
     ConversationListResponse,
     ConversationStatsResponse,
+    TicketStatusUpdateResponse,
 )
 
 
@@ -49,6 +50,8 @@ class OwnerConversationService:
                     created_at=conv.created_at,
                     updated_at=conv.updated_at,
                     is_escalated=conv.is_escalated,
+                    ticket_status=conv.ticket_status,
+                    visitor_email=conv.visitor_email,
                     message_count=msg_count or 0,
                     last_message_preview=preview,
                     last_message_role=latest_role,
@@ -87,6 +90,7 @@ class OwnerConversationService:
                 role=m.role,
                 content=m.content,
                 created_at=m.created_at,
+                citations=m.citations,
             )
             for m in messages
         ]
@@ -97,7 +101,45 @@ class OwnerConversationService:
             created_at=conv.created_at,
             updated_at=conv.updated_at,
             is_escalated=conv.is_escalated,
+            ticket_status=conv.ticket_status,
+            visitor_email=conv.visitor_email,
             messages=msg_reads,
+        )
+
+    @staticmethod
+    async def update_ticket_status(
+        session: AsyncSession,
+        conversation_id: uuid.UUID,
+        organization_id: uuid.UUID,
+        status: str,
+    ) -> TicketStatusUpdateResponse:
+        """Updates the resolution lifecycle status of an escalated ticket with strict tenant isolation."""
+        valid_statuses = {"open", "in_progress", "resolved"}
+        if status not in valid_statuses:
+            raise ResolvDeskException(
+                message=f"Invalid ticket status '{status}'. Must be one of: {', '.join(sorted(valid_statuses))}",
+                status_code=400,
+            )
+
+        conv = await ConversationRepository.update_ticket_status(
+            session=session,
+            conversation_id=conversation_id,
+            organization_id=organization_id,
+            ticket_status=status,
+        )
+        if not conv:
+            raise ResolvDeskException(
+                message="Conversation not found.",
+                status_code=404,
+            )
+
+        await session.commit()
+        await session.refresh(conv)
+
+        return TicketStatusUpdateResponse(
+            id=conv.id,
+            ticket_status=conv.ticket_status,
+            updated_at=conv.updated_at,
         )
 
     @staticmethod

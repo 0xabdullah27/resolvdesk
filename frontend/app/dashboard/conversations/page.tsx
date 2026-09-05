@@ -1,19 +1,47 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import { MessageSquare, Inbox } from "lucide-react";
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  listConversationsAction,
+  getConversationStatsAction,
+} from "@/actions/conversation-actions";
+import { ConversationsInbox } from "@/components/conversations/conversations-inbox";
 
 export const metadata: Metadata = {
-  title: "Conversations - ResolvDesk",
-  description: "View visitor chats and manage escalated tickets.",
+  title: "Conversations Inbox - ResolvDesk",
+  description: "Real-time visitor chat monitoring and human escalation management.",
 };
 
-export default function ConversationsPage() {
+interface PageProps {
+  searchParams: Promise<{ id?: string }>;
+}
+
+export default async function ConversationsPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const initialSelectedId = resolvedParams.id || null;
+
+  const [conversationsResult, statsResult] = await Promise.all([
+    listConversationsAction(20, 0),
+    getConversationStatsAction(),
+  ]);
+
+  const initialConversations =
+    conversationsResult.success && conversationsResult.data
+      ? conversationsResult.data.items
+      : [];
+  const initialTotal =
+    conversationsResult.success && conversationsResult.data
+      ? conversationsResult.data.total
+      : 0;
+  const initialStats =
+    statsResult.success && statsResult.data
+      ? statsResult.data
+      : {
+          total_conversations: 0,
+          total_messages: 0,
+          escalated_conversations: 0,
+          active_last_24h: 0,
+        };
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,23 +49,16 @@ export default function ConversationsPage() {
           Conversations Inbox
         </h2>
         <p className="text-sm text-muted-foreground">
-          Real-time visitor chat monitoring and human escalation management.
+          Real-time visitor chat monitoring, transcript inspection, and human ticket resolution.
         </p>
       </div>
 
-      <Card className="border-dashed border-2 border-border/80 bg-card/40">
-        <CardHeader className="text-center py-12">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-3">
-            <Inbox className="size-6" />
-          </div>
-          <CardTitle className="text-lg font-semibold">
-            No Active Conversations
-          </CardTitle>
-          <CardDescription className="max-w-md mx-auto">
-            Once you embed the widget on your website, visitor chat logs and live SSE conversations will stream here in real time.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <ConversationsInbox
+        initialConversations={initialConversations}
+        initialTotal={initialTotal}
+        initialStats={initialStats}
+        initialSelectedId={initialSelectedId}
+      />
     </div>
   );
 }

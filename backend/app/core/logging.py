@@ -15,6 +15,9 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 
+if not settings.SQL_ECHO:
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
 # Custom log record factory to ensure request_id is always present
 old_factory = logging.getLogRecordFactory()
 

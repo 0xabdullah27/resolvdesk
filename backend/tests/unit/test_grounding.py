@@ -25,8 +25,10 @@ def test_build_system_prompt_structure_and_guardrails():
 
 
 def test_similarity_threshold_constant():
-    """Verify confidence threshold is calibrated to 0.55 per technical specifications."""
-    assert SIMILARITY_THRESHOLD == 0.55
+    """Verify confidence threshold is calibrated and matches configured settings."""
+    from app.core.config import settings
+    assert SIMILARITY_THRESHOLD == settings.RAG_SIMILARITY_THRESHOLD
+    assert 0.0 < SIMILARITY_THRESHOLD < 1.0
 
 
 def test_is_origin_allowed_whitelisting():
