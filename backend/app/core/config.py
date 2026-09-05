@@ -72,6 +72,8 @@ class Settings(BaseSettings):
     EMBEDDING_API_KEY: str = "mock-key"
     EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
     EMBEDDING_DIMENSION: int = 1536
+    RAG_SIMILARITY_THRESHOLD: float = 0.28
+    RAG_TOP_K: int = 5
 
     # LLM Provider-Agnostic Settings (OpenAI-compatible)
     LLM_BASE_URL: str = "https://api.openai.com/v1"
