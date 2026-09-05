@@ -10,8 +10,8 @@
 
 **Purpose**: TypeScript definitions, validation schemas, and client/server contracts.
 
-- [ ] T001 [P] Create document TypeScript types and interfaces in `frontend/types/document.ts`
-- [ ] T002 [P] Create document Zod validation schemas in `frontend/lib/validations/document.ts`
+- [X] T001 [P] Create document TypeScript types and interfaces in `frontend/types/document.ts`
+- [X] T002 [P] Create document Zod validation schemas in `frontend/lib/validations/document.ts`
 
 ---
 
@@ -21,9 +21,9 @@
 
 **⚠️ CRITICAL**: Must complete before any user story UI components can connect to live backend data.
 
-- [ ] T003 Implement `listDocumentsAction` and `getDocumentDetailsAction` in `frontend/actions/document-actions.ts`
-- [ ] T004 [P] Implement `uploadDocumentAction` and `createRawDocumentAction` in `frontend/actions/document-actions.ts`
-- [ ] T005 [P] Implement `deleteDocumentAction` with path revalidation in `frontend/actions/document-actions.ts`
+- [X] T003 Implement `listDocumentsAction` and `getDocumentDetailsAction` in `frontend/actions/document-actions.ts`
+- [X] T004 [P] Implement `uploadDocumentAction` and `createRawDocumentAction` in `frontend/actions/document-actions.ts`
+- [X] T005 [P] Implement `deleteDocumentAction` with path revalidation in `frontend/actions/document-actions.ts`
 
 **Checkpoint**: Core Server Actions verified and ready to handle uploads, queries, and deletions.
 
@@ -35,10 +35,10 @@
 
 **Independent Test**: Navigate to `/dashboard/documents`, upload a sample text file and submit a manual FAQ note; verify validation errors on oversized/invalid files and observe successful ingestion triggers with toast notifications.
 
-- [ ] T006 [P] [US1] Implement drag-and-drop file upload zone in `frontend/components/documents/file-dropzone.tsx`
-- [ ] T007 [P] [US1] Implement manual text entry form with live character counter in `frontend/components/documents/manual-entry-form.tsx`
-- [ ] T008 [US1] Implement sequential batch upload queue manager with per-item progress tracking in `frontend/components/documents/upload-queue.tsx`
-- [ ] T009 [US1] Build permanent upload card component with tabbed switching in `frontend/components/documents/document-upload-card.tsx`
+- [X] T006 [P] [US1] Implement drag-and-drop file upload zone in `frontend/components/documents/file-dropzone.tsx`
+- [X] T007 [P] [US1] Implement manual text entry form with live character counter in `frontend/components/documents/manual-entry-form.tsx`
+- [X] T008 [US1] Implement sequential batch upload queue manager with per-item progress tracking in `frontend/components/documents/upload-queue.tsx`
+- [X] T009 [US1] Build permanent upload card component with tabbed switching in `frontend/components/documents/document-upload-card.tsx`
 
 **Checkpoint**: User Story 1 functional — owners can upload files and submit manual text with client-side validation and toast feedback.
 
@@ -50,11 +50,11 @@
 
 **Independent Test**: Upload a document and observe the status badge show `processing` with a spinner, automatically update to `ready` within 5–15 seconds via polling, and display chunk count.
 
-- [ ] T010 [P] [US2] Implement status badge component with spinner and failure tooltip in `frontend/components/documents/document-status-badge.tsx`
-- [ ] T011 [P] [US2] Implement clean empty state component with guidance illustrations in `frontend/components/documents/document-empty-state.tsx`
-- [ ] T012 [US2] Implement interactive document table displaying file details and action menus in `frontend/components/documents/document-table.tsx`
-- [ ] T013 [US2] Implement self-terminating 3-second status polling hook and client container in `frontend/components/documents/documents-view.tsx`
-- [ ] T014 [US2] Connect SSR initial data fetching in `frontend/app/dashboard/documents/page.tsx`
+- [X] T010 [P] [US2] Implement status badge component with spinner and failure tooltip in `frontend/components/documents/document-status-badge.tsx`
+- [X] T011 [P] [US2] Implement clean empty state component with guidance illustrations in `frontend/components/documents/document-empty-state.tsx`
+- [X] T012 [US2] Implement interactive document table displaying file details and action menus in `frontend/components/documents/document-table.tsx`
+- [X] T013 [US2] Implement self-terminating 3-second status polling hook and client container in `frontend/components/documents/documents-view.tsx`
+- [X] T014 [US2] Connect SSR initial data fetching in `frontend/app/dashboard/documents/page.tsx`
 
 **Checkpoint**: User Stories 1 AND 2 functional — complete upload, listing, auto-refresh, and empty state operational.
 
@@ -66,8 +66,8 @@
 
 **Independent Test**: Click "Preview" on any active document row; verify the right-side Sheet smoothly opens displaying metadata and the extracted text preview snippet.
 
-- [ ] T015 [US3] Implement slide-over preview Sheet component with on-demand detail fetching in `frontend/components/documents/document-preview-sheet.tsx`
-- [ ] T016 [US3] Wire row preview action trigger from document table to preview Sheet in `frontend/components/documents/documents-view.tsx`
+- [X] T015 [US3] Implement slide-over preview Sheet component with on-demand detail fetching in `frontend/components/documents/document-preview-sheet.tsx`
+- [X] T016 [US3] Wire row preview action trigger from document table to preview Sheet in `frontend/components/documents/documents-view.tsx`
 
 **Checkpoint**: User Story 3 functional — owners can inspect extracted text and chunk metrics on demand.
 
@@ -79,8 +79,8 @@
 
 **Independent Test**: Click "Delete" on a document row, verify the confirmation dialog appears, confirm deletion, and verify immediate removal from the table and server cache.
 
-- [ ] T017 [US4] Implement destructive `AlertDialog` confirmation dialog in `frontend/components/documents/document-delete-dialog.tsx`
-- [ ] T018 [US4] Wire delete action trigger, optimistic removal, and Sonner toast feedback in `frontend/components/documents/documents-view.tsx`
+- [X] T017 [US4] Implement destructive `AlertDialog` confirmation dialog in `frontend/components/documents/document-delete-dialog.tsx`
+- [X] T018 [US4] Wire delete action trigger, optimistic removal, and Sonner toast feedback in `frontend/components/documents/documents-view.tsx`
 
 **Checkpoint**: User Story 4 functional — atomic deletion with safety confirmation operating smoothly.
 
@@ -92,9 +92,9 @@
 
 **Independent Test**: Type a search query to filter documents, select a status filter, verify the capacity bar reflects total count, and check responsive card layout on mobile viewports.
 
-- [ ] T019 [P] [US5] Implement toolbar with capacity progress bar, search input, and Status filter dropdown in `frontend/components/documents/document-toolbar.tsx`
-- [ ] T020 [US5] Wire real-time client-side search filtering and status filtering in `frontend/components/documents/documents-view.tsx`
-- [ ] T021 [US5] Add mobile-responsive card stacking view for small screens in `frontend/components/documents/document-table.tsx`
+- [X] T019 [P] [US5] Implement toolbar with capacity progress bar, search input, and Status filter dropdown in `frontend/components/documents/document-toolbar.tsx`
+- [X] T020 [US5] Wire real-time client-side search filtering and status filtering in `frontend/components/documents/documents-view.tsx`
+- [X] T021 [US5] Add mobile-responsive card stacking view for small screens in `frontend/components/documents/document-table.tsx`
 
 **Checkpoint**: User Story 5 functional — filtering, capacity tracking, and responsive mobile layouts complete.
 
@@ -104,9 +104,9 @@
 
 **Purpose**: Theme token discipline, loading/error states, and end-to-end verification.
 
-- [ ] T022 Verify Constitution Principle VII compliance (100% semantic theme tokens, zero hard-coded palette utilities) across all document components
-- [ ] T023 Implement loading skeleton in `frontend/app/dashboard/documents/loading.tsx` and error boundary in `frontend/app/dashboard/documents/error.tsx`
-- [ ] T024 Run end-to-end validation scenarios against `quickstart.md` and verify clean production build (`npm run build`)
+- [X] T022 Verify Constitution Principle VII compliance (100% semantic theme tokens, zero hard-coded palette utilities) across all document components
+- [X] T023 Implement loading skeleton in `frontend/app/dashboard/documents/loading.tsx` and error boundary in `frontend/app/dashboard/documents/error.tsx`
+- [X] T024 Run end-to-end validation scenarios against `quickstart.md` and verify clean production build (`npm run build`)
 
 ---
 
