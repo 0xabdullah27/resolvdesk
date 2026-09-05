@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report:
-- Version change: 1.1.0 -> 1.2.0
-- Principles added: None
+- Version change: 1.2.0 -> 1.3.0
+- Principles added:
+  - VII. Strict Semantic Theming & Global Design Tokens
 - Added rules:
-  - Infrastructure: Cross-Store Atomicity (document deletion must be atomic across relational DB + vector store)
-  - Security: Owner Data Export Right (CSV/JSON export at any time)
-- Modified sections: Infrastructure & Data Layer Constraints, Security & Data Privacy Constraints
+  - Quality Gates & Testing Standards: Theme Token Discipline (prohibiting hard-coded color utilities like slate-*, sky-*)
+- Modified sections: Core Principles, Quality Gates & Testing Standards
 - Removed sections: None
 - Follow-up TODOs: None
 -->
@@ -32,6 +32,9 @@ All backend services MUST strictly adhere to a three-layer boundary: **router** 
 ### VI. Provider-Agnostic AI Layer
 The application MUST communicate with the AI layer through a single, unified API standard (OpenAI-compatible interface). Model switches or provider migrations MUST be executed solely by updating the target API Endpoint and API Key configuration variables. Zero application code changes and zero system downtime are required for a provider or model swap. No business logic, service layer, or repository MUST contain hard-coded references to any specific AI provider SDK or model name.
 
+### VII. Strict Semantic Theming & Global Design Tokens
+All user interface styling across the application MUST consume centralized semantic theme tokens (e.g., `bg-background`, `text-foreground`, `bg-primary`, `text-muted-foreground`, `border-border`) mapped from root CSS variables and global Tailwind theme configuration. Direct usage of hard-coded, specific color palette utilities (such as `slate-400`, `sky-300`, `zinc-900`, `indigo-600`, or raw hex values) in component markup is strictly prohibited. Every visual style MUST resolve through the global design token contract to ensure instantaneous, conflict-free theme switching, cohesive dark/light mode support, and seamless brand updates across the entire application.
+
 ## Infrastructure & Data Layer Constraints
 - **Relational Database**: PostgreSQL (hosted on Neon) is the canonical relational store. All ORM interactions MUST use SQLModel with async sessions via asyncpg.
 - **Schema Migrations**: All schema changes MUST be managed through Alembic migration files. Direct `CREATE`/`ALTER` statements against the production database without a tracked migration are prohibited.
@@ -50,10 +53,11 @@ The application MUST communicate with the AI layer through a single, unified API
 - **Automated Verification**: Every feature branch and pull request MUST include comprehensive integration and unit tests covering domain services, tenant query isolation, and schema validation.
 - **Async & Contract Testing**: API contracts, vector ingestion flows, and escalation triggers MUST be verified via automated test suites prior to merge.
 - **UI State Rigor**: Every data-fetching route or interactive component MUST implement explicit error boundaries (`error.tsx`) and loading states (`loading.tsx`). Stubs or no-op handlers MUST NOT be left unmarked in production code.
+- **Theme Token Discipline**: All component styling MUST be validated against the global theme token contract. Commits containing hard-coded palette utility classes (e.g., `slate-*`, `sky-*`, `zinc-*`, `blue-*`) or arbitrary color declarations in place of semantic theme tokens MUST NOT pass review.
 
 ## Governance
 - This Constitution supersedes all informal practices and serves as the highest architectural and quality authority for ResolvDesk.
 - Any amendment requires formal documentation, impact assessment, and a corresponding version increment following semantic versioning (MAJOR for removals/redefinitions, MINOR for additions, PATCH for clarifications).
 - All pull requests, code reviews, and automated agent workflows MUST verify compliance against these principles. Use `AGENTS.md` for runtime operational instructions.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
+**Version**: 1.3.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-05
