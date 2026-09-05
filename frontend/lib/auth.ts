@@ -31,3 +31,37 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
+
+/**
+ * Rolls back (deletes) a newly created Better Auth user if downstream
+ * workspace provisioning in the backend fails.
+ */
+export async function rollbackBetterAuthUser(userId: string) {
+  try {
+    // 1. Attempt Better Auth internal adapter delete
+    if ("adapter" in auth && typeof (auth as any).adapter?.delete === "function") {
+      try {
+        await (auth as any).adapter.delete({
+          model: "user",
+          where: [{ field: "id", value: userId }],
+        });
+        return;
+      } catch (adapterErr) {
+        console.warn("Adapter delete fallback to direct pool query:", adapterErr);
+      }
+    }
+
+    // 2. Direct database pool cleanup
+    try {
+      await pool.query('DELETE FROM "session" WHERE "userId" = $1 OR "user_id" = $1', [userId]);
+    } catch {}
+    try {
+      await pool.query('DELETE FROM "account" WHERE "userId" = $1 OR "user_id" = $1', [userId]);
+    } catch {}
+    try {
+      await pool.query('DELETE FROM "user" WHERE "id" = $1', [userId]);
+    } catch {}
+  } catch (err) {
+    console.error(`Rollback: Failed to delete Better Auth user ${userId}:`, err);
+  }
+}

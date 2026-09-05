@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { auth, rollbackBetterAuthUser } from "@/lib/auth";
 import { backendFetch, BackendApiError } from "@/lib/backend-api";
 import {
   registerSchema,
@@ -23,6 +23,7 @@ export async function registerOwnerAction(values: RegisterFormValues) {
 
   const { fullName, email, password, businessName } = parseResult.data;
 
+  let createdUserId: string | null = null;
   try {
     const headerList = await headers();
 
@@ -43,6 +44,8 @@ export async function registerOwnerAction(values: RegisterFormValues) {
       };
     }
 
+    createdUserId = signUpResult.user.id;
+
     // 2. Server-to-Server handshake with FastAPI backend: atomic workspace & owner provisioning
     try {
       await backendFetch("api/v1/registration/complete", {
@@ -56,6 +59,10 @@ export async function registerOwnerAction(values: RegisterFormValues) {
       });
     } catch (backendErr) {
       console.error("FastAPI registration error:", backendErr);
+
+      // Rollback Better Auth user so account is not left in an inconsistent state
+      await rollbackBetterAuthUser(signUpResult.user.id);
+
       if (backendErr instanceof BackendApiError && backendErr.status === 409) {
         return {
           success: false,
@@ -75,6 +82,9 @@ export async function registerOwnerAction(values: RegisterFormValues) {
     return { success: true };
   } catch (err: any) {
     console.error("Registration action error:", err);
+    if (createdUserId) {
+      await rollbackBetterAuthUser(createdUserId);
+    }
     if (
       err?.message?.includes("already exists") ||
       err?.status === 409 ||
