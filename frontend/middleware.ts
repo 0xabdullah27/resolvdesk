@@ -19,11 +19,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Auth routes for guests only: /login, /register
-  if (pathname === "/login" || pathname === "/register") {
+  // 2. Auth routes:
+  // If redirected to /login with callbackUrl (e.g. invalid/expired session from dashboard),
+  // purge the stale cookie so the browser does not stay in a stale state.
+  if (pathname === "/login") {
     const hasCallback = request.nextUrl.searchParams.has("callbackUrl");
-    if (isAuthenticated && !hasCallback) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    if (hasCallback) {
+      const response = NextResponse.next();
+      response.cookies.delete("better-auth.session_token");
+      response.cookies.delete("__Secure-better-auth.session_token");
+      return response;
     }
   }
 
@@ -42,6 +47,5 @@ export const config = {
     "/",
     "/dashboard/:path*",
     "/login",
-    "/register",
   ],
 };
