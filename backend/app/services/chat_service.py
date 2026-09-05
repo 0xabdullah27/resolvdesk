@@ -6,7 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.database import async_session_factory
 from app.core.exceptions import ResolvDeskException
 from app.core.logging import get_logger
-from app.models.conversation import Conversation, Message
+from app.models.conversation import Conversation, Message, utc_now
 from app.models.organization import Organization
 from app.models.owner import OwnerStatus
 from app.models.widget import WidgetConfiguration
@@ -14,7 +14,7 @@ from app.repos.conversation_repo import ConversationRepository
 from app.repos.organization_repo import OrganizationRepo
 from app.repos.vector_repo import vector_repo
 from app.repos.widget_repo import WidgetRepo
-from app.schemas.chat import ChatMessageRead, ConversationHistoryResponse
+from app.schemas.chat import ChatEscalateResponse, ChatMessageRead, ConversationHistoryResponse
 from app.services.embedding_service import embedding_service
 from app.services.llm_service import llm_service
 
@@ -193,6 +193,8 @@ class ChatService:
 
         # Check confidence threshold for anti-hallucination
         relevant_chunks: List[str] = []
+        citations: List[Dict[str, str]] = []
+        seen_doc_ids = set()
         is_grounded = False
 
         if scored_chunks:
@@ -205,15 +207,24 @@ class ChatService:
                     text = payload.get("text")
                     if text:
                         relevant_chunks.append(text)
+                    doc_id = payload.get("document_id")
+                    title = payload.get("title") or "Documentation"
+                    if doc_id and doc_id not in seen_doc_ids:
+                        seen_doc_ids.add(doc_id)
+                        citations.append({
+                            "document_id": str(doc_id),
+                            "title": title,
+                        })
 
         full_response = ""
 
         if not is_grounded or not relevant_chunks:
-            # Fallback path: stream standardized fallback response
+            # Fallback path: stream standardized fallback response and suggest escalation
             full_response = FALLBACK_RESPONSE
             for word in FALLBACK_RESPONSE.split(" "):
                 token = word + " "
                 yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
+            yield f"event: escalate_suggestion\ndata: {json.dumps({'suggest_escalation': True})}\n\n"
         else:
             # 5. Build prompt with history and retrieved context
             async with async_session_factory() as session:
@@ -247,6 +258,11 @@ class ChatService:
                 yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
 
             full_response = "".join(tokens_accumulated)
+
+            # Emit citation event if knowledge base sources were used
+            if citations:
+                yield f"event: citation\ndata: {json.dumps({'citations': citations})}\n\n"
+
 
         # 7. Persist assistant response turn
         async with async_session_factory() as session:
@@ -306,6 +322,57 @@ class ChatService:
             conversation_id=conv.id,
             created_at=conv.created_at,
             messages=msg_reads,
+        )
+
+    async def escalate_conversation(
+        self,
+        session: AsyncSession,
+        widget_key: str,
+        conversation_id: uuid.UUID,
+        visitor_email: str,
+        reason: Optional[str] = None,
+        request_origin: Optional[str] = None,
+    ) -> ChatEscalateResponse:
+        """Escalates a conversation session, flags is_escalated=True, appends audit note, and returns ticket reference."""
+        widget, org = await self.validate_widget_access(
+            session=session,
+            widget_key=widget_key,
+            request_origin=request_origin,
+        )
+
+        conv = await ConversationRepository.mark_escalated(
+            session=session,
+            conversation_id=conversation_id,
+            organization_id=org.id,
+        )
+        if not conv:
+            raise ResolvDeskException(
+                message="Conversation not found.",
+                status_code=404,
+            )
+
+        # Append audit/system message to conversation history
+        audit_content = f"Human escalation requested by visitor ({visitor_email})."
+        if reason:
+            audit_content += f" Note: {reason}"
+        await ConversationRepository.append_message(
+            session=session,
+            conversation_id=conversation_id,
+            role="system",
+            content=audit_content,
+        )
+        await session.commit()
+
+        # Generate ticket reference e.g. TK-C56A41
+        short_id = conversation_id.hex[:6].upper()
+        ticket_id = f"TK-{short_id}"
+
+        return ChatEscalateResponse(
+            ticket_id=ticket_id,
+            conversation_id=conversation_id,
+            visitor_email=visitor_email,
+            status="submitted",
+            created_at=utc_now(),
         )
 
 

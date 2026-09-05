@@ -6,7 +6,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.database import get_db
 from app.core.rate_limiter import check_chat_rate_limit
-from app.schemas.chat import ChatRequest, ConversationHistoryResponse
+from app.schemas.chat import (
+    ChatEscalateRequest,
+    ChatEscalateResponse,
+    ChatRequest,
+    ConversationHistoryResponse,
+)
 from app.schemas.widget import PublicWidgetConfigResponse
 from app.services.chat_service import chat_service
 from app.services.widget_service import WidgetService
@@ -94,3 +99,28 @@ async def get_conversation_history(
         conversation_id=conversation_id,
         request_origin=origin,
     )
+
+
+@router.post(
+    "/chat/escalate",
+    response_model=ChatEscalateResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Escalate visitor chat to a human support ticket",
+    description="Allows an anonymous visitor to submit contact details and an inquiry note to trigger human support escalation.",
+    dependencies=[Depends(check_chat_rate_limit)],
+)
+async def escalate_chat_message(
+    body: ChatEscalateRequest,
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+) -> ChatEscalateResponse:
+    origin = extract_client_origin(request)
+    return await chat_service.escalate_conversation(
+        session=session,
+        widget_key=body.widget_key,
+        conversation_id=body.conversation_id,
+        visitor_email=body.visitor_email,
+        reason=body.reason,
+        request_origin=origin,
+    )
+

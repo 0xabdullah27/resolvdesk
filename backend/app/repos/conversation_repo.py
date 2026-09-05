@@ -42,6 +42,26 @@ class ConversationRepository:
         return result.first()
 
     @staticmethod
+    async def mark_escalated(
+        session: AsyncSession,
+        conversation_id: uuid.UUID,
+        organization_id: uuid.UUID,
+    ) -> Optional[Conversation]:
+        """Marks a conversation as escalated (is_escalated=True) enforcing tenant isolation."""
+        conv = await ConversationRepository.get_conversation(
+            session=session,
+            conversation_id=conversation_id,
+            organization_id=organization_id,
+        )
+        if not conv:
+            return None
+        conv.is_escalated = True
+        conv.updated_at = utc_now()
+        session.add(conv)
+        await session.flush()
+        return conv
+
+    @staticmethod
     async def append_message(
         session: AsyncSession,
         conversation_id: uuid.UUID,

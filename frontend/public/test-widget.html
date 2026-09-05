@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merchant Storefront Fixture - ResolvDesk Widget Test</title>
+  <style>
+    /* Aggressive global CSS reset to test Shadow DOM style isolation */
+    * {
+      box-sizing: content-box !important;
+      font-family: "Comic Sans MS", "Chalkboard SE", cursive !important;
+      color: #b91c1c !important;
+    }
+    body {
+      margin: 0;
+      padding: 40px 24px;
+      background: #f8fafc;
+      min-height: 100vh;
+    }
+    .store-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .product-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .product-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    .price {
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    button.buy-btn {
+      background: #b91c1c;
+      color: #ffffff !important;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="store-container">
+    <h1>Velvet Apparel Storefront</h1>
+    <p>
+      This demo storefront applies aggressive universal host CSS resets (forcing <code>box-sizing: content-box</code>, red text color, and Comic Sans font) across the host DOM.
+      The ResolvDesk customer chat widget uses <strong>native Shadow DOM</strong> encapsulation to guarantee that its layout, typography, and merchant branding tokens are 100% protected from host page CSS bleed.
+    </p>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <h3>Cashmere Crewneck</h3>
+        <div class="price">$148.00</div>
+        <button class="buy-btn">Add to Cart</button>
+      </div>
+      <div class="product-card">
+        <h3>Tailored Wool Trousers</h3>
+        <div class="price">$185.00</div>
+        <button class="buy-btn">Add to Cart</button>
+      </div>
+      <div class="product-card">
+        <h3>Italian Leather Loafers</h3>
+        <div class="price">$220.00</div>
+        <button class="buy-btn">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ResolvDesk Embeddable Customer Chat Widget -->
+  <script 
+    src="/widget.js" 
+    data-widget-key="rd_live_test_fixture_key" 
+    data-api-base="http://localhost:8000" 
+    defer>
+  </script>
+</body>
+</html>
