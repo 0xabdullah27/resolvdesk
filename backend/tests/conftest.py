@@ -105,6 +105,19 @@ async def prepare_database():
         await conn.run_sync(SQLModel.metadata.drop_all)
 
 
+@pytest_asyncio.fixture(autouse=True)
+async def isolate_vector_store(monkeypatch):
+    """Ensures each test runs against an isolated in-memory Qdrant instance to avoid polluting live cloud cluster."""
+    from qdrant_client import AsyncQdrantClient
+    from app.repos.vector_repo import vector_repo
+
+    in_memory_client = AsyncQdrantClient(location=":memory:")
+    monkeypatch.setattr(vector_repo, "_client", in_memory_client)
+    monkeypatch.setattr(vector_repo, "_initialized", False)
+    yield
+    await in_memory_client.close()
+
+
 @pytest_asyncio.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
     """Yields a test database AsyncSession."""
