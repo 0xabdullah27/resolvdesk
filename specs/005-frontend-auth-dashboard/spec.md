@@ -8,6 +8,13 @@
 
 **Input**: User description: "frontend client authentication and dashboard foundation: complete better-auth client integration, login, registration, route protection, and responsive dashboard shell with semantic theming"
 
+## Clarifications
+
+### Session 2026-09-05
+- Q: How should the root path (`/`) behave when visited by authenticated owners versus unauthenticated visitors? → A: Render a clean product welcome page for unauthenticated visitors, and automatically redirect authenticated owners to `/dashboard`.
+- Q: Should the "Forgot Password" / Password Reset UI flow be included in Feature 005, or deferred to a subsequent security milestone? → A: Defer password reset UI to a subsequent milestone; focus Feature 005 strictly on Registration, Login, Session Management, and Dashboard Shell.
+- Q: Should the business owner registration form include an optional "Website URL" field during onboarding? → A: Include an optional "Website URL" input on the registration form; validate URL format if entered, but allow owners to skip it.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Self-Service Business Owner Registration & Workspace Provisioning (Priority: P1) 🎯 MVP
@@ -115,8 +122,8 @@ The owner switches between light and dark modes according to their preference, w
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide a dedicated self-service registration interface accepting owner full name, email address, password, and organization/business name.
-- **FR-002**: System MUST validate input constraints client-side before submission: email format, minimum 8-character password, non-empty full name, and non-empty business name.
+- **FR-001**: System MUST provide a dedicated self-service registration interface accepting owner full name, email address, password, organization/business name, and an optional website URL.
+- **FR-002**: System MUST validate input constraints client-side before submission: email format, minimum 8-character password, non-empty full name, non-empty business name, and valid URL syntax if a website URL is provided.
 - **FR-003**: System MUST execute atomic multi-tenant registration, establishing both the authentication session and provisioning the owner organization profile.
 - **FR-004**: System MUST provide a secure login interface accepting email and password with generic error handling on authentication failure.
 - **FR-005**: System MUST store authenticated sessions in secure httpOnly cookies adhering to project security constraints.
@@ -128,6 +135,7 @@ The owner switches between light and dark modes according to their preference, w
 - **FR-011**: System MUST provide error boundary views allowing recovery or retry on failed requests.
 - **FR-012**: System MUST provide a light/dark theme switch that applies semantic theme variables across the entire application without component-level styling conflicts.
 - **FR-013**: All user interface components MUST strictly consume semantic theme tokens mapped to root CSS variables per Constitution Principle VII, prohibiting hard-coded palette utilities.
+- **FR-014**: System MUST render a product landing page at `/` with direct "Sign In" and "Get Started" entry points for unauthenticated visitors, and automatically route authenticated owners visiting `/` directly to `/dashboard`.
 
 ### Key Entities
 
@@ -154,4 +162,5 @@ The owner switches between light and dark modes according to their preference, w
 - **Authentication Authority**: Next.js serves as the authentication server via Better Auth, while FastAPI serves as the stateless resource server.
 - **Target Viewports**: Responsive layout supports desktop screens (1024px+), tablets (768px - 1023px), and mobile devices (< 768px).
 - **No Third-Party Social Logins in v1**: Owner authentication is strictly email and password for the initial release per System Specification.
+- **Password Reset UI Deferred**: The self-service password recovery flow is deferred to a follow-up security milestone; Feature 005 focuses on registration, login, session persistence, and dashboard shell.
 - **Email Verification Deferred**: Self-service registration automatically logs the user into their workspace immediately without blocking on an outbound email verification loop in v1.
