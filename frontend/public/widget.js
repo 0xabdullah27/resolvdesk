@@ -764,23 +764,44 @@
     var themeToggleBtn = chatWindow.querySelector(".rd-theme-toggle-btn");
 
     // --- Automatic Theme Detection & Reactive Syncing ---
-    var userThemeOverride = null;
+    // Clean up any stale permanent localStorage override from testing so auto-detection works
     try {
-      userThemeOverride = localStorage.getItem("resolvdesk_theme_mode");
+      localStorage.removeItem("resolvdesk_theme_mode");
     } catch (e) {}
 
-    function parseRgbColor(colorStr) {
-      if (!colorStr) return null;
-      var match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-      if (!match) return null;
-      var a = match[4] !== undefined ? parseFloat(match[4]) : 1;
-      if (a === 0) return null;
-      return {
-        r: parseInt(match[1], 10),
-        g: parseInt(match[2], 10),
-        b: parseInt(match[3], 10),
-        a: a,
-      };
+    var userSessionOverride = null;
+    try {
+      userSessionOverride = sessionStorage.getItem("resolvdesk_theme_mode");
+    } catch (e) {}
+
+    var _themeCanvasCtx = null;
+    function getRgbFromColor(colorStr) {
+      if (!colorStr || colorStr === "transparent" || colorStr === "rgba(0, 0, 0, 0)") {
+        return null;
+      }
+      var m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (m) {
+        var a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+        if (a < 0.1) return null;
+        return { r: parseInt(m[1], 10), g: parseInt(m[2], 10), b: parseInt(m[3], 10), a: a };
+      }
+      try {
+        if (!_themeCanvasCtx) {
+          var c = document.createElement("canvas");
+          c.width = 1;
+          c.height = 1;
+          _themeCanvasCtx = c.getContext("2d", { willReadFrequently: true });
+        }
+        if (_themeCanvasCtx) {
+          _themeCanvasCtx.clearRect(0, 0, 1, 1);
+          _themeCanvasCtx.fillStyle = colorStr;
+          _themeCanvasCtx.fillRect(0, 0, 1, 1);
+          var px = _themeCanvasCtx.getImageData(0, 0, 1, 1).data;
+          if (px[3] < 20) return null;
+          return { r: px[0], g: px[1], b: px[2], a: px[3] / 255 };
+        }
+      } catch (e) {}
+      return null;
     }
 
     function calcLuminance(r, g, b) {
@@ -791,21 +812,28 @@
       var docEl = document.documentElement;
       var body = document.body;
 
-      // 1. Check classes on <html> and <body>
+      // 1. Check classes on <html>, <body>, or any top-level dark container
       if (
         (docEl && docEl.classList.contains("dark")) ||
-        (body && body.classList.contains("dark"))
+        (body && body.classList.contains("dark")) ||
+        document.querySelector(".dark") !== null
       ) {
         return "dark";
       }
-      if (
-        (docEl && docEl.classList.contains("light")) ||
-        (body && body.classList.contains("light"))
-      ) {
-        return "light";
-      }
 
-      // 2. Check data-theme, data-mode, data-color-mode, theme
+      // 2. Check color-scheme (style attribute or computed style on <html> and <body>)
+      try {
+        var docCs = (docEl && (docEl.style.colorScheme || window.getComputedStyle(docEl).colorScheme)) || "";
+        var bodyCs = (body && (body.style.colorScheme || window.getComputedStyle(body).colorScheme)) || "";
+        if (docCs === "dark" || bodyCs === "dark") {
+          return "dark";
+        }
+        if (docCs === "light" || bodyCs === "light") {
+          return "light";
+        }
+      } catch (e) {}
+
+      // 3. Check data attributes (daisyUI, chakra, next-themes, github)
       var themeAttr =
         (docEl && (docEl.getAttribute("data-theme") || docEl.getAttribute("data-mode") || docEl.getAttribute("data-color-mode") || docEl.getAttribute("theme"))) ||
         (body && (body.getAttribute("data-theme") || body.getAttribute("data-mode") || body.getAttribute("data-color-mode")));
@@ -816,30 +844,60 @@
         if (lower.indexOf("light") !== -1) return "light";
       }
 
-      // 3. Check computed background color or text luminance on body or root
+      // 4. Check host localStorage (next-themes, tailwind, etc.)
       try {
-        var candidates = [body, docEl];
+        var hostSavedTheme = 
+          localStorage.getItem("theme") || 
+          localStorage.getItem("color-theme") || 
+          localStorage.getItem("chakra-ui-color-mode") ||
+          localStorage.getItem("mantine-color-scheme-value");
+        if (hostSavedTheme) {
+          var hLower = hostSavedTheme.toLowerCase();
+          if (hLower.indexOf("dark") !== -1) return "dark";
+          if (hLower.indexOf("light") !== -1) return "light";
+        }
+      } catch (e) {}
+
+      // 5. Check computed background color or text luminance across key elements
+      try {
+        var candidates = [
+          body,
+          docEl,
+          document.querySelector("main"),
+          document.querySelector("#__next"),
+          document.querySelector("#root"),
+          body ? body.firstElementChild : null
+        ];
         for (var i = 0; i < candidates.length; i++) {
           var el = candidates[i];
           if (!el) continue;
           var computed = window.getComputedStyle(el);
           if (computed) {
-            var bg = parseRgbColor(computed.backgroundColor);
+            var bg = getRgbFromColor(computed.backgroundColor);
             if (bg && bg.a > 0.1) {
               var bgLum = calcLuminance(bg.r, bg.g, bg.b);
               if (bgLum < 128) return "dark";
               if (bgLum >= 128) return "light";
             }
-            var fg = parseRgbColor(computed.color);
+            var fg = getRgbFromColor(computed.color);
             if (fg && fg.a > 0.5) {
               var fgLum = calcLuminance(fg.r, fg.g, fg.b);
               if (fgLum > 180) return "dark";
+              if (fgLum < 70) return "light";
             }
           }
         }
       } catch (e) {}
 
-      // 4. Fallback to OS prefers-color-scheme
+      // 6. Check explicit class="light" on root
+      if (
+        (docEl && docEl.classList.contains("light")) ||
+        (body && body.classList.contains("light"))
+      ) {
+        return "light";
+      }
+
+      // 7. Fallback to OS prefers-color-scheme
       if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
         return "dark";
       }
@@ -858,16 +916,22 @@
       }
     }
 
-    function syncTheme() {
-      if (userThemeOverride) {
-        applyTheme(userThemeOverride);
-      } else {
-        applyTheme(detectHostTheme());
+    function syncTheme(forceHost) {
+      if (!forceHost && userSessionOverride) {
+        applyTheme(userSessionOverride);
+        return;
       }
+      var detected = detectHostTheme();
+      applyTheme(detected);
     }
 
     // Initial theme sync
     syncTheme();
+
+    // Re-check theme on hydration intervals (for host React/Next-themes hydration)
+    setTimeout(function () { syncTheme(); }, 150);
+    setTimeout(function () { syncTheme(); }, 600);
+    setTimeout(function () { syncTheme(); }, 1600);
 
     // Theme toggle button handler
     if (themeToggleBtn) {
@@ -875,9 +939,9 @@
         e.stopPropagation();
         var currentTheme = hostContainer.getAttribute("data-theme") || detectHostTheme();
         var nextTheme = currentTheme === "dark" ? "light" : "dark";
-        userThemeOverride = nextTheme;
+        userSessionOverride = nextTheme;
         try {
-          localStorage.setItem("resolvdesk_theme_mode", nextTheme);
+          sessionStorage.setItem("resolvdesk_theme_mode", nextTheme);
         } catch (err) {}
         applyTheme(nextTheme);
       });
@@ -886,9 +950,12 @@
     // Live reactive theme sync via MutationObserver
     try {
       var themeObserver = new MutationObserver(function () {
-        if (!userThemeOverride) {
-          syncTheme();
-        }
+        // When host website changes theme, reset user session override and follow host
+        userSessionOverride = null;
+        try {
+          sessionStorage.removeItem("resolvdesk_theme_mode");
+        } catch (err) {}
+        syncTheme(true);
       });
       themeObserver.observe(document.documentElement, {
         attributes: true,
@@ -907,11 +974,13 @@
         var mql = window.matchMedia("(prefers-color-scheme: dark)");
         if (mql.addEventListener) {
           mql.addEventListener("change", function () {
-            if (!userThemeOverride) syncTheme();
+            userSessionOverride = null;
+            syncTheme(true);
           });
         } else if (mql.addListener) {
           mql.addListener(function () {
-            if (!userThemeOverride) syncTheme();
+            userSessionOverride = null;
+            syncTheme(true);
           });
         }
       } catch (e) {}
