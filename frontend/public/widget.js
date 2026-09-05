@@ -1,9 +1,9 @@
 /**
- * ResolvDesk Embeddable Customer Chat Widget
- * Version: 1.0.0
- * Lightweight, zero-dependency standalone script.
- * Mounts via Native Shadow DOM for complete CSS isolation from host storefronts.
- */
+* ResolvDesk Embeddable Customer Chat Widget
+* Version: 1.0.0
+* Lightweight, zero-dependency standalone script.
+* Mounts via Native Shadow DOM for complete CSS isolation from host storefronts.
+*/
 (function () {
   "use strict";
 
@@ -741,8 +741,8 @@
                 '  <div class="rd-ticket-content">',
                 "    <strong>Ticket #" + escapeHtml(resData.ticket_id) + " Submitted</strong>",
                 "    <p>Our store support team will follow up via email at <em>" +
-                  escapeHtml(resData.visitor_email) +
-                  "</em>.</p>",
+                escapeHtml(resData.visitor_email) +
+                "</em>.</p>",
                 "  </div>",
                 "</div>",
               ].join("");
@@ -782,8 +782,8 @@
           '  <div class="rd-ticket-content">',
           "    <strong>Ticket #" + escapeHtml(ticketData.ticket_id) + " Submitted</strong>",
           "    <p>Our store support team will follow up at <em>" +
-            escapeHtml(ticketData.visitor_email) +
-            "</em>.</p>",
+          escapeHtml(ticketData.visitor_email) +
+          "</em>.</p>",
           "  </div>",
           "</div>",
         ].join("");
@@ -987,8 +987,8 @@
                       '  <div class="rd-ticket-content">',
                       "    <strong>Ticket #" + escapeHtml(rData.ticket_id) + " Submitted</strong>",
                       "    <p>Our store support team will follow up via email at <em>" +
-                        escapeHtml(rData.visitor_email) +
-                        "</em>.</p>",
+                      escapeHtml(rData.visitor_email) +
+                      "</em>.</p>",
                       "  </div>",
                       "</div>",
                     ].join("");
