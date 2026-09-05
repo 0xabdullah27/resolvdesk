@@ -39,15 +39,19 @@ Implement Next.js Edge Middleware in `frontend/middleware.ts` that checks the se
 
 ---
 
-## 3. Centralized API Gateway & Bearer Token Interceptor (`api-client.ts`)
+## 3. Server Actions Architecture for Backend Integration
 
 ### Decision
-Create `frontend/lib/api-client.ts` encapsulating an Axios instance with request and response interceptors.
+Implement Next.js Server Actions (`frontend/actions/auth-actions.ts`) and a server-side native `fetch` utility (`frontend/lib/backend-api.ts`) for all mutations and backend communications, completely eliminating client-side Axios and browser-side token handling.
 
 ### Rationale
-- **Automatic Authorization**: Attaches `Authorization: Bearer <token>` to all calls directed at FastAPI (`http://localhost:8000/api/v1`).
-- **Token Resolution**: In the browser, fetches the current valid JWT via `authClient.token()`; in server actions, forwards the session cookie/header.
-- **Graceful Error Handling**: Automatically catches HTTP 401/403 responses and triggers session invalidation or user-friendly redirect.
+- **Zero Browser Token Exposure**: The browser never sees, requests, or stores JWT tokens. Tokens are acquired server-side via Better Auth (`auth.api.getToken`) and forwarded server-to-server (`Next.js Server ──► FastAPI`).
+- **No CORS Constraints**: The browser communicates only with `http://localhost:3000` (its own origin). All requests to FastAPI (`http://localhost:8000`) happen server-to-server.
+- **Native Cache Invalidation**: Server Actions immediately trigger `revalidatePath("/dashboard")` upon completion, fulfilling the [AGENTS.md](file:///d:/AbdullahQureshi/workspace/resolvdesk/AGENTS.md) cache invalidation mandate.
+- **Chat Streaming Exemption**: When live chat streaming is added in a future milestone, the visitor widget will use the browser's native `fetch()` with `ReadableStream` against the public endpoint (which requires zero auth tokens).
+
+### Alternatives Considered
+- *Client-side Axios with in-memory JWT interceptor*: Unnecessarily complex; requires token refresh loops, CORS configuration, and exposes tokens to browser memory.
 
 ---
 

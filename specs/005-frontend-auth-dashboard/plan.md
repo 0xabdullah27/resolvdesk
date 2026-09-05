@@ -8,21 +8,21 @@
 
 ## Summary
 
-Deliver the complete client-side authentication, self-service business owner registration, session persistence, server-side route protection, and responsive dashboard shell for ResolvDesk. Connects the Better Auth client (`auth-client.ts`) with Next.js 16 App Router, establishes an Axios API gateway (`api-client.ts`) forwarding RS256 Bearer JWTs to FastAPI, configures edge `middleware.ts` for route defense, and constructs a responsive dashboard layout strictly adhering to Constitution Principle VII (semantic design tokens and conflict-free theming).
+Deliver the complete client-side authentication, self-service business owner registration, session persistence, server-side route protection, and responsive dashboard shell for ResolvDesk. Connects the Better Auth client (`auth-client.ts`) with Next.js 16 App Router, utilizes Next.js Server Actions (`actions/auth-actions.ts`) with native `fetch` for server-to-server FastAPI communication (eliminating client-side token exposure, CORS issues, and Axios complexity), configures edge `middleware.ts` for route defense, and constructs a responsive dashboard layout strictly adhering to Constitution Principle VII (semantic design tokens and conflict-free theming).
 
 ---
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5, Node.js 20+, Next.js 16.3.4 (App Router, Turbopack), React 19.2.8  
-**Primary Dependencies**: Better Auth (`better-auth` + `better-auth/react`), Shadcn UI (Base Nova + Lucide), Tailwind CSS v4, `react-hook-form`, `zod` v4, `@hookform/resolvers`, `axios`, `next-themes`, `sonner`  
+**Primary Dependencies**: Better Auth (`better-auth` + `better-auth/react`), Shadcn UI (Base Nova + Lucide), Tailwind CSS v4, `react-hook-form`, `zod` v4, `@hookform/resolvers`, `next-themes`, `sonner`  
 **Storage**: PostgreSQL on Neon (Better Auth session and user tables), httpOnly secure session cookies  
 **Testing**: Next.js production compilation (`npm run build`), TypeScript typecheck, manual quickstart verification scenarios  
 **Target Platform**: Modern web browsers (Chrome, Firefox, Safari, Edge), responsive desktop & mobile  
 **Project Type**: Full-stack web application (Next.js 16 App Router)  
 **Performance Goals**: Page initial load < 1s, theme transition < 50ms, registration flow completion < 30s  
-**Constraints**: Zero hard-coded palette classes (Principle VII), httpOnly session storage (no localStorage auth tokens), server-side route protection (middleware)  
-**Scale/Scope**: 1 landing page, 2 auth pages (Login, Register), 1 dashboard shell layout with responsive sidebar/header, 3 placeholder module pages (Documents, Inbox, Widget), 3 utility modules (`auth-client.ts`, `api-client.ts`, `middleware.ts`)
+**Constraints**: Zero hard-coded palette classes (Principle VII), httpOnly session storage (zero browser-side JWT tokens), server-side route protection (middleware), Server Actions for all mutations with `revalidatePath`  
+**Scale/Scope**: 1 landing page, 2 auth pages (Login, Register), 1 dashboard shell layout with responsive sidebar/header, 3 placeholder module pages (Documents, Inbox, Widget), 3 core infrastructure modules (`auth-client.ts`, `actions/auth-actions.ts`, `middleware.ts`)
 
 ---
 
@@ -36,10 +36,10 @@ Deliver the complete client-side authentication, self-service business owner reg
 | **II. Grounded AI & Zero Hallucination** | **PASS** | N/A for authentication and navigation shell. |
 | **III. Continuous Human Safety Net** | **PASS** | N/A for authentication shell; prepares the inbox route for support tickets. |
 | **IV. Frictionless & Secure Widget** | **PASS** | N/A for dashboard shell; prepares widget settings view for key management. |
-| **V. Layered Architecture & Boundary Defense** | **PASS** | Strict schema validation at the Zod layer; edge middleware route defense before page rendering. |
+| **V. Layered Architecture & Boundary Defense** | **PASS** | Strict schema validation at the Zod layer; edge middleware route defense before page rendering; Server Actions bridge between UI and backend. |
 | **VI. Provider-Agnostic AI Layer** | **PASS** | N/A for frontend authentication. |
 | **VII. Strict Semantic Theming & Global Tokens** | **PASS** | All layouts, components, and pages consume semantic CSS variables (`bg-background`, `text-foreground`, `border-border`, etc.) from `globals.css`. |
-| **Session Security Constraint** | **PASS** | Better Auth session stored exclusively in httpOnly cookies; no client-accessible localStorage tokens. |
+| **Session Security Constraint** | **PASS** | Better Auth session stored exclusively in httpOnly cookies; zero client-accessible tokens in localStorage or in-memory variables. |
 | **Server Route Protection Constraint** | **PASS** | Edge `middleware.ts` intercepts unauthenticated requests to `/dashboard/*` before HTML rendering. |
 | **UI State Rigor Constraint** | **PASS** | Dashboard routes include explicit `loading.tsx` skeletons and `error.tsx` boundaries. |
 
@@ -66,6 +66,8 @@ specs/005-frontend-auth-dashboard/
 
 ```text
 frontend/
+├── actions/
+│   └── auth-actions.ts              # Next.js Server Actions ("use server"): register, login, logout, profile
 ├── app/
 │   ├── layout.tsx                   # Root layout with ThemeProvider and Sonner Toaster
 │   ├── page.tsx                     # Public product landing page (redirects if authenticated)
@@ -76,7 +78,7 @@ frontend/
 │   │   └── register/
 │   │       └── page.tsx             # Owner registration page
 │   └── dashboard/
-│       ├── layout.tsx               # Protected dashboard shell (Sidebar + Header + Session)
+│       ├── layout.tsx               # Protected dashboard shell (Server Component resolving session)
 │       ├── loading.tsx              # Dashboard root loading skeleton
 │       ├── error.tsx                # Dashboard root error boundary
 │       ├── page.tsx                 # Dashboard overview page
@@ -88,8 +90,8 @@ frontend/
 │           └── page.tsx             # Widget configuration module route
 ├── components/
 │   ├── auth/
-│   │   ├── login-form.tsx           # Client form with React Hook Form + Zod
-│   │   └── register-form.tsx        # Client form with atomic registration
+│   │   ├── login-form.tsx           # Client form calling login Server Action
+│   │   └── register-form.tsx        # Client form calling register Server Action
 │   ├── dashboard/
 │   │   ├── sidebar.tsx              # Collapsible semantic sidebar
 │   │   ├── header.tsx               # App bar with breadcrumb, theme toggle, and user menu
@@ -99,8 +101,8 @@ frontend/
 │   └── ui/                          # 61 shadcn UI components (already installed)
 ├── lib/
 │   ├── auth.ts                      # Better Auth server configuration (existing)
-│   ├── auth-client.ts               # Better Auth client hooks & JWT token getter
-│   ├── api-client.ts                # Axios client with JWT Bearer interceptor
+│   ├── auth-client.ts               # Better Auth client hooks (useSession, signOut)
+│   ├── backend-api.ts               # Server-to-server native fetch helper calling FastAPI
 │   └── utils.ts                     # cn() class merge helper (existing)
 └── middleware.ts                    # Edge route protection for /dashboard/* and /
 ```
@@ -110,28 +112,30 @@ frontend/
 ## Phases & Execution Plan
 
 ### Phase 0: Research & Technical Foundations
-- Resolved all technical unknowns: Better Auth client configuration, Next.js Edge middleware session verification, Axios Bearer interceptor, and semantic theming.
+- Resolved all technical unknowns: Better Auth client configuration, Next.js Server Actions architecture, native server-to-server `fetch`, Edge middleware session verification, and semantic theming.
 - Documented decisions in `research.md`.
 
 ### Phase 1: Design & Contracts
 - Defined Zod validation schemas (`registerSchema`, `loginSchema`) and domain interfaces in `data-model.md`.
-- Documented route access contracts, API handshakes, and UI component contracts in `contracts/auth_and_dashboard_contracts.md`.
+- Documented route access contracts, Server Action signatures, and UI component contracts in `contracts/auth_and_dashboard_contracts.md`.
 - Formulated testable verification scenarios in `quickstart.md`.
 
 ### Phase 2: Implementation (Scheduled for `/speckit-tasks` and `/speckit-implement`)
-1. **Core Client Auth & Network Infrastructure**:
-   - Create `frontend/lib/auth-client.ts` and `frontend/lib/api-client.ts`.
+1. **Core Client Auth & Server Action Infrastructure**:
+   - Create `frontend/lib/auth-client.ts` with Better Auth client hooks.
+   - Implement `frontend/lib/backend-api.ts` providing server-to-server `fetch` utility injecting FastAPI JWT Bearer tokens.
+   - Implement `frontend/actions/auth-actions.ts` (`registerOwnerAction`, `loginOwnerAction`, `logoutOwnerAction`).
    - Implement `frontend/middleware.ts` for server-side route protection.
    - Configure `frontend/components/theme-provider.tsx` and integrate into `frontend/app/layout.tsx`.
 2. **Authentication Pages**:
-   - Implement `frontend/components/auth/register-form.tsx` with atomic registration call to `POST /api/v1/registration/complete`.
-   - Implement `frontend/components/auth/login-form.tsx` with generic credential defense.
+   - Implement `frontend/components/auth/register-form.tsx` calling `registerOwnerAction`.
+   - Implement `frontend/components/auth/login-form.tsx` calling `loginOwnerAction`.
    - Build `(auth)/register/page.tsx` and `(auth)/login/page.tsx`.
 3. **Public Landing Page**:
    - Update `frontend/app/page.tsx` with product landing hero and direct CTAs.
 4. **Dashboard Shell & Layout**:
    - Build `frontend/components/dashboard/sidebar.tsx` and `header.tsx`.
-   - Build `frontend/app/dashboard/layout.tsx` with `loading.tsx` and `error.tsx`.
+   - Build `frontend/app/dashboard/layout.tsx` (Server Component) with `loading.tsx` and `error.tsx`.
    - Build `frontend/app/dashboard/page.tsx` overview screen.
    - Build placeholder routes for `/documents`, `/conversations`, and `/widget`.
 5. **Validation & Build Verification**:

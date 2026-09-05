@@ -88,7 +88,33 @@ Authorization: Bearer <RS256_JWT_TOKEN>
 
 ---
 
-## 4. UI Shell Component Contracts
+## 4. Server Action Contracts (`frontend/actions/auth-actions.ts`)
+
+### 1. `registerOwnerAction(values: RegisterFormValues)`
+- **Input**: Validated `RegisterFormValues` (fullName, email, password, businessName, websiteUrl).
+- **Execution**:
+  1. Calls Better Auth `auth.api.signUpEmail` on Next.js server.
+  2. Acquires signed RS256 token via `auth.api.getToken`.
+  3. Executes server-to-server call to FastAPI `POST /api/v1/registration/complete`.
+  4. Calls `revalidatePath("/dashboard")`.
+- **Return**: `{ success: true }` or `{ success: false, error: string }`.
+
+### 2. `loginOwnerAction(values: LoginFormValues)`
+- **Input**: Validated `LoginFormValues` (email, password).
+- **Execution**:
+  1. Calls Better Auth `auth.api.signInEmail` on Next.js server.
+  2. Sets httpOnly session cookie.
+  3. Calls `revalidatePath("/dashboard")`.
+- **Return**: `{ success: true }` or `{ success: false, error: string }`.
+
+### 3. `signOutOwnerAction()`
+- **Input**: None.
+- **Execution**: Calls `auth.api.signOut` and clears session cookie.
+- **Return**: `{ success: true }`.
+
+---
+
+## 5. UI Shell Component Contracts
 
 ### 1. `DashboardSidebar` (`frontend/components/dashboard/sidebar.tsx`)
 - **Props**:
