@@ -8,6 +8,14 @@
 
 **Input**: User description: "Feature 007 (Widget Customizer UI)"
 
+## Clarifications
+
+### Session 2026-09-05
+- Q: Which preset color swatches should be offered by default? → A: Curated 6-color palette (`#4F46E5` Indigo, `#2563EB` Blue, `#059669` Emerald, `#7C3AED` Violet, `#EA580C` Orange, `#0F172A` Slate Dark) + native HTML5 color picker + custom hex input.
+- Q: Should the form provide a distinct radio toggle between 'Allow on all websites (*)' vs 'Restricted domains list'? → A: Dedicated toggle between "Allow on all websites (*)" and "Specific domains" with domain list input.
+- Q: What should owners be able to do inside the preview box on /dashboard/widget? → A: Visual preview only: open/close the bubble to preview bot name, brand color, and welcome greeting without simulated test chatting.
+- Q: Should the widget customizer form include a 'Reset to Defaults' action alongside Save? → A: Yes, include a "Reset to Defaults" button (with confirmation dialog) that resets inputs to standard platform defaults (`#4F46E5`, "Support Assistant", "Hi! How can I help you today?", `bottom-right`, `*`).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Customize Widget Branding & Appearance (Priority: P1)
@@ -81,6 +89,7 @@ As a business owner, I want to easily copy the HTML embed snippet and securely r
 - **FR-010**: System MUST provide a key rotation modal that requires explicit confirmation and displays the 24-hour dual-key grace window status.
 - **FR-011**: All frontend components MUST strictly adhere to semantic CSS tokens (`bg-card`, `text-foreground`, `border-border`, `text-primary`) without hard-coded color palette classes per Constitution Principle VII.
 - **FR-012**: System MUST provide explicit Server Component boundaries, route loading skeletons (`loading.tsx`), and error boundaries (`error.tsx`).
+- **FR-013**: System MUST provide a "Reset to Defaults" button (with confirmation dialog) allowing owners to restore all appearance fields to standard factory defaults.
 
 ### Key Entities *(include if feature involves data)*
 

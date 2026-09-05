@@ -35,4 +35,5 @@
   1. FR-006: Dedicated toggle between "Allow on all websites (*)" and "Specific domains".
   2. FR-007: Visual preview simulation only (collapsible/expandable bubble & header/greeting preview).
   3. FR-008: Curated 6-color preset palette (#4F46E5, #2563EB, #059669, #7C3AED, #EA580C, #0F172A) + native color picker + custom hex.
+  4. FR-013: "Reset to Defaults" action (with confirmation dialog) restoring factory settings (#4F46E5, "Support Assistant", "Hi! How can I help you today?", bottom-right, *).
 - Specification is 100% complete and ready for `/speckit-plan`.
