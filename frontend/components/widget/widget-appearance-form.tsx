@@ -147,25 +147,6 @@ export function WidgetAppearanceForm({
             >
               <div
                 className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
-                  widgetPlacement === "bottom-right"
-                    ? "border-primary bg-primary/5"
-                    : "border-border/60 hover:border-border bg-card"
-                }`}
-                onClick={() =>
-                  setValue("widget_placement", "bottom-right", { shouldDirty: true, shouldValidate: true })
-                }
-              >
-                <RadioGroupItem value="bottom-right" id="placement-right" />
-                <div className="flex items-center gap-2">
-                  <AlignRight className="size-4 text-muted-foreground" />
-                  <Label htmlFor="placement-right" className="text-xs font-medium cursor-pointer">
-                    Bottom Right (Default)
-                  </Label>
-                </div>
-              </div>
-
-              <div
-                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
                   widgetPlacement === "bottom-left"
                     ? "border-primary bg-primary/5"
                     : "border-border/60 hover:border-border bg-card"
@@ -179,6 +160,25 @@ export function WidgetAppearanceForm({
                   <AlignLeft className="size-4 text-muted-foreground" />
                   <Label htmlFor="placement-left" className="text-xs font-medium cursor-pointer">
                     Bottom Left
+                  </Label>
+                </div>
+              </div>
+
+              <div
+                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                  widgetPlacement === "bottom-right"
+                    ? "border-primary bg-primary/5"
+                    : "border-border/60 hover:border-border bg-card"
+                }`}
+                onClick={() =>
+                  setValue("widget_placement", "bottom-right", { shouldDirty: true, shouldValidate: true })
+                }
+              >
+                <RadioGroupItem value="bottom-right" id="placement-right" />
+                <div className="flex items-center gap-2">
+                  <AlignRight className="size-4 text-muted-foreground" />
+                  <Label htmlFor="placement-right" className="text-xs font-medium cursor-pointer">
+                    Bottom Right (Default)
                   </Label>
                 </div>
               </div>

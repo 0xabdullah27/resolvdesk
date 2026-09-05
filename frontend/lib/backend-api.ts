@@ -74,13 +74,15 @@ export async function backendFetch<T = unknown>(
 
   if (!response.ok) {
     let errorData: any = null;
+    const rawText = await response.text();
     try {
-      errorData = await response.json();
+      errorData = JSON.parse(rawText);
     } catch {
-      errorData = await response.text();
+      errorData = rawText;
     }
     const message =
       (typeof errorData === "object" && errorData?.detail) ||
+      (typeof errorData === "string" && errorData.length > 0 && errorData.length < 200 ? errorData : null) ||
       `Backend API call failed with status ${response.status}`;
     throw new BackendApiError(response.status, errorData, message);
   }
@@ -89,5 +91,11 @@ export async function backendFetch<T = unknown>(
     return {} as T;
   }
 
-  return response.json() as Promise<T>;
+  const rawText = await response.text();
+  try {
+    return JSON.parse(rawText) as T;
+  } catch {
+    return rawText as unknown as T;
+  }
 }
+

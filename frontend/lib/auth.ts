@@ -3,13 +3,23 @@ import { jwt } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { Pool } from "@neondatabase/serverless";
 
-const connectionString =
+const rawConnectionString =
   process.env.DATABASE_URL ||
   "postgresql://postgres:password@localhost:5432/resolvdesk";
 
+// Strip channel_binding parameter as Neon serverless WebSocket pool does not support SCRAM channel binding
+const connectionString = rawConnectionString.replace(/[\?&]channel_binding=[^&]*/g, "");
+
 const pool = new Pool({ connectionString });
+pool.on("error", (err: any) => {
+  console.warn("Neon database connection pool event:", err?.message || err);
+});
 
 export const auth = betterAuth({
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000",
   database: pool,
   advanced: {
     database: {

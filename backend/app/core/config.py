@@ -34,7 +34,13 @@ class Settings(BaseSettings):
     AUTH_AUDIENCE: str = "resolvdesk-api"
 
     # CORS
-    CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000"]
+    CORS_ORIGINS: Union[List[str], str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "https://homesprint.store",
+    ]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -43,7 +49,13 @@ class Settings(BaseSettings):
             return [i.strip() for i in v.split(",") if i.strip()]
         elif isinstance(v, list):
             return v
-        return ["http://localhost:3000"]
+        return [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:3001",
+            "http://127.0.0.1:3001",
+            "https://homesprint.store",
+        ]
 
     # Widget & Multi-tenant defaults
     WIDGET_KEY_PREFIX: str = "rd_live_"

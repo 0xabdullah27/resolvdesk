@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getWidgetConfigAction } from "@/actions/widget-actions";
 import { WidgetCustomizerView } from "@/components/widget/widget-customizer-view";
 import type { WidgetConfig } from "@/types/widget";
@@ -29,14 +30,14 @@ export default async function WidgetPage() {
   const res = await getWidgetConfigAction();
 
   if (!res.success) {
-    console.error("Failed to load widget config on server:", res.error);
-    // Render with fallback or throw for error boundary
-    if (!res.data) {
-      throw new Error(res.error || "Failed to load widget configuration.");
+    if (res.error?.includes("session") || res.error?.includes("log in")) {
+      redirect("/login?callbackUrl=/dashboard/widget");
     }
+    console.warn("Using fallback widget configuration:", res.error);
   }
 
   const config = res.data || fallbackConfig;
 
   return <WidgetCustomizerView initialConfig={config} />;
 }
+
