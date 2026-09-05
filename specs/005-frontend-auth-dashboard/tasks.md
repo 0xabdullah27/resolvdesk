@@ -10,10 +10,10 @@
 
 **Purpose**: Project initialization, theme foundation, and base application shell configuration.
 
-- [ ] T001 Initialize environment configuration and verify API endpoint variables in `frontend/.env.local`
-- [ ] T002 [P] Configure root font definitions, semantic color variables, and dark theme tokens per Principle VII in `frontend/app/globals.css`
-- [ ] T003 [P] Implement client-side `ThemeProvider` wrapper using `next-themes` in `frontend/components/theme-provider.tsx`
-- [ ] T004 Integrate `ThemeProvider` and Sonner `Toaster` with root HTML structure in `frontend/app/layout.tsx`
+- [X] T001 Initialize environment configuration and verify API endpoint variables in `frontend/.env.local`
+- [X] T002 [P] Configure root font definitions, semantic color variables, and dark theme tokens per Principle VII in `frontend/app/globals.css`
+- [X] T003 [P] Implement client-side `ThemeProvider` wrapper using `next-themes` in `frontend/components/theme-provider.tsx`
+- [X] T004 Integrate `ThemeProvider` and Sonner `Toaster` with root HTML structure in `frontend/app/layout.tsx`
 
 ---
 
@@ -23,11 +23,11 @@
 
 > **CRITICAL**: No user story work can begin until this foundational phase is complete.
 
-- [ ] T005 [P] Implement client-side Zod validation schemas (`registerSchema`, `loginSchema`) and inferred types in `frontend/lib/validations/auth.ts`
-- [ ] T006 [P] Create domain and navigation TypeScript interfaces (`OwnerProfile`, `OrganizationWorkspace`, `NavItem`) in `frontend/types/dashboard.ts`
-- [ ] T007 [P] Configure Better Auth client SDK hooks (`createAuthClient`, `useSession`, `signOut`) in `frontend/lib/auth-client.ts`
-- [ ] T008 Implement server-to-server native fetch helper injecting FastAPI JWT Bearer token in `frontend/lib/backend-api.ts`
-- [ ] T009 Implement edge route protection middleware redirecting unauthenticated guests and authenticated owners in `frontend/middleware.ts`
+- [X] T005 [P] Implement client-side Zod validation schemas (`registerSchema`, `loginSchema`) and inferred types in `frontend/lib/validations/auth.ts`
+- [X] T006 [P] Create domain and navigation TypeScript interfaces (`OwnerProfile`, `OrganizationWorkspace`, `NavItem`) in `frontend/types/dashboard.ts`
+- [X] T007 [P] Configure Better Auth client SDK hooks (`createAuthClient`, `useSession`, `signOut`) in `frontend/lib/auth-client.ts`
+- [X] T008 Implement server-to-server native fetch helper injecting FastAPI JWT Bearer token in `frontend/lib/backend-api.ts`
+- [X] T009 Implement edge route protection middleware redirecting unauthenticated guests and authenticated owners in `frontend/middleware.ts`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -39,11 +39,11 @@
 
 **Independent Test**: Navigate to `/register`, submit the form with valid unique credentials and a business name, and verify immediate redirect to `/dashboard` displaying the business name in the workspace header.
 
-- [ ] T010 [US1] Implement `registerOwnerAction` Server Action in `frontend/actions/auth-actions.ts` orchestrating Better Auth sign-up, JWT token retrieval, and FastAPI `POST /api/v1/registration/complete`
-- [ ] T011 [P] [US1] Create registration form component with React Hook Form, Zod resolver, inline validation errors, and submit loading state in `frontend/components/auth/register-form.tsx`
-- [ ] T012 [P] [US1] Create public auth layout container with centered glassmorphic card and semantic styling in `frontend/app/(auth)/layout.tsx`
-- [ ] T013 [US1] Create registration page rendering `RegisterForm` with navigation link to sign-in in `frontend/app/(auth)/register/page.tsx`
-- [ ] T014 [US1] Create root landing page with direct "Get Started" and "Sign In" CTAs in `frontend/app/page.tsx`
+- [X] T010 [US1] Implement `registerOwnerAction` Server Action in `frontend/actions/auth-actions.ts` orchestrating Better Auth sign-up, JWT token retrieval, and FastAPI `POST /api/v1/registration/complete`
+- [X] T011 [P] [US1] Create registration form component with React Hook Form, Zod resolver, inline validation errors, and submit loading state in `frontend/components/auth/register-form.tsx`
+- [X] T012 [P] [US1] Create public auth layout container with centered glassmorphic card and semantic styling in `frontend/app/(auth)/layout.tsx`
+- [X] T013 [US1] Create registration page rendering `RegisterForm` with navigation link to sign-in in `frontend/app/(auth)/register/page.tsx`
+- [X] T014 [US1] Create root landing page with direct "Get Started" and "Sign In" CTAs in `frontend/app/page.tsx`
 
 **Checkpoint**: At this point, User Story 1 (MVP) is fully functional and testable end-to-end.
 
@@ -55,10 +55,10 @@
 
 **Independent Test**: Navigate to `/login`, submit invalid credentials to verify generic error notification, submit valid credentials to verify redirect to `/dashboard`, then trigger "Sign Out" from the profile menu and verify session termination.
 
-- [ ] T015 [US2] Implement `loginOwnerAction` and `signOutOwnerAction` Server Actions with path revalidation in `frontend/actions/auth-actions.ts`
-- [ ] T016 [P] [US2] Create login form component with React Hook Form, Zod resolver, generic credential error handling, and password visibility toggle in `frontend/components/auth/login-form.tsx`
-- [ ] T017 [US2] Create login page rendering `LoginForm` with navigation link to registration in `frontend/app/(auth)/login/page.tsx`
-- [ ] T018 [P] [US2] Create owner user menu dropdown with avatar, email display, and sign-out trigger calling `signOutOwnerAction` in `frontend/components/dashboard/user-menu.tsx`
+- [X] T015 [US2] Implement `loginOwnerAction` and `signOutOwnerAction` Server Actions with path revalidation in `frontend/actions/auth-actions.ts`
+- [X] T016 [P] [US2] Create login form component with React Hook Form, Zod resolver, generic credential error handling, and password visibility toggle in `frontend/components/auth/login-form.tsx`
+- [X] T017 [US2] Create login page rendering `LoginForm` with navigation link to registration in `frontend/app/(auth)/login/page.tsx`
+- [X] T018 [P] [US2] Create owner user menu dropdown with avatar, email display, and sign-out trigger calling `signOutOwnerAction` in `frontend/components/dashboard/user-menu.tsx`
 
 **Checkpoint**: User Stories 1 and 2 are fully functional and independently testable.
 
@@ -70,14 +70,14 @@
 
 **Independent Test**: Attempt unauthenticated navigation to `/dashboard` (verify redirect to `/login?callbackUrl=/dashboard`). Log in and verify sidebar renders business name, active route highlights, breadcrumb, and navigation to `/dashboard/documents`, `/dashboard/conversations`, and `/dashboard/widget`.
 
-- [ ] T019 [US3] Implement `getOwnerContextAction` Server Action calling FastAPI `GET /api/v1/me` in `frontend/actions/auth-actions.ts`
-- [ ] T020 [P] [US3] Create collapsible desktop and mobile responsive sidebar component with semantic tokens in `frontend/components/dashboard/sidebar.tsx`
-- [ ] T021 [P] [US3] Create top dashboard application header with breadcrumbs, mobile trigger, theme toggle, and user menu in `frontend/components/dashboard/header.tsx`
-- [ ] T022 [US3] Implement protected dashboard layout resolving owner profile and wrapping children in `frontend/app/dashboard/layout.tsx`
-- [ ] T023 [P] [US3] Implement dashboard overview metrics and quickstart welcome view in `frontend/app/dashboard/page.tsx`
-- [ ] T024 [P] [US3] Create knowledge base documents placeholder route in `frontend/app/dashboard/documents/page.tsx`
-- [ ] T025 [P] [US3] Create conversations inbox placeholder route in `frontend/app/dashboard/conversations/page.tsx`
-- [ ] T026 [P] [US3] Create widget customizer placeholder route in `frontend/app/dashboard/widget/page.tsx`
+- [X] T019 [US3] Implement `getOwnerContextAction` Server Action calling FastAPI `GET /api/v1/me` in `frontend/actions/auth-actions.ts`
+- [X] T020 [P] [US3] Create collapsible desktop and mobile responsive sidebar component with semantic tokens in `frontend/components/dashboard/sidebar.tsx`
+- [X] T021 [P] [US3] Create top dashboard application header with breadcrumbs, mobile trigger, theme toggle, and user menu in `frontend/components/dashboard/header.tsx`
+- [X] T022 [US3] Implement protected dashboard layout resolving owner profile and wrapping children in `frontend/app/dashboard/layout.tsx`
+- [X] T023 [P] [US3] Implement dashboard overview metrics and quickstart welcome view in `frontend/app/dashboard/page.tsx`
+- [X] T024 [P] [US3] Create knowledge base documents placeholder route in `frontend/app/dashboard/documents/page.tsx`
+- [X] T025 [P] [US3] Create conversations inbox placeholder route in `frontend/app/dashboard/conversations/page.tsx`
+- [X] T026 [P] [US3] Create widget customizer placeholder route in `frontend/app/dashboard/widget/page.tsx`
 
 **Checkpoint**: All three P1 User Stories are complete and form an integrated user experience.
 
@@ -89,10 +89,10 @@
 
 **Independent Test**: Toggle between light, dark, and system modes; verify root `html` class changes and colors adapt using semantic CSS variables without contrast issues. Simulate network failure; verify error boundary renders retry trigger.
 
-- [ ] T027 [P] [US4] Create theme toggle button component with light, dark, and system dropdown options in `frontend/components/theme-toggle.tsx`
-- [ ] T028 [P] [US4] Create root dashboard loading skeleton with placeholder cards and sidebar skeleton in `frontend/app/dashboard/loading.tsx`
-- [ ] T029 [US4] Create root dashboard error boundary with error recovery button in `frontend/app/dashboard/error.tsx`
-- [ ] T030 [US4] Audit all created components for strict compliance with Constitution Principle VII (semantic tokens only, zero hard-coded palette classes) in `frontend/app/globals.css` and `frontend/components/`
+- [X] T027 [P] [US4] Create theme toggle button component with light, dark, and system dropdown options in `frontend/components/theme-toggle.tsx`
+- [X] T028 [P] [US4] Create root dashboard loading skeleton with placeholder cards and sidebar skeleton in `frontend/app/dashboard/loading.tsx`
+- [X] T029 [US4] Create root dashboard error boundary with error recovery button in `frontend/app/dashboard/error.tsx`
+- [X] T030 [US4] Audit all created components for strict compliance with Constitution Principle VII (semantic tokens only, zero hard-coded palette classes) in `frontend/app/globals.css` and `frontend/components/`
 
 **Checkpoint**: Theme toggling, loading skeletons, and error boundaries function gracefully across all viewports.
 
@@ -102,9 +102,9 @@
 
 **Purpose**: Production readiness, build verification, and end-to-end documentation alignment.
 
-- [ ] T031 [P] Verify and update end-to-end testing instructions and scenario steps in `specs/005-frontend-auth-dashboard/quickstart.md`
-- [ ] T032 Execute full production build (`npm run build`) in `frontend/` to verify zero compile or TypeScript errors
-- [ ] T033 Validate end-to-end registration, login, route protection, and logout flows per quickstart scenarios
+- [X] T031 [P] Verify and update end-to-end testing instructions and scenario steps in `specs/005-frontend-auth-dashboard/quickstart.md`
+- [X] T032 Execute full production build (`npm run build`) in `frontend/` to verify zero compile or TypeScript errors
+- [X] T033 Validate end-to-end registration, login, route protection, and logout flows per quickstart scenarios
 
 ---
 
