@@ -89,6 +89,11 @@ export function VolumeTrendsChart({ initialData }: VolumeTrendsChartProps) {
   );
   const [data, setData] = React.useState<DailyVolumePoint[]>(initialData.points || []);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleRangeChange = async (newRange: TrendRange) => {
     if (newRange === range || isLoading) return;
@@ -167,15 +172,20 @@ export function VolumeTrendsChart({ initialData }: VolumeTrendsChartProps) {
       </CardHeader>
 
       <CardContent>
-        <div className="h-[280px] w-full pt-2">
-          {data.length === 0 ? (
+        <div className="h-[280px] w-full min-w-0 pt-2">
+          {!isMounted ? (
+            <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
+              <Loader2 className="size-4 animate-spin mr-2" />
+              Loading chart...
+            </div>
+          ) : data.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
               <Calendar className="size-8 stroke-1 mb-2 opacity-50" />
               <p className="text-sm font-medium">No activity recorded for this period.</p>
               <p className="text-xs">Once visitors start chatting, trends will populate here.</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="aiResolvedGradient" x1="0" y1="0" x2="0" y2="1">

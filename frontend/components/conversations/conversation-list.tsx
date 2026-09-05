@@ -17,6 +17,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { ConversationSummary, InboxFilterTab } from "@/types/conversation";
 
+function stripMarkdown(text?: string | null): string {
+  if (!text) return "No message content recorded";
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^#+\s+/gm, "")
+    .replace(/[*_~`#>-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 interface ConversationListProps {
   conversations: ConversationSummary[];
   selectedId: string | null;
@@ -189,7 +202,7 @@ export function ConversationList({
 
                 {/* Message preview snippet */}
                 <p className="text-xs line-clamp-2 text-foreground/85 leading-snug break-words">
-                  {conv.last_message_preview || "No message content recorded"}
+                  {stripMarkdown(conv.last_message_preview)}
                 </p>
 
                 {/* Footer metadata: message count & escalation indicator */}
