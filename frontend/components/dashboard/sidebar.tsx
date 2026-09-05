@@ -114,7 +114,7 @@ export function DashboardSidebar({
       </nav>
 
       {/* Sidebar Footer */}
-      <div className="border-t border-sidebar-border p-4 text-[11px] text-sidebar-foreground/50 text-center">
+      <div className="mt-auto shrink-0 border-t border-sidebar-border p-4 text-[11px] text-sidebar-foreground/50 text-center">
         ResolvDesk v0.1.0 • Autonomous Support
       </div>
     </aside>

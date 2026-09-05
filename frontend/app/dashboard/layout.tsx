@@ -18,15 +18,15 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       {/* Desktop Persistent Sidebar */}
       <DashboardSidebar
         organizationName={owner.organizationName}
-        className="hidden md:flex shrink-0"
+        className="hidden md:flex shrink-0 h-full"
       />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col h-full min-w-0 overflow-hidden">
         <DashboardHeader
           ownerName={owner.name || owner.fullName}
           ownerEmail={owner.email}
