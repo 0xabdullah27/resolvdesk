@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
+import sqlalchemy as sa
 from sqlalchemy import Column, Text
 from sqlmodel import Field, SQLModel
 
@@ -37,10 +38,12 @@ class Conversation(ConversationBase, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
+        sa_type=sa.DateTime(timezone=True),
         nullable=False,
     )
     updated_at: datetime = Field(
         default_factory=utc_now,
+        sa_type=sa.DateTime(timezone=True),
         nullable=False,
         index=True,
     )
@@ -68,6 +71,7 @@ class Message(MessageBase, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
+        sa_type=sa.DateTime(timezone=True),
         nullable=False,
         index=True,
     )

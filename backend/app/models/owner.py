@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
+import sqlalchemy as sa
 from sqlmodel import Field, SQLModel
 
 
@@ -36,9 +37,11 @@ class Owner(OwnerBase, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
+        sa_type=sa.DateTime(timezone=True),
         nullable=False,
     )
     updated_at: datetime = Field(
         default_factory=utc_now,
+        sa_type=sa.DateTime(timezone=True),
         nullable=False,
     )
