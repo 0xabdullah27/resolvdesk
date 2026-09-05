@@ -164,3 +164,92 @@ async def test_list_conversations_is_escalated_filter(client: AsyncClient, db_se
     data_non_esc = resp_non_esc.json()
     assert data_non_esc["total"] == 1
     assert data_non_esc["items"][0]["is_escalated"] is False
+
+
+@pytest.mark.asyncio
+async def test_update_ticket_status_success(client: AsyncClient, db_session: AsyncSession):
+    """Verifies owner can update ticket resolution status (in_progress -> resolved)."""
+    _, token, _, conv2 = await setup_test_owner_and_conversations(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Transition to in_progress
+    resp1 = await client.patch(
+        f"/api/v1/conversations/{conv2.id}/ticket",
+        json={"status": "in_progress"},
+        headers=headers,
+    )
+    assert resp1.status_code == 200, resp1.text
+    data1 = resp1.json()
+    assert data1["id"] == str(conv2.id)
+    assert data1["ticket_status"] == "in_progress"
+
+    # Transition to resolved
+    resp2 = await client.patch(
+        f"/api/v1/conversations/{conv2.id}/ticket",
+        json={"status": "resolved"},
+        headers=headers,
+    )
+    assert resp2.status_code == 200
+    data2 = resp2.json()
+    assert data2["ticket_status"] == "resolved"
+
+    # Verify transcript now shows updated status
+    transcript_resp = await client.get(f"/api/v1/conversations/{conv2.id}", headers=headers)
+    assert transcript_resp.status_code == 200
+    assert transcript_resp.json()["ticket_status"] == "resolved"
+
+
+@pytest.mark.asyncio
+async def test_update_ticket_status_invalid_value_422(client: AsyncClient, db_session: AsyncSession):
+    """Verifies that submitting an invalid ticket status returns HTTP 422."""
+    _, token, _, conv2 = await setup_test_owner_and_conversations(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = await client.patch(
+        f"/api/v1/conversations/{conv2.id}/ticket",
+        json={"status": "invalid_status_value"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_ticket_status_not_found_404(client: AsyncClient, db_session: AsyncSession):
+    """Verifies that updating a non-existent conversation returns HTTP 404."""
+    _, token, _, _ = await setup_test_owner_and_conversations(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    random_id = uuid.uuid4()
+    response = await client.patch(
+        f"/api/v1/conversations/{random_id}/ticket",
+        json={"status": "resolved"},
+        headers=headers,
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Conversation not found."
+
+
+@pytest.mark.asyncio
+async def test_transcript_includes_citations_when_present(client: AsyncClient, db_session: AsyncSession):
+    """Verifies that transcript response includes citations list when present on assistant messages."""
+    _, token, conv1, _ = await setup_test_owner_and_conversations(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Add grounded assistant message with citations
+    cited_msg = Message(
+        conversation_id=conv1.id,
+        role="assistant",
+        content="Grounding citations test.",
+        citations=[{"document_id": "doc-123", "title": "Store Policy"}],
+    )
+    db_session.add(cited_msg)
+    await db_session.commit()
+
+    response = await client.get(f"/api/v1/conversations/{conv1.id}", headers=headers)
+    assert response.status_code == 200
+    messages = response.json()["messages"]
+    last_msg = messages[-1]
+    assert last_msg["citations"] is not None
+    assert len(last_msg["citations"]) == 1
+    assert last_msg["citations"][0]["title"] == "Store Policy"
+

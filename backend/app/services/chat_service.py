@@ -271,6 +271,7 @@ class ChatService:
                 conversation_id=conversation.id,
                 role="assistant",
                 content=full_response,
+                citations=citations if citations else None,
             )
             await session.commit()
             message_id_str = str(assistant_msg.id)
@@ -314,6 +315,7 @@ class ChatService:
                 role=m.role,
                 content=m.content,
                 created_at=m.created_at,
+                citations=m.citations,
             )
             for m in messages
         ]
@@ -344,6 +346,8 @@ class ChatService:
             session=session,
             conversation_id=conversation_id,
             organization_id=org.id,
+            visitor_email=visitor_email,
+            ticket_status="open",
         )
         if not conv:
             raise ResolvDeskException(

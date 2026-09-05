@@ -11,7 +11,7 @@
 
 **Purpose**: Initialize frontend domain type definitions and foundational structures.
 
-- [ ] T001 [P] Create TypeScript domain interfaces and UI state types in frontend/types/conversation.ts
+- [x] T001 [P] Create TypeScript domain interfaces and UI state types in frontend/types/conversation.ts
 
 ---
 
@@ -21,16 +21,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this foundational phase is complete.
 
-- [ ] T002 Create Alembic database migration 005_add_ticket_fields_to_conversations.py in backend/alembic/versions/005_add_ticket_fields_to_conversations.py
-- [ ] T003 [P] Update SQLModel models with ticket_status, visitor_email, and citations in backend/app/models/conversation.py
-- [ ] T004 [P] Update Pydantic DTO schemas for conversation list, transcript, and ticket status in backend/app/schemas/conversation.py and backend/app/schemas/chat.py
-- [ ] T005 Update ConversationRepository to query and update ticket fields and citations in backend/app/repos/conversation_repo.py
-- [ ] T006 Update ChatService to set ticket_status and visitor_email on escalation and store citations in backend/app/services/chat_service.py
-- [ ] T007 Implement ticket status transition logic and validation in backend/app/services/owner_conversation_service.py
-- [ ] T008 Add PATCH /api/v1/conversations/{conversation_id}/ticket endpoint in backend/app/routers/conversations.py
-- [ ] T009 [P] Add contract tests for PATCH /ticket endpoint and updated schemas in backend/tests/contract/test_owner_conversations_contract.py
-- [ ] T010 [P] Add integration tests verifying multi-tenant isolation on ticket updates in backend/tests/integration/test_owner_conversations_isolation.py
-- [ ] T011 Implement Server Actions for conversation listing, transcript, stats, and ticket updates in frontend/actions/conversation-actions.ts
+- [x] T002 Create Alembic database migration 005_add_ticket_fields_to_conversations.py in backend/alembic/versions/005_add_ticket_fields_to_conversations.py
+- [x] T003 [P] Update SQLModel models with ticket_status, visitor_email, and citations in backend/app/models/conversation.py
+- [x] T004 [P] Update Pydantic DTO schemas for conversation list, transcript, and ticket status in backend/app/schemas/conversation.py and backend/app/schemas/chat.py
+- [x] T005 Update ConversationRepository to query and update ticket fields and citations in backend/app/repos/conversation_repo.py
+- [x] T006 Update ChatService to set ticket_status and visitor_email on escalation and store citations in backend/app/services/chat_service.py
+- [x] T007 Implement ticket status transition logic and validation in backend/app/services/owner_conversation_service.py
+- [x] T008 Add PATCH /api/v1/conversations/{conversation_id}/ticket endpoint in backend/app/routers/conversations.py
+- [x] T009 [P] Add contract tests for PATCH /ticket endpoint and updated schemas in backend/tests/contract/test_owner_conversations_contract.py
+- [x] T010 [P] Add integration tests verifying multi-tenant isolation on ticket updates in backend/tests/integration/test_owner_conversations_isolation.py
+- [x] T011 Implement Server Actions for conversation listing, transcript, stats, and ticket updates in frontend/actions/conversation-actions.ts
 
 **Checkpoint**: Backend database schema migrated, PATCH endpoint implemented and verified via automated tests, and frontend Server Actions ready.
 
@@ -42,13 +42,13 @@
 
 **Independent Test**: Log in as an organization owner, open `/dashboard/conversations`, verify the first conversation is auto-selected on desktop with its full transcript loaded, click through different conversation items observing instantaneous detail updates and URL sync (`?id=...`), and verify the empty state when no chats exist.
 
-- [ ] T012 [P] [US1] Create loading skeletons for master-detail split-view in frontend/components/conversations/conversations-skeleton.tsx
-- [ ] T013 [P] [US1] Create route-level loading boundary in frontend/app/dashboard/conversations/loading.tsx
-- [ ] T014 [P] [US1] Create route-level error boundary with retry UI in frontend/app/dashboard/conversations/error.tsx
-- [ ] T015 [US1] Implement chronological transcript viewer with citation badges in frontend/components/conversations/conversation-transcript.tsx
-- [ ] T016 [US1] Implement scrollable master conversation list with previews and pagination in frontend/components/conversations/conversation-list.tsx
-- [ ] T017 [US1] Implement master-detail split-pane coordinator with URL search param sync and mobile view toggle in frontend/components/conversations/conversations-inbox.tsx
-- [ ] T018 [US1] Update conversations dashboard page server component with initial data hydration in frontend/app/dashboard/conversations/page.tsx
+- [x] T012 [P] [US1] Create loading skeletons for master-detail split-view in frontend/components/conversations/conversations-skeleton.tsx
+- [x] T013 [P] [US1] Create route-level loading boundary in frontend/app/dashboard/conversations/loading.tsx
+- [x] T014 [P] [US1] Create route-level error boundary with retry UI in frontend/app/dashboard/conversations/error.tsx
+- [x] T015 [US1] Implement chronological transcript viewer with citation badges in frontend/components/conversations/conversation-transcript.tsx
+- [x] T016 [US1] Implement scrollable master conversation list with previews and pagination in frontend/components/conversations/conversation-list.tsx
+- [x] T017 [US1] Implement master-detail split-pane coordinator with URL search param sync and mobile view toggle in frontend/components/conversations/conversations-inbox.tsx
+- [x] T018 [US1] Update conversations dashboard page server component with initial data hydration in frontend/app/dashboard/conversations/page.tsx
 
 **Checkpoint**: User Story 1 is fully functional and testable independently. Owners can browse conversations, inspect full transcripts with citations, and navigate seamlessly.
 
@@ -60,10 +60,10 @@
 
 **Independent Test**: Click the "Escalated Only" filter tab, verify only escalated conversations appear, select an escalated ticket, verify customer email copy and `mailto:` actions, and change ticket status to "In Progress" and "Resolved", confirming optimistic UI updates and backend persistence.
 
-- [ ] T019 [P] [US2] Implement EscalationCard with email copy feedback, mailto launcher, and status dropdown selector in frontend/components/conversations/escalation-card.tsx
-- [ ] T020 [US2] Integrate EscalationCard into detail transcript view in frontend/components/conversations/conversation-transcript.tsx
-- [ ] T021 [US2] Add Escalated filter tab toggle and status pill badges in frontend/components/conversations/conversation-list.tsx
-- [ ] T022 [US2] Implement optimistic ticket status transitions and server action mutation handling in frontend/components/conversations/conversations-inbox.tsx
+- [x] T019 [P] [US2] Implement EscalationCard with email copy feedback, mailto launcher, and status dropdown selector in frontend/components/conversations/escalation-card.tsx
+- [x] T020 [US2] Integrate EscalationCard into detail transcript view in frontend/components/conversations/conversation-transcript.tsx
+- [x] T021 [US2] Add Escalated filter tab toggle and status pill badges in frontend/components/conversations/conversation-list.tsx
+- [x] T022 [US2] Implement optimistic ticket status transitions and server action mutation handling in frontend/components/conversations/conversations-inbox.tsx
 
 **Checkpoint**: User Stories 1 and 2 work cohesively. Owners can triage and resolve escalated tickets with full customer follow-up tooling.
 
@@ -75,10 +75,10 @@
 
 **Independent Test**: Verify the 4 overview metric cards display accurate aggregates, type in search box to filter conversation previews, trigger incoming message via widget and observe silent prepend with "New" badge during 30s background poll without interrupting active transcript scroll.
 
-- [ ] T023 [P] [US3] Implement conversation overview statistics metric cards in frontend/components/conversations/conversation-stats-cards.tsx
-- [ ] T024 [US3] Add client-side keyword search bar for filtering conversation preview snippets in frontend/components/conversations/conversation-list.tsx
-- [ ] T025 [US3] Implement 30-second visibility-aware background polling and non-disruptive prepend logic in frontend/components/conversations/conversations-inbox.tsx
-- [ ] T026 [US3] Add manual Refresh button with spinning animation in frontend/components/conversations/conversation-list.tsx
+- [x] T023 [P] [US3] Implement conversation overview statistics metric cards in frontend/components/conversations/conversation-stats-cards.tsx
+- [x] T024 [US3] Add client-side keyword search bar for filtering conversation preview snippets in frontend/components/conversations/conversation-list.tsx
+- [x] T025 [US3] Implement 30-second visibility-aware background polling and non-disruptive prepend logic in frontend/components/conversations/conversations-inbox.tsx
+- [x] T026 [US3] Add manual Refresh button with spinning animation in frontend/components/conversations/conversation-list.tsx
 
 **Checkpoint**: All three user stories are complete. The inbox provides real-time monitoring, live stats, search, and silent incoming chat updates.
 
@@ -88,10 +88,10 @@
 
 **Purpose**: Verification, semantic theme compliance, accessibility, and end-to-end regression testing.
 
-- [ ] T027 [P] Perform semantic theme token audit across all conversations components to ensure 100% compliance with Constitution Principle VII
-- [ ] T028 [P] Verify responsive behavior on mobile viewports (< 768px) and accessible keyboard navigation
-- [ ] T029 Run full backend pytest test suite and frontend type-checking and linting
-- [ ] T030 Execute end-to-end verification scenarios per quickstart.md in specs/009-conversations-inbox-ui/quickstart.md
+- [x] T027 [P] Perform semantic theme token audit across all conversations components to ensure 100% compliance with Constitution Principle VII
+- [x] T028 [P] Verify responsive behavior on mobile viewports (< 768px) and accessible keyboard navigation
+- [x] T029 Run full backend pytest test suite and frontend type-checking and linting
+- [x] T030 Execute end-to-end verification scenarios per quickstart.md in specs/009-conversations-inbox-ui/quickstart.md
 
 ---
 

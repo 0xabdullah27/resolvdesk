@@ -123,3 +123,63 @@ async def test_suspended_owner_cannot_access_conversations(client: AsyncClient, 
 
     resp = await client.get("/api/v1/conversations", headers=headers)
     assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_ticket_status_update_tenant_isolation(client: AsyncClient, db_session: AsyncSession):
+    """Verifies that an owner cannot mutate ticket status of another organization's conversation."""
+    # Org A
+    org_a = Organization(display_name="Isolation Alpha")
+    db_session.add(org_a)
+    await db_session.flush()
+
+    owner_a = Owner(
+        email="isolation_a@alpha.com",
+        full_name="Iso Owner A",
+        status=OwnerStatus.ACTIVE,
+        organization_id=org_a.id,
+    )
+    db_session.add(owner_a)
+
+    # Org B
+    org_b = Organization(display_name="Isolation Beta")
+    db_session.add(org_b)
+    await db_session.flush()
+
+    owner_b = Owner(
+        email="isolation_b@beta.com",
+        full_name="Iso Owner B",
+        status=OwnerStatus.ACTIVE,
+        organization_id=org_b.id,
+    )
+    db_session.add(owner_b)
+
+    # Conv B belongs to Org B
+    conv_b = Conversation(organization_id=org_b.id, is_escalated=True, ticket_status="open")
+    db_session.add(conv_b)
+    await db_session.commit()
+
+    token_a = issue_test_jwt(sub=str(owner_a.id), email=owner_a.email, organization_id=str(org_a.id))
+    token_b = issue_test_jwt(sub=str(owner_b.id), email=owner_b.email, organization_id=str(org_b.id))
+
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    # Owner A attempts to update Org B's ticket status -> MUST return 404
+    cross_resp = await client.patch(
+        f"/api/v1/conversations/{conv_b.id}/ticket",
+        json={"status": "resolved"},
+        headers=headers_a,
+    )
+    assert cross_resp.status_code == 404
+    assert cross_resp.json()["detail"] == "Conversation not found."
+
+    # Owner B updates their own ticket status -> SUCCESS 200
+    legit_resp = await client.patch(
+        f"/api/v1/conversations/{conv_b.id}/ticket",
+        json={"status": "resolved"},
+        headers=headers_b,
+    )
+    assert legit_resp.status_code == 200
+    assert legit_resp.json()["ticket_status"] == "resolved"
+

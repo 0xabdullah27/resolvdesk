@@ -46,8 +46,10 @@ class ConversationRepository:
         session: AsyncSession,
         conversation_id: uuid.UUID,
         organization_id: uuid.UUID,
+        visitor_email: Optional[str] = None,
+        ticket_status: str = "open",
     ) -> Optional[Conversation]:
-        """Marks a conversation as escalated (is_escalated=True) enforcing tenant isolation."""
+        """Marks a conversation as escalated with status and visitor email, enforcing tenant isolation."""
         conv = await ConversationRepository.get_conversation(
             session=session,
             conversation_id=conversation_id,
@@ -55,6 +57,31 @@ class ConversationRepository:
         )
         if not conv:
             return None
+        conv.is_escalated = True
+        conv.ticket_status = ticket_status
+        if visitor_email:
+            conv.visitor_email = visitor_email
+        conv.updated_at = utc_now()
+        session.add(conv)
+        await session.flush()
+        return conv
+
+    @staticmethod
+    async def update_ticket_status(
+        session: AsyncSession,
+        conversation_id: uuid.UUID,
+        organization_id: uuid.UUID,
+        ticket_status: str,
+    ) -> Optional[Conversation]:
+        """Updates the ticket lifecycle status, ensuring tenant isolation."""
+        conv = await ConversationRepository.get_conversation(
+            session=session,
+            conversation_id=conversation_id,
+            organization_id=organization_id,
+        )
+        if not conv:
+            return None
+        conv.ticket_status = ticket_status
         conv.is_escalated = True
         conv.updated_at = utc_now()
         session.add(conv)
@@ -67,12 +94,14 @@ class ConversationRepository:
         conversation_id: uuid.UUID,
         role: str,
         content: str,
+        citations: Optional[List[dict]] = None,
     ) -> Message:
         """Append a message to an existing conversation and update conversation updated_at."""
         message = Message(
             conversation_id=conversation_id,
             role=role,
             content=content,
+            citations=citations,
             created_at=utc_now(),
         )
         session.add(message)
