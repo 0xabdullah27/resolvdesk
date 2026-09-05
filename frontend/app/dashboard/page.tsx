@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { getOwnerContextAction } from "@/actions/auth-actions";
+import { listDocumentsAction } from "@/actions/document-actions";
 import {
   Card,
   CardContent,
@@ -26,7 +27,12 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const owner = await getOwnerContextAction();
+  const [owner, docsResult] = await Promise.all([
+    getOwnerContextAction(),
+    listDocumentsAction(),
+  ]);
+
+  const docCount = docsResult.success && docsResult.data ? docsResult.data.total : 0;
 
   return (
     <div className="space-y-8">
@@ -56,7 +62,7 @@ export default async function DashboardPage() {
               className={buttonVariants()}
             >
               <FileText className="mr-2 size-4" />
-              Upload Knowledge
+              {docCount > 0 ? "Manage Knowledge" : "Upload Knowledge"}
             </Link>
           </div>
         </div>
@@ -72,9 +78,13 @@ export default async function DashboardPage() {
             <FileText className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-card-foreground">0 Documents</div>
+            <div className="text-2xl font-bold text-card-foreground">
+              {docCount} {docCount === 1 ? "Document" : "Documents"}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Add FAQs, catalogs, or policies for grounding.
+              {docCount > 0
+                ? `${docCount} knowledge resource${docCount === 1 ? "" : "s"} indexed for grounding.`
+                : "Add FAQs, catalogs, or policies for grounding."}
             </p>
             <div className="mt-4">
               <Link
@@ -173,19 +183,33 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/50 p-3.5">
-              <div className="size-5 rounded-full border-2 border-muted-foreground/40 shrink-0 mt-0.5 flex items-center justify-center text-[10px] font-bold">
-                2
+            {docCount > 0 ? (
+              <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/50 p-3.5">
+                <CheckCircle2 className="size-5 text-primary shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">
+                    Step 2: Upload Knowledge Base Files
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {docCount} {docCount === 1 ? "document" : "documents"} uploaded and ready for grounding.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium text-foreground">
-                  Step 2: Upload Knowledge Base Files
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Upload text files, FAQs, or markdown guides so the agent can answer queries.
-                </p>
+            ) : (
+              <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/50 p-3.5">
+                <div className="size-5 rounded-full border-2 border-muted-foreground/40 shrink-0 mt-0.5 flex items-center justify-center text-[10px] font-bold">
+                  2
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">
+                    Step 2: Upload Knowledge Base Files
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Upload text files, FAQs, or markdown guides so the agent can answer queries.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-background/50 p-3.5">
               <div className="size-5 rounded-full border-2 border-muted-foreground/40 shrink-0 mt-0.5 flex items-center justify-center text-[10px] font-bold">
