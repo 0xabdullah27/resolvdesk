@@ -11,6 +11,9 @@ const rawConnectionString =
 const connectionString = rawConnectionString.replace(/[\?&]channel_binding=[^&]*/g, "");
 
 const pool = new Pool({ connectionString });
+pool.on("error", (err: any) => {
+  console.warn("Neon database connection pool event:", err?.message || err);
+});
 
 export const auth = betterAuth({
   baseURL:
