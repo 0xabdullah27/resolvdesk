@@ -25,7 +25,7 @@ export function WidgetPreviewWindow({
   return (
     <div
       className={cn(
-        "flex flex-col w-[320px] sm:w-[350px] h-[440px] rounded-2xl border border-border/80 bg-card shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200",
+        "flex flex-col w-[290px] sm:w-[320px] h-[390px] rounded-2xl border border-border/80 bg-card shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200",
         className
       )}
     >

@@ -27,7 +27,7 @@ export function WidgetLivePreview({
   const isBottomLeft = placement === "bottom-left";
 
   return (
-    <Card className="border-border/70 bg-card overflow-hidden sticky top-6">
+    <Card className="border-border/70 bg-card overflow-hidden shadow-sm">
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/20">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold flex items-center gap-2 text-foreground">
@@ -46,7 +46,7 @@ export function WidgetLivePreview({
 
       <CardContent className="p-0">
         {/* Simulated Browser Viewport */}
-        <div className="relative flex flex-col h-[580px] bg-background/95 overflow-hidden">
+        <div className="relative flex flex-col h-[520px] lg:h-[540px] bg-background/95 overflow-hidden">
           {/* Simulated Browser Address Bar */}
           <div className="flex items-center gap-2 border-b border-border/60 bg-muted/40 px-3 py-2 text-xs select-none">
             <div className="flex items-center gap-1.5">

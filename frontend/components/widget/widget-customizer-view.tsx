@@ -152,7 +152,7 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
       </div>
 
       {/* Main 2-Column Responsive Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form & Embed Details */}
         <div className="lg:col-span-7 space-y-6">
           <WidgetAppearanceForm
@@ -173,12 +173,14 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
 
         {/* Right Column: Sticky Live Interactive Preview Sandbox */}
         <div className="lg:col-span-5">
-          <WidgetLivePreview
-            botName={watchedBotName}
-            greeting={watchedGreeting}
-            primaryColor={watchedColor}
-            placement={watchedPlacement}
-          />
+          <div className="lg:sticky lg:top-4">
+            <WidgetLivePreview
+              botName={watchedBotName}
+              greeting={watchedGreeting}
+              primaryColor={watchedColor}
+              placement={watchedPlacement}
+            />
+          </div>
         </div>
       </div>
 
