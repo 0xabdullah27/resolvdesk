@@ -1,4 +1,5 @@
 import datetime
+import logging
 import uuid
 from typing import Annotated, Any, Dict, Optional
 import jwt
@@ -11,6 +12,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.owner import Owner, OwnerStatus
+
+logger = logging.getLogger(__name__)
 
 # Setup PyJWKClient with caching for stateless JWT verification
 jwks_client = PyJWKClient(
@@ -43,6 +46,13 @@ def verify_jwt(token: str) -> Dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid authentication token: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except jwt.PyJWKClientError as e:
+        logger.error("JWKS public key fetching failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication authority is currently unreachable.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
