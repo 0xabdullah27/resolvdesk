@@ -1,6 +1,5 @@
 import * as React from "react";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { getOwnerContextAction } from "@/actions/auth-actions";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -15,9 +14,6 @@ export default async function DashboardLayout({
   const owner = await getOwnerContextAction();
 
   if (!owner) {
-    const cookieStore = await cookies();
-    cookieStore.delete("better-auth.session_token");
-    cookieStore.delete("__Secure-better-auth.session_token");
     redirect("/login?callbackUrl=/dashboard");
   }
 
