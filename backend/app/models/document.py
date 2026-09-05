@@ -28,7 +28,13 @@ class DocumentType(str, Enum):
 
 class DocumentBase(SQLModel):
     title: str = Field(max_length=255, nullable=False, description="Filename or manual snippet title")
-    file_type: DocumentType = Field(nullable=False, description="Document source format")
+    file_type: DocumentType = Field(
+        sa_column=sa.Column(
+            sa.Enum(DocumentType, native_enum=False, values_callable=lambda x: [e.value for e in x], length=20),
+            nullable=False,
+        ),
+        description="Document source format",
+    )
     file_size_bytes: int = Field(default=0, ge=0, description="File size in bytes (0 for raw text)")
 
 
@@ -52,8 +58,12 @@ class Document(DocumentBase, table=True):
     )
     status: DocumentStatus = Field(
         default=DocumentStatus.UPLOADING,
-        nullable=False,
-        index=True,
+        sa_column=sa.Column(
+            sa.Enum(DocumentStatus, native_enum=False, values_callable=lambda x: [e.value for e in x], length=20),
+            default=DocumentStatus.UPLOADING,
+            nullable=False,
+            index=True,
+        ),
         description="Ingestion lifecycle status",
     )
     chunk_count: int = Field(
