@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
+import { nextCookies } from "better-auth/next-js";
 import { Pool } from "@neondatabase/serverless";
 
 const connectionString =
@@ -32,6 +33,7 @@ export const auth = betterAuth({
         jwksPath: "/.well-known/jwks.json",
       },
     }),
+    nextCookies(),
   ],
 });
 
