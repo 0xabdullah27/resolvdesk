@@ -40,6 +40,7 @@ async def test_get_me_success(client: AsyncClient, db_session: AsyncSession):
     assert data["full_name"] == "Alice Store"
     assert data["status"] == "active"
     assert data["organization_id"] == str(org_id)
+    assert data["organization_name"] == "Test Store"
 
 
 @pytest.mark.asyncio

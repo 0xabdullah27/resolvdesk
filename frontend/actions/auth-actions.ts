@@ -183,7 +183,8 @@ export async function getOwnerContextAction(): Promise<OwnerProfile | null> {
         organizationName: profile.organization_name || "My Workspace",
         createdAt: profile.created_at || new Date().toISOString(),
       };
-    } catch {
+    } catch (apiErr) {
+      console.warn("Could not fetch owner profile from backend, falling back to session:", apiErr);
       return {
         id: session.user.id,
         email: session.user.email,

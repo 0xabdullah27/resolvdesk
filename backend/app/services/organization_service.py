@@ -17,14 +17,20 @@ class OrganizationService:
     """Business service for owner and organization profile management."""
 
     @staticmethod
-    def get_owner_profile(owner: Owner) -> OwnerProfileResponse:
-        """Returns the profile DTO for the verified owner."""
+    async def get_owner_profile(
+        owner: Owner,
+        session: AsyncSession,
+    ) -> OwnerProfileResponse:
+        """Returns the profile DTO for the verified owner with tenant organization details."""
+        org = await OrganizationRepo.get_organization_by_id(session, owner.organization_id)
         return OwnerProfileResponse(
             id=str(owner.id),
             email=owner.email,
             full_name=owner.full_name,
             status=owner.status,
             organization_id=str(owner.organization_id),
+            organization_name=org.display_name if org else None,
+            created_at=owner.created_at,
         )
 
     @staticmethod

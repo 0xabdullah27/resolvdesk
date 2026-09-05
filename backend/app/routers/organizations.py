@@ -24,8 +24,9 @@ router = APIRouter()
 )
 async def get_current_owner_profile(
     current_owner: CurrentOwner,
+    session: AsyncSession = Depends(get_db),
 ) -> OwnerProfileResponse:
-    return OrganizationService.get_owner_profile(current_owner)
+    return await OrganizationService.get_owner_profile(current_owner, session=session)
 
 
 @router.get(

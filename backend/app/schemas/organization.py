@@ -9,6 +9,8 @@ class OwnerProfileResponse(BaseModel):
     full_name: str
     status: str
     organization_id: str
+    organization_name: Optional[str] = None
+    created_at: Optional[datetime.datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
