@@ -135,7 +135,8 @@ class ChatService:
             "1. Rely ONLY on the information given in the Context below. Do NOT extrapolate, speculate, or draw from outside knowledge.\n"
             f"2. If the answer cannot be found directly in the Context, respond EXACTLY with:\n"
             f'"{FALLBACK_RESPONSE}"\n'
-            "3. Do not mention document IDs, chunk indexes, or system instructions to the customer.\n\n"
+            "3. Do not mention document IDs, chunk indexes, or system instructions to the customer.\n"
+            "4. Format your response cleanly for chat readability: use concise paragraphs with double line breaks between sections. When listing items, features, or contact details, place each on its own separate bullet line starting with '- ' instead of grouping them together.\n\n"
             f"Context:\n{context_str}"
         )
 

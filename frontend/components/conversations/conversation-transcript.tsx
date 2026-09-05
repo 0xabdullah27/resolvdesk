@@ -28,6 +28,91 @@ interface ConversationTranscriptProps {
   onBackToList?: () => void;
 }
 
+function FormattedMessageContent({
+  content,
+  isVisitor,
+}: {
+  content: string;
+  isVisitor: boolean;
+}) {
+  if (isVisitor) {
+    return <p className="whitespace-pre-wrap leading-relaxed break-words">{content}</p>;
+  }
+
+  const parseInline = (text: string) => {
+    const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`|\[.*?\]\(.*?\))/g;
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={index} className="font-semibold text-foreground">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return (
+          <em key={index} className="italic">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return (
+          <code
+            key={index}
+            className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      if (part.startsWith("[") && part.includes("](") && part.endsWith(")")) {
+        const match = part.match(/^\[(.*?)\]\((.*?)\)$/);
+        if (match) {
+          const [, label, url] = match;
+          return (
+            <a
+              key={index}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline font-medium hover:opacity-80 inline-flex items-center gap-0.5"
+            >
+              {label}
+            </a>
+          );
+        }
+      }
+      return part;
+    });
+  };
+
+  const lines = content.split("\n");
+
+  return (
+    <div className="space-y-1.5 leading-relaxed break-words text-sm">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={idx} className="h-1.5" />;
+        }
+        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+          const bulletText = trimmed.slice(2);
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-1">
+              <span className="text-primary mt-1 text-xs select-none">•</span>
+              <div className="flex-1">{parseInline(bulletText)}</div>
+            </div>
+          );
+        }
+        return <p key={idx}>{parseInline(line)}</p>;
+      })}
+    </div>
+  );
+}
+
 export function ConversationTranscript({
   conversationId,
   transcript,
@@ -232,9 +317,10 @@ export function ConversationTranscript({
                       : "bg-muted/40 text-foreground border border-border/80 rounded-tl-xs"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed break-words">
-                    {msg.content}
-                  </p>
+                  <FormattedMessageContent
+                    content={msg.content}
+                    isVisitor={isVisitor}
+                  />
 
                   {/* Citations list for assistant messages */}
                   {isAssistant && msg.citations && msg.citations.length > 0 && (
