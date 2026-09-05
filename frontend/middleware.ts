@@ -21,7 +21,8 @@ export function middleware(request: NextRequest) {
 
   // 2. Auth routes for guests only: /login, /register
   if (pathname === "/login" || pathname === "/register") {
-    if (isAuthenticated) {
+    const hasCallback = request.nextUrl.searchParams.has("callbackUrl");
+    if (isAuthenticated && !hasCallback) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
