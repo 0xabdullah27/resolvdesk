@@ -29,9 +29,20 @@ class WidgetProfileDetails(BaseModel):
     bot_display_name: str
     welcome_message: str
     widget_placement: str
+    allowed_origins: str = "*"
     has_grace_key: bool = False
+    grace_expires_at: Optional[datetime.datetime] = None
+    embed_snippet: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class WidgetUpdateRequest(BaseModel):
+    bot_display_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    welcome_message: Optional[str] = Field(None, min_length=1, max_length=500)
+    primary_color: Optional[str] = Field(None, pattern=r"^#([A-Fa-f0-9]{6})$")
+    widget_placement: Optional[str] = Field(None, pattern=r"^(bottom-right|bottom-left)$")
+    allowed_origins: Optional[str] = Field(None, max_length=500)
 
 
 class OrganizationProfileResponse(BaseModel):

@@ -1,76 +1,42 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import { Sliders, Code2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { getWidgetConfigAction } from "@/actions/widget-actions";
+import { WidgetCustomizerView } from "@/components/widget/widget-customizer-view";
+import type { WidgetConfig } from "@/types/widget";
 
 export const metadata: Metadata = {
   title: "Widget Customizer - ResolvDesk",
-  description: "Customize and embed your autonomous support widget.",
+  description: "Customize appearance, greeting, allowed domains, and embed your autonomous support widget.",
 };
 
-export default function WidgetPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-          Widget Customizer
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Configure bot appearance, welcome greeting, placement, and retrieve your live embed code.
-        </p>
-      </div>
+// Fallback configuration if initial fetch fails or is freshly provisioned
+const fallbackConfig: WidgetConfig = {
+  widget_key: "rd_live_default",
+  has_grace_key: false,
+  bot_display_name: "Support Assistant",
+  welcome_message: "Hi! How can I help you today?",
+  primary_color: "#4F46E5",
+  widget_placement: "bottom-right",
+  allowed_origins: "*",
+  embed_snippet: '<script src="https://resolvdesk.com/widget.js" data-widget-key="rd_live_default" defer></script>',
+};
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-border/70 bg-card">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Sliders className="size-4 text-primary" />
-              Appearance & Greetings
-            </CardTitle>
-            <CardDescription>
-              Adjust your widget display name, theme accent color, and initial message.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-muted-foreground">
-            <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-              <span className="font-medium text-foreground">Bot Name:</span> Support Assistant
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-              <span className="font-medium text-foreground">Welcome Message:</span> Hi! How can I help you today?
-            </div>
-            <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
-              <span className="font-medium text-foreground">Placement:</span> Bottom Right
-            </div>
-          </CardContent>
-        </Card>
+/**
+ * Server Component: Fetches initial widget configuration on the server
+ * and passes the populated state to the interactive Client Component.
+ */
+export default async function WidgetPage() {
+  const res = await getWidgetConfigAction();
 
-        <Card className="border-border/70 bg-card">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Code2 className="size-4 text-primary" />
-              Embed Snippet
-            </CardTitle>
-            <CardDescription>
-              Paste this script tag inside the &lt;body&gt; of your website.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="rounded-lg border border-border/60 bg-muted/50 p-4 font-mono text-xs overflow-x-auto text-foreground">
-              <code>{`<script 
-  src="https://resolvdesk.com/widget.js" 
-  data-widget-key="rd_live_preview"
-  defer>
-</script>`}</code>
-            </pre>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  if (!res.success) {
+    console.error("Failed to load widget config on server:", res.error);
+    // Render with fallback or throw for error boundary
+    if (!res.data) {
+      throw new Error(res.error || "Failed to load widget configuration.");
+    }
+  }
+
+  const config = res.data || fallbackConfig;
+
+  return <WidgetCustomizerView initialConfig={config} />;
 }

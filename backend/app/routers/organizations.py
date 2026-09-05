@@ -8,6 +8,8 @@ from app.schemas.organization import (
     OrganizationProfileResponse,
     OwnerProfileResponse,
     WidgetKeyRotationResponse,
+    WidgetProfileDetails,
+    WidgetUpdateRequest,
 )
 from app.services.organization_service import OrganizationService
 from app.services.widget_service import WidgetService
@@ -61,3 +63,23 @@ async def rotate_widget_key(
         session=session,
         organization_id=current_owner.organization_id,
     )
+
+
+@router.patch(
+    "/organization/widget",
+    response_model=WidgetProfileDetails,
+    status_code=status.HTTP_200_OK,
+    summary="Update organization widget configuration",
+    description="Updates widget branding, greeting, placement, and allowed origins with tenant query isolation.",
+)
+async def update_widget_config(
+    payload: WidgetUpdateRequest,
+    current_owner: CurrentOwner,
+    session: AsyncSession = Depends(get_db),
+) -> WidgetProfileDetails:
+    return await WidgetService.update_config(
+        session=session,
+        organization_id=current_owner.organization_id,
+        payload=payload,
+    )
+
