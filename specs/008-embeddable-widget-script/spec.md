@@ -15,6 +15,16 @@ The widget must automatically adapt to the merchant's customized branding (displ
 
 ---
 
+## Clarifications
+
+### Session 2026-09-05
+
+- Q: How should visitors be able to initiate human escalation within the chat widget? (FR-011) → A: Reactive only: Escalation prompts appear inline within the chat stream when the AI fails to find an answer, detects low confidence, or when the visitor explicitly asks for human assistance (no persistent header escalation button).
+- Q: How should the widget behave on the host storefront if the configuration request fails or times out? (FR-003) → A: Fail silently: Keep the widget completely hidden and log a discreet diagnostic console warning, preventing broken visual artifacts or errors on the merchant store.
+- Q: Once a visitor submits an escalation ticket, what should the conversation state become in the widget? (FR-011) → A: Interactive with confirmation card: Display an inline confirmation card with the ticket reference number in the chat feed, keeping the message input open and active for subsequent visitor questions.
+
+---
+
 ## 2. User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Visitor Floating Launcher & Customized Greeting (Priority: P1) 🎯 MVP
@@ -88,13 +98,14 @@ So that I am never left stranded without a solution.
    **Then** an inline form prompts for the visitor's email address and message summary.
 3. **Given** valid contact details are submitted,  
    **When** the submission succeeds,  
-   **Then** the visitor receives a ticket confirmation with a reference number and a notice that the store team will follow up via email.
+   **Then** an inline confirmation card appears in the chat stream displaying the generated ticket reference number and follow-up email notice, while the chat message input remains active for further questions.
 
 ---
 
 ### Edge Cases
 
 - **Slow or Disconnected Internet**: If the network drops while streaming an AI response, an inline retry prompt appears rather than crashing the chat.
+- **Configuration Fetch Failure**: If the backend API is unreachable or returns an error during widget bootstrapping, the widget MUST fail gracefully and silently remain unmounted, logging a discreet diagnostic warning to the browser console without throwing uncaught exceptions.
 - **Maximum Input Length**: If a visitor attempts to paste more than 1,000 characters, the input is capped and an inline character limit warning is shown.
 - **Host Website Style Conflicts**: Third-party CSS resets (e.g. universal box-sizing or aggressive `!important` font styles) on the host site must NOT alter or break the chat widget's typography, colors, or positioning.
 - **Rapid Clicking**: Multiple rapid clicks on the send button are debounced to prevent duplicate requests.
@@ -108,7 +119,7 @@ So that I am never left stranded without a solution.
 
 - **FR-001**: The widget script MUST self-execute upon inclusion via a standard HTML `<script>` tag and extract its active public key from the `data-widget-key` attribute.
 - **FR-002**: The widget MUST isolate its styles and markup from the host website using a native Shadow DOM root (`attachShadow({ mode: "open" })`), ensuring complete style encapsulation against host page CSS conflicts while allowing typography inheritance and dynamic injection of the merchant's brand accent color via CSS custom properties.
-- **FR-003**: The widget MUST retrieve the merchant's public branding configuration (bot display name, welcome greeting, accent color, placement, and domain whitelist) prior to mounting the chat window.
+- **FR-003**: The widget MUST retrieve the merchant's public branding configuration (bot display name, welcome greeting, accent color, placement, and domain whitelist) prior to mounting the chat window; if this configuration request fails or times out, the widget MUST fail silently and remain completely hidden without disturbing host page rendering.
 - **FR-004**: The widget MUST enforce domain authorization: if the host site's hostname is not authorized by the merchant's configuration, the widget MUST refuse execution.
 - **FR-005**: The widget launcher bubble and chat header MUST render using the merchant's chosen brand accent color, with high-contrast text and icons.
 - **FR-006**: The widget MUST support both `bottom-right` and `bottom-left` corner anchoring based on the merchant's configured placement setting.
@@ -116,7 +127,7 @@ So that I am never left stranded without a solution.
 - **FR-008**: The widget MUST stream assistant answers progressively token-by-token using Server-Sent Events (SSE) with a time-to-first-token under 2 seconds.
 - **FR-009**: The widget MUST render source citation badges under AI answers whenever documents are cited.
 - **FR-010**: The widget MUST adapt responsively for mobile viewports: on screens under 640px width, opening the widget MUST expand into an immersive full-screen view with a top navigation bar (bot name, online status, and close button) for optimal touch typing.
-- **FR-011**: The widget MUST provide an automated human escalation option whenever the AI answer engine returns an escalation trigger, low confidence, or explicit user request.
+- **FR-011**: The widget MUST provide a reactive inline human escalation option directly in the chat message stream whenever the AI answer engine returns an escalation trigger, low confidence, or an explicit visitor request (keeping the header uncluttered without a persistent escalation button). Upon ticket submission, the widget MUST render an inline confirmation card with the ticket reference ID in the chat stream while keeping the message input active for subsequent visitor questions.
 - **FR-012**: The widget MUST enforce rate limits and input validation (rejecting messages over 1,000 characters).
 - **FR-013**: The widget script MUST be self-contained and zero-dependency, keeping the initial bundle size under 40 KB gzipped.
 
