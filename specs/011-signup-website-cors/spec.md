@@ -8,6 +8,13 @@
 
 **Input**: User description: "see all the relevant places to make the changes as when the user is signup so make the website url field the required too. so that we have the user's webiste and then in the backend make that field required too so that we ahve the user's website url and then after successfully added up the user add the user's website url (domian) in the cors so then whenever the browser send the req from the user website so teh domain is already allowed otehrwise not allowed"
 
+## Clarifications
+
+### Session 2026-09-06
+- Q: Should the registration form accept bare domain names like store.com in addition to full URLs like https://store.com? → A: Accept both full URLs (https://...) and bare domains (store.com), automatically normalizing to a clean hostname.
+- Q: Should the initial allowed origins list automatically include localhost alongside the merchant's registered store domain? → A: Include both the registered domain and localhost (e.g. mystore.com, localhost).
+- Q: Should the submitted website address also be stored on the Organization profile in the database, or only used to configure the widget's allowed origins? → A: Store the website on both the Organization record and the widget's initial allowed origins.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Required Website URL during Registration & Automatic Domain Authorization (Priority: P1)
@@ -78,18 +85,19 @@ Can be tested by simulating or embedding the widget snippet on an unauthorized e
 
 ### Functional Requirements
 
-- **FR-001**: System MUST require the website URL as a mandatory field on the user registration form.
-- **FR-002**: System MUST validate that the website URL conforms to a valid web address format before processing registration.
-- **FR-003**: System MUST enforce website URL validation at the backend API boundary before initiating account provisioning.
-- **FR-004**: System MUST extract and normalize the root hostname/domain from the submitted website URL (e.g., extracting `example.com` from `https://www.example.com/path`).
-- **FR-005**: System MUST provision the initial widget configuration with the normalized domain (and local development test hostnames) in its allowed origins list instead of defaulting to wildcard `*`.
+- **FR-001**: System MUST require the website address as a mandatory field on the user registration form, accepting both full URLs (`https://example.com`) and bare domains (`example.com`).
+- **FR-002**: System MUST validate that the website address conforms to a valid web address or domain format before processing registration.
+- **FR-003**: System MUST enforce website address validation at the backend API boundary before initiating account provisioning.
+- **FR-004**: System MUST extract and normalize the root hostname/domain from the submitted website input (e.g., extracting `example.com` from `https://www.example.com/path` or `example.com`).
+- **FR-005**: System MUST provision the initial widget configuration with the normalized domain and `localhost` (e.g., `example.com, localhost`) in its allowed origins list instead of defaulting to wildcard `*`.
 - **FR-006**: System MUST permit cross-origin requests (`/config`, `/chat`, `/chat/escalate`) originating from the registered domain.
 - **FR-007**: System MUST reject cross-origin requests originating from domains not present in the widget's allowed origins list with an explicit authorization refusal.
 - **FR-008**: System MUST allow authenticated merchants to view and update their allowed domains list anytime in their widget settings.
+- **FR-009**: System MUST persist the submitted website URL on the Organization profile in the relational database.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Organization**: Represents the merchant workspace; stores workspace identity, owner link, and primary website URL.
+- **Organization**: Represents the merchant workspace; stores workspace identity, display name, primary website address, and owner association.
 - **Widget Configuration**: Represents customer-facing widget settings; stores public widget keys, branding choices, and `allowed_origins` (comma-separated list of approved domains).
 
 ---
