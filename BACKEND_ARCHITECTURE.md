@@ -26,27 +26,29 @@ flowchart TD
 
 ### What happens:
 1. The store owner fills out the signup form with their **Name**, **Email**, **Password**, and **Store Website URL** (e.g. `https://shoeking.com`).
-2. The frontend sends a request to the backend:
-   * **Endpoint:** `POST /api/v1/auth/register`
+2. The frontend completes Better Auth credentials creation and sends the provisioning payload to the backend:
+   * **Endpoint:** `POST /api/v1/registration/complete`
    * **Router:** `app/routers/registration.py`
 
 ### Inside the Backend:
-1. The **Router** validates the input using Pydantic (`RegisterTenantRequest`) and passes it to:
-   * **Service:** `app/services/registration_service.py` (`RegistrationService.register_tenant`)
-2. The **Service** opens an **atomic database transaction** (either everything succeeds or nothing is saved):
-   * Extracts the clean domain from the website URL (e.g. `https://shoeking.com/shop` → `shoeking.com`).
-   * Calls `OrganizationRepo.create_organization` to create the store record with its website URL.
-   * Calls `OrganizationRepo.create_owner` to create the merchant user profile linked to Better Auth.
-   * Calls `WidgetRepo.create_for_organization` to generate:
-     * A unique public widget key (e.g. `rd_live_a1b2c3d4...`).
-     * Default branding colors, bot name, and welcome greeting.
-     * **Restricted CORS Allowed Domains:** auto-set to `shoeking.com, localhost`.
-   * **Commits the transaction to Neon PostgreSQL**.
+1. The **Router** validates the input using Pydantic (`RegistrationCompleteRequest`) and passes it to:
+   * **Service:** `app/services/registration_service.py` (`RegistrationService.complete_registration`)
+2. The **Service** executes the cross-domain onboarding workflow:
+   * **Pre-validation checks:** Calls `OwnerRepo.get_by_id` and `OwnerRepo.get_by_email` to prevent duplicates.
+   * Extracts and normalizes the website domain (e.g. `https://shoeking.com/shop` → `shoeking.com`).
+   * Opens an **atomic multi-table transaction** (either everything succeeds or nothing is saved):
+     * Calls `OrganizationRepo.create_organization` to create the store record in `organizations`.
+     * Calls `OwnerRepo.create` to create the merchant owner profile in `owners` linked to the organization.
+     * Calls `WidgetRepo.create_widget_config` to generate:
+       * A unique public widget key (e.g. `rd_live_a1b2c3d4...`).
+       * Default branding colors, bot name, and welcome greeting.
+       * **Restricted CORS Allowed Domains:** auto-set to `shoeking.com, localhost`.
+     * **Commits the transaction to Neon PostgreSQL**.
 
 ### 💾 What is now saved in the Database:
-* **`organizations` table:** 1 row with your store name and website URL.
-* **`owners` table:** 1 row with your merchant email, name, and `organization_id`.
-* **`widget_configurations` table:** 1 row with your unique `widget_key`, default greeting, and `allowed_origins = "shoeking.com, localhost"`.
+* **`organizations` table:** 1 row with store name and website URL.
+* **`owners` table:** 1 row with merchant email, name, status, and `organization_id`.
+* **`widget_configurations` table:** 1 row with unique `widget_key`, default greeting, and `allowed_origins = "shoeking.com, localhost"`.
 
 ---
 
@@ -120,12 +122,13 @@ flowchart TD
 1. **Router (`widget.py`):**
    * Validates the payload and calls:
    * **Service:** `app/services/chat_service.py` (`ChatService.stream_visitor_message`)
-2. **Security & Origin Verification (`is_origin_allowed`):**
-   * Looks up the widget using the `X-Widget-Key`.
-   * Checks the incoming browser `Origin: https://shoeking.com`.
-   * Does it match the merchant's `allowed_origins`?
-     * ❌ **No match:** Returns `403 Forbidden` (`"Domain not authorized for this widget"`). An unauthorized website cannot steal your AI credits!
-     * ✅ **Match:** Proceeds to chat.
+2. **Security, Tenant & Origin Verification (`is_origin_allowed`):**
+   * Calls `WidgetRepo.get_by_public_key` to resolve active primary or grace key.
+   * Checks the incoming browser `Origin` header against `widget.allowed_origins`:
+     * ❌ **No match:** Returns `403 Forbidden` (`"Domain not authorized for this widget"`). An unauthorized website cannot hijack your assistant!
+     * ✅ **Match:** Proceeds to validation.
+   * Calls `OwnerRepo.get_by_organization_id` to verify the merchant owner status is active (blocks suspended accounts).
+   * Calls `OrganizationRepo.get_organization_by_id` to verify organization tenant existence.
 3. **Rate Limiting Check (`app/core/rate_limiter.py`):**
    * Protects against spam by enforcing a 30 messages/minute sliding window per IP.
 4. **Vector Semantic Search (RAG):**
@@ -232,3 +235,19 @@ Notice how every single feature follows the exact same 3 steps:
 | **1** | **Router** | `app/routers/` | Accepts HTTP request from frontend or widget, checks authentication and types. Never writes SQL or business logic. |
 | **2** | **Service** | `app/services/` | Runs the business workflow (domain extraction, chunking, Cohere embeddings, Mistral AI generation, transactions). |
 | **3** | **Repository** | `app/repos/` | Executes queries on Neon PostgreSQL and Qdrant Cloud. Enforces tenant isolation (`WHERE organization_id = ...`). |
+
+---
+
+## 🏛️ Domain Entity Layer Decoupling
+
+Every domain entity in ResolvDesk has a dedicated, isolated repository and service without mixing cross-domain concerns:
+
+| Domain Entity | Database Model (`app/models/`) | Repository (`app/repos/`) | Service (`app/services/`) | Primary Router (`app/routers/`) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Owner** | `Owner` (`owners` table) | `OwnerRepo` | `OwnerService` | `organizations.py` (`GET /me`) & `auth.py` |
+| **Organization** | `Organization` (`organizations` table) | `OrganizationRepo` | `OrganizationService` | `organizations.py` (`GET /organization/profile`) |
+| **Widget** | `WidgetConfiguration` (`widget_configurations`) | `WidgetRepo` | `WidgetService` | `widget.py` & `organizations.py` |
+| **Knowledge Base** | `Document` (`documents` table) | `DocumentRepository` & `VectorRepository` | `DocumentService` & `IngestionService` | `documents.py` |
+| **Conversations & Messages** | `Conversation`, `Message` | `ConversationRepository` | `OwnerConversationService` & `ChatService` | `conversations.py` & `widget.py` |
+| **Analytics** | Aggregated across tables | `AnalyticsRepo` | `AnalyticsService` | `analytics.py` |
+| **Multi-Entity Onboarding** | Coordinates `Owner` + `Org` + `Widget` | Coordinates `OwnerRepo` + `OrganizationRepo` + `WidgetRepo` | `RegistrationService` | `registration.py` |
