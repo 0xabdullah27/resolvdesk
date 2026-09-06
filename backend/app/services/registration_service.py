@@ -16,6 +16,23 @@ from app.schemas.registration import (
 )
 
 
+from urllib.parse import urlparse
+
+
+def extract_domain(raw_url: str) -> str:
+    """Extracts and normalizes the lowercase hostname/domain from a URL or bare domain string."""
+    cleaned = raw_url.strip()
+    if not cleaned:
+        return ""
+    if not cleaned.startswith(("http://", "https://")):
+        cleaned = "https://" + cleaned
+    try:
+        parsed = urlparse(cleaned)
+        return (parsed.hostname or "").lower()
+    except Exception:
+        return ""
+
+
 def generate_widget_key() -> str:
     """Generates a cryptographically random public widget key with rd_live_ prefix."""
     random_part = secrets.token_urlsafe(32)
@@ -38,6 +55,14 @@ class RegistrationService:
                 detail="user_id must be a valid UUID",
             )
 
+        # Pre-validate website domain format
+        domain = extract_domain(payload.website_url)
+        if not domain or ("." not in domain and domain != "localhost"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid website or store URL format.",
+            )
+
         # 1. Pre-validation checks against existing owner records
         existing_owner_by_id = await OrganizationRepo.get_owner_by_id(session, owner_uuid)
         if existing_owner_by_id:
@@ -57,10 +82,11 @@ class RegistrationService:
 
         # 2. Atomic multi-table transaction execution
         try:
-            # Step 2a: Create Organization
+            # Step 2a: Create Organization with website_url
             org = await OrganizationRepo.create_organization(
                 session=session,
                 display_name=payload.organization_name,
+                website_url=payload.website_url.strip(),
             )
 
             # Step 2b: Create Owner linked to Organization
@@ -72,12 +98,14 @@ class RegistrationService:
                 organization_id=org.id,
             )
 
-            # Step 2c: Create Default Widget Configuration linked to Organization
+            # Step 2c: Create Default Widget Configuration locked to merchant domain + localhost
             widget_key = generate_widget_key()
+            allowed_origins = f"{domain}, localhost"
             widget = await WidgetRepo.create_widget_config(
                 session=session,
                 organization_id=org.id,
                 widget_key=widget_key,
+                allowed_origins=allowed_origins,
             )
 
             # Commit the atomic transaction
@@ -87,10 +115,11 @@ class RegistrationService:
             await session.refresh(widget)
 
             logger.info(
-                "Successfully registered owner %s, organization %s (%s)",
+                "Successfully registered owner %s, organization %s (%s), allowed_origins=%s",
                 owner.id,
                 org.id,
                 org.display_name,
+                widget.allowed_origins,
             )
 
             return RegistrationCompleteResponse(
@@ -104,6 +133,7 @@ class RegistrationService:
                 organization=OrganizationResponse(
                     id=str(org.id),
                     display_name=org.display_name,
+                    website_url=org.website_url,
                     created_at=org.created_at,
                 ),
                 widget=WidgetResponse(
@@ -114,6 +144,7 @@ class RegistrationService:
                     bot_display_name=widget.bot_display_name,
                     welcome_message=widget.welcome_message,
                     widget_placement=widget.widget_placement,
+                    allowed_origins=widget.allowed_origins,
                 ),
             )
 

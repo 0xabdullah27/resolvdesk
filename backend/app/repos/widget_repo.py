@@ -31,7 +31,7 @@ class WidgetRepo:
             bot_display_name=bot_display_name,
             welcome_message=welcome_message,
             widget_placement=widget_placement,
-            allowed_origins=allowed_origins,
+            allowed_origins=allowed_origins.strip() if allowed_origins else "*",
         )
         session.add(config)
         await session.flush()

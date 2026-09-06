@@ -146,21 +146,22 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="websiteUrl">Website URL</Label>
-          <span className="text-xs text-muted-foreground">Optional</span>
-        </div>
+        <Label htmlFor="websiteUrl">Store / Website Address</Label>
         <Input
           id="websiteUrl"
-          type="url"
-          placeholder="https://example.com"
+          type="text"
+          placeholder="e.g. mystore.com or https://mystore.com"
           disabled={isSubmitting}
           aria-invalid={!!errors.websiteUrl}
           {...register("websiteUrl")}
         />
-        {errors.websiteUrl && (
+        {errors.websiteUrl ? (
           <p className="text-xs text-destructive">
             {errors.websiteUrl.message}
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            ResolvDesk will automatically authorize and lock your support widget to this domain.
           </p>
         )}
       </div>

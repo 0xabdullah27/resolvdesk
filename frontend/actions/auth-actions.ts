@@ -21,7 +21,7 @@ export async function registerOwnerAction(values: RegisterFormValues) {
     };
   }
 
-  const { fullName, email, password, businessName } = parseResult.data;
+  const { fullName, email, password, businessName, websiteUrl } = parseResult.data;
 
   let createdUserId: string | null = null;
   try {
@@ -55,6 +55,7 @@ export async function registerOwnerAction(values: RegisterFormValues) {
           email: email,
           full_name: fullName,
           organization_name: businessName,
+          website_url: websiteUrl,
         }),
       });
     } catch (backendErr) {

@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 import uuid
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -8,6 +9,7 @@ class RegistrationCompleteRequest(BaseModel):
     email: EmailStr = Field(..., description="Owner email address")
     full_name: str = Field(..., min_length=1, max_length=200, description="Owner full name")
     organization_name: str = Field(..., min_length=1, max_length=200, description="Organization workspace name")
+    website_url: str = Field(..., min_length=1, max_length=500, description="Merchant primary website or store URL")
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
@@ -25,6 +27,7 @@ class OwnerResponse(BaseModel):
 class OrganizationResponse(BaseModel):
     id: str
     display_name: str
+    website_url: Optional[str] = None
     created_at: datetime.datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -38,6 +41,7 @@ class WidgetResponse(BaseModel):
     bot_display_name: str
     welcome_message: str
     widget_placement: str
+    allowed_origins: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -9,8 +9,8 @@
 
 **Purpose**: Database schema expansion to store the merchant's website URL on the Organization entity.
 
-- [ ] T001 Create Alembic migration script for adding `website_url` column to `organizations` table in `backend/alembic/versions/006_add_website_url_to_organizations.py`
-- [ ] T002 Update `OrganizationBase` and `Organization` SQLModel entities to include `website_url` in `backend/app/models/organization.py`
+- [x] T001 Create Alembic migration script for adding `website_url` column to `organizations` table in `backend/alembic/versions/006_add_website_url_to_organizations.py`
+- [x] T002 Update `OrganizationBase` and `Organization` SQLModel entities to include `website_url` in `backend/app/models/organization.py`
 
 ---
 
@@ -18,9 +18,9 @@
 
 **Purpose**: Update data access repositories and boundary schemas before implementing business logic.
 
-- [ ] T003 [P] Update `OrganizationRepo.create_organization` to accept and persist `website_url` in `backend/app/repos/organization_repo.py`
-- [ ] T004 [P] Update `WidgetRepo.create_widget_config` to accept `allowed_origins` string parameter in `backend/app/repos/widget_repo.py`
-- [ ] T005 [P] Update `RegistrationCompleteRequest` and `OrganizationResponse` schemas to require `website_url` in `backend/app/schemas/registration.py`
+- [x] T003 [P] Update `OrganizationRepo.create_organization` to accept and persist `website_url` in `backend/app/repos/organization_repo.py`
+- [x] T004 [P] Update `WidgetRepo.create_widget_config` to accept `allowed_origins` string parameter in `backend/app/repos/widget_repo.py`
+- [x] T005 [P] Update `RegistrationCompleteRequest` and `OrganizationResponse` schemas to require `website_url` in `backend/app/schemas/registration.py`
 
 **Checkpoint**: Core models, schemas, and repositories ready — user story implementation can begin.
 
@@ -33,13 +33,13 @@
 **Independent Test**: Navigate to `/register`, verify submission without website URL fails validation, submit with `https://mystore.com`, and verify that the newly created widget has `allowed_origins = 'mystore.com, localhost'`.
 
 ### Tests for User Story 1
-- [ ] T006 [P] [US1] Update registration unit tests for website URL validation and domain normalization in `backend/tests/unit/test_registration.py`
+- [x] T006 [P] [US1] Update registration unit tests for website URL validation and domain normalization in `backend/tests/unit/test_registration.py`
 
 ### Implementation for User Story 1
-- [ ] T007 [US1] Implement domain extraction helper and provision widget with `allowed_origins = f"{domain}, localhost"` in `backend/app/services/registration_service.py`
-- [ ] T008 [P] [US1] Update frontend Zod registration validation schema with required `websiteUrl` validation in `frontend/lib/validations/auth.ts`
-- [ ] T009 [US1] Update registration form UI to make Website URL required, remove Optional badge, and add helper text in `frontend/components/auth/register-form.tsx`
-- [ ] T010 [US1] Forward `websiteUrl` in the onboarding server action payload to the backend in `frontend/actions/auth-actions.ts`
+- [x] T007 [US1] Implement domain extraction helper and provision widget with `allowed_origins = f"{domain}, localhost"` in `backend/app/services/registration_service.py`
+- [x] T008 [P] [US1] Update frontend Zod registration validation schema with required `websiteUrl` validation in `frontend/lib/validations/auth.ts`
+- [x] T009 [US1] Update registration form UI to make Website URL required, remove Optional badge, and add helper text in `frontend/components/auth/register-form.tsx`
+- [x] T010 [US1] Forward `websiteUrl` in the onboarding server action payload to the backend in `frontend/actions/auth-actions.ts`
 
 **Checkpoint**: At this point, User Story 1 is fully functional and testable end-to-end as an MVP increment.
 
@@ -52,10 +52,10 @@
 **Independent Test**: Simulate cross-origin requests from the registered merchant domain and verify 200 OK responses with matching `Access-Control-Allow-Origin`.
 
 ### Tests for User Story 2
-- [ ] T011 [P] [US2] Update contract test verifying cross-origin `/config` and `/chat` requests succeed from merchant's authorized domain in `backend/tests/contract/test_widget_contract.py`
+- [x] T011 [P] [US2] Update contract test verifying cross-origin `/config` and `/chat` requests succeed from merchant's authorized domain in `backend/tests/contract/test_widget_contract.py`
 
 ### Implementation for User Story 2
-- [ ] T012 [US2] Verify public widget config and chat streaming requests accept requests matching the registered origin in `backend/app/routers/widget.py`
+- [x] T012 [US2] Verify public widget config and chat streaming requests accept requests matching the registered origin in `backend/app/routers/widget.py`
 
 **Checkpoint**: User Stories 1 AND 2 are both operational and verified independently.
 
@@ -68,10 +68,10 @@
 **Independent Test**: Send a request to `/api/v1/widget/chat` with an unlisted origin header and assert `HTTP 403 Forbidden: Domain not authorized for this widget.`.
 
 ### Tests for User Story 3
-- [ ] T013 [P] [US3] Unit test verifying 403 Forbidden is returned for requests from unlisted external origins in `backend/tests/unit/test_chat_service.py`
+- [x] T013 [P] [US3] Unit test verifying 403 Forbidden is returned for requests from unlisted external origins in `backend/tests/unit/test_chat_service.py`
 
 ### Implementation for User Story 3
-- [ ] T014 [US3] Verify widget script in `frontend/public/widget.js` halts gracefully when receiving 403 unauthorized domain responses without crashing host storefront
+- [x] T014 [US3] Verify widget script in `frontend/public/widget.js` halts gracefully when receiving 403 unauthorized domain responses without crashing host storefront
 
 **Checkpoint**: All three user stories are fully implemented and protected against unauthorized usage.
 
@@ -81,10 +81,10 @@
 
 **Purpose**: Execute migrations, run regression test suites, verify production builds, and validate quickstart guide.
 
-- [ ] T015 Apply Alembic migration `006_add_website_url_to_organizations.py` to PostgreSQL database
-- [ ] T016 Run full backend test suite (`pytest`) to confirm 100% test pass rate
-- [ ] T017 Run frontend production build (`npm run build`) to ensure 0 TypeScript or ESLint errors
-- [ ] T018 Execute manual verification scenarios per `specs/011-signup-website-cors/quickstart.md`
+- [x] T015 Apply Alembic migration `006_add_website_url_to_organizations.py` to PostgreSQL database
+- [x] T016 Run full backend test suite (`pytest`) to confirm 100% test pass rate
+- [x] T017 Run frontend production build (`npm run build`) to ensure 0 TypeScript or ESLint errors
+- [x] T018 Execute manual verification scenarios per `specs/011-signup-website-cors/quickstart.md`
 
 ---
 

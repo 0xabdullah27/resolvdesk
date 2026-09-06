@@ -12,6 +12,7 @@ async def test_registration_complete_success(client: AsyncClient):
         "email": "jane@shoestore.com",
         "full_name": "Jane Doe",
         "organization_name": "ShoeStore",
+        "website_url": "https://shoestore.com",
     }
 
     response = await client.post("/api/v1/registration/complete", json=payload)
@@ -30,6 +31,7 @@ async def test_registration_complete_success(client: AsyncClient):
     assert "organization" in data
     assert data["organization"]["id"] == data["owner"]["organization_id"]
     assert data["organization"]["display_name"] == "ShoeStore"
+    assert data["organization"]["website_url"] == "https://shoestore.com"
     assert "created_at" in data["organization"]
 
     # Verify Widget Configuration
@@ -40,6 +42,7 @@ async def test_registration_complete_success(client: AsyncClient):
     assert data["widget"]["bot_display_name"] == "Support Assistant"
     assert data["widget"]["welcome_message"] == "Hi! How can I help you today?"
     assert data["widget"]["widget_placement"] == "bottom-right"
+    assert data["widget"]["allowed_origins"] == "shoestore.com, localhost"
 
 
 @pytest.mark.asyncio
@@ -51,6 +54,7 @@ async def test_registration_duplicate_user_id(client: AsyncClient):
         "email": "owner1@example.com",
         "full_name": "Owner One",
         "organization_name": "Org One",
+        "website_url": "https://orgone.com",
     }
 
     response1 = await client.post("/api/v1/registration/complete", json=payload)
@@ -61,6 +65,7 @@ async def test_registration_duplicate_user_id(client: AsyncClient):
         "email": "owner2@example.com",
         "full_name": "Owner Two",
         "organization_name": "Org Two",
+        "website_url": "https://orgtwo.com",
     }
     response2 = await client.post("/api/v1/registration/complete", json=payload2)
     assert response2.status_code == 409

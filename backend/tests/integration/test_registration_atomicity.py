@@ -37,6 +37,7 @@ async def test_registration_atomic_rollback_on_failure(
         "email": "rollback@test.com",
         "full_name": "Rollback User",
         "organization_name": "Rollback Inc",
+        "website_url": "https://rollback.com",
     }
 
     response = await client.post("/api/v1/registration/complete", json=payload)

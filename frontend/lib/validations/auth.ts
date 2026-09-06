@@ -19,9 +19,17 @@ export const registerSchema = z.object({
     .max(100, "Business name must be under 100 characters"),
   websiteUrl: z
     .string()
-    .url("Must be a valid URL (e.g. https://example.com)")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "Website or store address is required")
+    .max(500, "Website address must be under 500 characters")
+    .refine(
+      (val) => {
+        const cleaned = val.trim();
+        if (!cleaned) return false;
+        const pattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/;
+        return pattern.test(cleaned) || cleaned === "localhost" || cleaned.startsWith("localhost:");
+      },
+      { message: "Please enter a valid store address (e.g. yourstore.com or https://yourstore.com)" }
+    ),
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;

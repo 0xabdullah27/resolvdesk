@@ -260,3 +260,47 @@ async def test_update_widget_config_validation_and_isolation(
     assert widget2.bot_display_name == "Org 2 Bot"
     assert widget2.primary_color == "#2563EB"
 
+
+@pytest.mark.asyncio
+async def test_widget_origin_authorization_allowed_and_rejected(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    """Verify origin matching against widget.allowed_origins (US2 & US3)."""
+    org_id = uuid.uuid4()
+    key = "rd_live_origin_test12345678901234567890123456"
+    org = Organization(id=org_id, display_name="Origin Store", website_url="https://originstore.com")
+    widget = WidgetConfiguration(
+        id=uuid.uuid4(),
+        organization_id=org_id,
+        widget_key=key,
+        allowed_origins="originstore.com, localhost",
+    )
+    db_session.add(org)
+    db_session.add(widget)
+    await db_session.commit()
+
+    # 1. Allowed origin: https://originstore.com
+    resp_allowed = await client.get(
+        f"/api/v1/widget/config?key={key}",
+        headers={"Origin": "https://originstore.com"},
+    )
+    assert resp_allowed.status_code == 200
+    assert resp_allowed.json()["widget_key"] == key
+
+    # 2. Allowed origin: localhost
+    resp_localhost = await client.get(
+        f"/api/v1/widget/config?key={key}",
+        headers={"Origin": "http://localhost:3000"},
+    )
+    assert resp_localhost.status_code == 200
+
+    # 3. Disallowed origin: https://hacker-site.com
+    resp_disallowed = await client.get(
+        f"/api/v1/widget/config?key={key}",
+        headers={"Origin": "https://hacker-site.com"},
+    )
+    assert resp_disallowed.status_code == 403
+    assert "Domain not authorized" in resp_disallowed.json()["detail"]
+
+

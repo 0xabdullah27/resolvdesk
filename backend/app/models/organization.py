@@ -11,6 +11,7 @@ def utc_now() -> datetime:
 
 class OrganizationBase(SQLModel):
     display_name: str = Field(max_length=200, nullable=False)
+    website_url: Optional[str] = Field(default=None, max_length=500, nullable=True)
 
 
 class Organization(OrganizationBase, table=True):

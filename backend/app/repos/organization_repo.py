@@ -29,11 +29,13 @@ class OrganizationRepo:
     async def create_organization(
         session: AsyncSession,
         display_name: str,
+        website_url: Optional[str] = None,
         org_id: Optional[uuid.UUID] = None,
     ) -> Organization:
         org = Organization(
             id=org_id or uuid.uuid4(),
             display_name=display_name.strip(),
+            website_url=website_url.strip() if website_url else None,
         )
         session.add(org)
         await session.flush()
