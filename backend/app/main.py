@@ -63,16 +63,17 @@ app = FastAPI(
 # Correlation ID Middleware
 app.add_middleware(CorrelationIdMiddleware)
 
-# CORS Middleware
-cors_origin_regex = (
-    r"https?://.*"
-    if (settings.ENVIRONMENT == "development" or settings.DEBUG)
-    else None
-)
+# CORS Middleware: Enable cross-origin requests for embeddable widgets on external
+# e-commerce storefronts (Shopify, WooCommerce, Webflow, custom domains).
+# Specific merchant domain authorization is enforced at the service layer via widget.allowed_origins.
+cors_origin_regex = r"^https?://.*$"
+allowed_origins_list = list(settings.CORS_ORIGINS)
+if "null" not in allowed_origins_list:
+    allowed_origins_list.append("null")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=allowed_origins_list,
     allow_origin_regex=cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
