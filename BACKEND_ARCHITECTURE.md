@@ -14,8 +14,9 @@ The ResolvDesk backend is built as a **stateless, multi-tenant AI resource serve
 * **Relational Database:** [PostgreSQL](https://www.postgresql.org/) (Neon Serverless PostgreSQL via `asyncpg`)
 * **ORM & Data Modeling:** [SQLModel](https://sqlmodel.tiangolo.com/) / [SQLAlchemy 2.0](https://www.sqlalchemy.org/) (Async Engine & Session)
 * **Migrations:** [Alembic](https://alembic.sqlalchemy.org/)
-* **Vector Database:** [Qdrant](https://qdrant.tech/) (Dense 1536-dimensional vectors with tenant payload filtering)
-* **AI & Embeddings:** OpenAI API / Gemini via OpenAI SDK (`text-embedding-3-small`, `gpt-4o-mini`)
+* **Vector Database:** [Qdrant](https://qdrant.tech/) (Qdrant Cloud managed cluster on AWS, storing 1024-dimensional dense vectors with payload indexing)
+* **Embeddings Engine:** [Cohere v3](https://cohere.com/) (`embed-english-v3.0`, 1024-dim) via custom async HTTP client in `embedding_service.py` (provider-agnostic, also supports OpenAI-compatible `/v1/embeddings`)
+* **LLM Reasoning & Chat:** [Mistral AI](https://mistral.ai/) (`open-mistral-7b`) via custom async HTTP streaming client in `llm_service.py` (provider-agnostic, connects to any OpenAI-compatible `/chat/completions` endpoint)
 * **Authentication:** Full-stack Better Auth integration via asymmetric JWT verification (`PyJWKClient` reading public JWKS from Next.js Auth Server)
 
 ---
@@ -68,8 +69,8 @@ graph TD
 
     subgraph Data_Stores ["Data Stores"]
         DB_Postgres[("Neon PostgreSQL<br/>(Relational State)")]
-        DB_Qdrant[("Qdrant Vector DB<br/>(Knowledge Chunks & Embeddings)")]
-        External_LLM["OpenAI / LLM Provider<br/>(Embeddings & Chat Completions)"]
+        DB_Qdrant[("Qdrant Cloud Vector DB<br/>(1024-dim Knowledge Chunks)")]
+        External_LLM["Cohere v3 & Mistral AI<br/>(1024-dim Embeddings & Streaming LLM)"]
     end
 
     Client -->|HTTP / SSE| Middleware_Security
@@ -250,8 +251,8 @@ sequenceDiagram
     IngestService->>Chunker: Split into overlapping semantic chunks (500 tokens, 100 overlap)
     Chunker-->>IngestService: List of text chunks
     
-    IngestService->>Embedder: Generate dense embeddings in batch (text-embedding-3-small)
-    Embedder-->>IngestService: 1536-dimensional vector array
+    IngestService->>Embedder: Generate dense embeddings in batch (Cohere embed-english-v3.0)
+    Embedder-->>IngestService: 1024-dimensional vector array
     
     par Dual Storage Persistence
         IngestService->>VectorRepo: Upsert vectors with payload {organization_id, document_id, text}
@@ -278,7 +279,7 @@ sequenceDiagram
     participant ChatRouter as widget.py
     participant ChatService as chat_service.py
     participant VectorRepo as vector_repo.py (Qdrant)
-    participant LLM as OpenAI / LLM Service
+    participant LLM as Mistral AI / LLM Service
     participant ConvRepo as conversation_repo.py (Postgres)
 
     Visitor->>Widget: Types question ("What is your refund policy?")
