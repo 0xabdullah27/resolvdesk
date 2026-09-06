@@ -4,6 +4,21 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // 0. Handle CORS and Chrome Private Network Access preflights
+  if (request.method === "OPTIONS") {
+    const origin = request.headers.get("origin") || "*";
+    const response = new NextResponse(null, { status: 204 });
+    response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD");
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "X-Widget-Key, Authorization, Content-Type, Accept, Access-Control-Request-Private-Network, X-Requested-With"
+    );
+    response.headers.set("Access-Control-Allow-Private-Network", "true");
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+    return response;
+  }
+
   const sessionToken =
     request.cookies.get("better-auth.session_token")?.value ||
     request.cookies.get("__Secure-better-auth.session_token")?.value;
@@ -47,5 +62,7 @@ export const config = {
     "/",
     "/dashboard/:path*",
     "/login",
+    "/widget.js",
+    "/api/v1/:path*",
   ],
 };

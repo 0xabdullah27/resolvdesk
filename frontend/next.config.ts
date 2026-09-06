@@ -17,14 +17,18 @@ const nextConfig: NextConfig = {
         source: "/api/v1/:path*",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Private-Network", value: "true" },
           { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
-          { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" },
+          { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Access-Control-Request-Private-Network" },
         ],
       },
       {
         source: "/widget.js",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Private-Network", value: "true" },
+          { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,HEAD" },
+          { key: "Access-Control-Allow-Headers", value: "X-Widget-Key, Content-Type, Accept, Access-Control-Request-Private-Network" },
           { key: "Cache-Control", value: "public, max-age=3600" },
         ],
       },
