@@ -37,8 +37,10 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
   const [isRotating, setIsRotating] = React.useState(false);
 
   // Initialize form with existing configuration
-  const isInitialAllDomains =
-    !initialConfig.allowed_origins || initialConfig.allowed_origins.trim() === "*";
+  const initialDomains =
+    !initialConfig.allowed_origins || initialConfig.allowed_origins.trim() === "*"
+      ? "localhost"
+      : initialConfig.allowed_origins;
 
   const form = useForm<WidgetFormValues>({
     resolver: zodResolver(widgetFormSchema),
@@ -47,8 +49,7 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
       welcome_message: initialConfig.welcome_message || WIDGET_DEFAULTS.welcome_message,
       primary_color: initialConfig.primary_color || WIDGET_DEFAULTS.primary_color,
       widget_placement: initialConfig.widget_placement || WIDGET_DEFAULTS.widget_placement,
-      domain_scope: isInitialAllDomains ? "all" : "restricted",
-      restricted_domains: isInitialAllDomains ? "" : initialConfig.allowed_origins,
+      restricted_domains: initialDomains,
     },
   });
 
@@ -64,11 +65,8 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
   const onSave = handleSubmit(async (values: WidgetFormValues) => {
     setIsSaving(true);
 
-    let resolvedOrigins = "*";
-    if (values.domain_scope === "restricted") {
-      const cleaned = normalizeDomains(values.restricted_domains || "");
-      resolvedOrigins = cleaned || "*";
-    }
+    const cleaned = normalizeDomains(values.restricted_domains || "");
+    const resolvedOrigins = cleaned || "localhost";
 
     try {
       const res = await updateWidgetConfigAction({
@@ -86,8 +84,7 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
           welcome_message: res.data.welcome_message,
           primary_color: res.data.primary_color,
           widget_placement: res.data.widget_placement,
-          domain_scope: res.data.allowed_origins === "*" ? "all" : "restricted",
-          restricted_domains: res.data.allowed_origins === "*" ? "" : res.data.allowed_origins,
+          restricted_domains: res.data.allowed_origins || "localhost",
         });
         toast.success("Widget configuration updated successfully!");
       } else {
@@ -107,7 +104,6 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
       welcome_message: WIDGET_DEFAULTS.welcome_message,
       primary_color: WIDGET_DEFAULTS.primary_color,
       widget_placement: WIDGET_DEFAULTS.widget_placement,
-      domain_scope: WIDGET_DEFAULTS.domain_scope,
       restricted_domains: WIDGET_DEFAULTS.restricted_domains,
     });
     toast.info("Form reset to defaults. Click 'Save Changes' to apply.");

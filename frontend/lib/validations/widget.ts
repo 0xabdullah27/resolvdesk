@@ -14,8 +14,7 @@ export const WIDGET_DEFAULTS = {
   welcome_message: "Hi! How can I help you today?",
   primary_color: "#4F46E5",
   widget_placement: "bottom-right" as const,
-  domain_scope: "all" as const,
-  restricted_domains: "",
+  restricted_domains: "localhost",
 };
 
 export const widgetFormSchema = z.object({
@@ -34,22 +33,31 @@ export const widgetFormSchema = z.object({
     .trim()
     .regex(/^#([A-Fa-f0-9]{6})$/, "Must be a valid 6-character hex color (e.g. #4F46E5)"),
   widget_placement: z.enum(["bottom-right", "bottom-left"]),
-  domain_scope: z.enum(["all", "restricted"]),
-  restricted_domains: z.string(),
+  restricted_domains: z
+    .string()
+    .trim()
+    .min(1, "At least one authorized domain is required (e.g. yourstore.com, localhost)")
+    .refine(
+      (val) => {
+        const tokens = val.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+        return !tokens.includes("*");
+      },
+      { message: "Wildcard '*' is not permitted. Please specify verified domain hostnames." }
+    ),
 });
 
 export type WidgetFormValues = z.infer<typeof widgetFormSchema>;
 
 /**
  * Normalizes a list of domains from user input (strips protocol, port/paths if present, trailing slashes)
- * and returns comma-separated clean domain string.
+ * and returns comma-separated clean domain string. Wildcard '*' is filtered out.
  */
 export function normalizeDomains(input: string): string {
   if (!input) return "";
   return input
     .split(/[\n,]+/)
     .map((d) => d.trim())
-    .filter(Boolean)
+    .filter((d) => Boolean(d) && d !== "*")
     .map((d) => {
       // Remove protocol
       let clean = d.replace(/^https?:\/\//i, "");

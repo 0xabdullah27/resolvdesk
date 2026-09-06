@@ -239,7 +239,16 @@ async def test_update_widget_config_validation_and_isolation(
     )
     assert bad_placement_resp.status_code == 422
 
-    # 3. Unauthenticated request
+    # 3. Validation failure: wildcard '*' in allowed_origins
+    wildcard_resp = await client.patch(
+        "/api/v1/organization/widget",
+        headers={"Authorization": f"Bearer {token1}"},
+        json={"allowed_origins": "*"},
+    )
+    assert wildcard_resp.status_code == 422
+    assert "Wildcard '*' is not permitted" in wildcard_resp.text
+
+    # 4. Unauthenticated request
     unauth_resp = await client.patch(
         "/api/v1/organization/widget",
         json={"bot_display_name": "Hacker Bot"},

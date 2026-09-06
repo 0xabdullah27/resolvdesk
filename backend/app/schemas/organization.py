@@ -1,6 +1,6 @@
 import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class OwnerProfileResponse(BaseModel):
@@ -29,7 +29,7 @@ class WidgetProfileDetails(BaseModel):
     bot_display_name: str
     welcome_message: str
     widget_placement: str
-    allowed_origins: str = "*"
+    allowed_origins: str = "localhost"
     has_grace_key: bool = False
     grace_expires_at: Optional[datetime.datetime] = None
     embed_snippet: Optional[str] = None
@@ -43,6 +43,17 @@ class WidgetUpdateRequest(BaseModel):
     primary_color: Optional[str] = Field(None, pattern=r"^#([A-Fa-f0-9]{6})$")
     widget_placement: Optional[str] = Field(None, pattern=r"^(bottom-right|bottom-left)$")
     allowed_origins: Optional[str] = Field(None, max_length=500)
+
+    @field_validator("allowed_origins")
+    @classmethod
+    def validate_allowed_origins(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            parts = [p.strip() for p in v.split(",") if p.strip()]
+            if not parts:
+                raise ValueError("At least one authorized domain must be specified.")
+            if "*" in parts:
+                raise ValueError("Wildcard '*' is not permitted. Please specify verified domain hostnames.")
+        return v
 
 
 class OrganizationProfileResponse(BaseModel):

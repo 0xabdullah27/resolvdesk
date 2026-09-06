@@ -43,7 +43,6 @@ export function WidgetAppearanceForm({
   const welcomeMessage = watch("welcome_message") || "";
   const primaryColor = watch("primary_color") || "#4F46E5";
   const widgetPlacement = watch("widget_placement") || "bottom-right";
-  const domainScope = watch("domain_scope") || "all";
   const restrictedDomains = watch("restricted_domains") || "";
 
   return (
@@ -189,10 +188,6 @@ export function WidgetAppearanceForm({
 
       {/* 2. Allowed Domains Card */}
       <WidgetDomainsCard
-        domainScope={domainScope}
-        onDomainScopeChange={(scope) =>
-          setValue("domain_scope", scope, { shouldDirty: true, shouldValidate: true })
-        }
         restrictedDomains={restrictedDomains}
         onRestrictedDomainsChange={(domains) =>
           setValue("restricted_domains", domains, { shouldDirty: true, shouldValidate: true })

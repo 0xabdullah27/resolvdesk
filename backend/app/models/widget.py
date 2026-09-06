@@ -21,7 +21,7 @@ class WidgetConfigurationBase(SQLModel):
         default="*",
         max_length=500,
         nullable=False,
-        description="Comma-separated allowed origins (e.g. 'mystore.com, localhost:3000'). '*' allows any domain.",
+        description="Comma-separated allowed origins (e.g. 'mystore.com, localhost:3000'). Defaults to * for internal fixtures; restricted upon signup.",
     )
 
 
