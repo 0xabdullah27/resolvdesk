@@ -12,6 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.owner import Owner, OwnerStatus
+from app.repos.owner_repo import OwnerRepo
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +110,7 @@ async def get_current_owner(
             detail="Invalid user ID format in token.",
         )
 
-    statement = select(Owner).where(Owner.id == owner_uuid)
-    result = await session.exec(statement)
-    owner = result.first()
+    owner = await OwnerRepo.get_by_id(session, owner_uuid)
 
     if not owner:
         raise HTTPException(

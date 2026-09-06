@@ -13,6 +13,7 @@ from app.models.owner import OwnerStatus
 from app.models.widget import WidgetConfiguration
 from app.repos.conversation_repo import ConversationRepository
 from app.repos.organization_repo import OrganizationRepo
+from app.repos.owner_repo import OwnerRepo
 from app.repos.vector_repo import vector_repo
 from app.repos.widget_repo import WidgetRepo
 from app.schemas.chat import ChatEscalateResponse, ChatMessageRead, ConversationHistoryResponse
@@ -83,7 +84,7 @@ class ChatService:
                 status_code=403,
             )
 
-        owner = await OrganizationRepo.get_owner_by_organization_id(session, widget.organization_id)
+        owner = await OwnerRepo.get_by_organization_id(session, widget.organization_id)
         if owner and owner.status == OwnerStatus.SUSPENDED.value:
             raise ResolvDeskException(
                 message="Widget is temporarily unavailable.",

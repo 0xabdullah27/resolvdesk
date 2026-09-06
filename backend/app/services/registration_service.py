@@ -6,6 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.config import settings
 from app.core.logging import logger
 from app.repos.organization_repo import OrganizationRepo
+from app.repos.owner_repo import OwnerRepo
 from app.repos.widget_repo import WidgetRepo
 from app.schemas.registration import (
     OrganizationResponse,
@@ -64,14 +65,14 @@ class RegistrationService:
             )
 
         # 1. Pre-validation checks against existing owner records
-        existing_owner_by_id = await OrganizationRepo.get_owner_by_id(session, owner_uuid)
+        existing_owner_by_id = await OwnerRepo.get_by_id(session, owner_uuid)
         if existing_owner_by_id:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Owner with this user_id already exists.",
             )
 
-        existing_owner_by_email = await OrganizationRepo.get_owner_by_email(
+        existing_owner_by_email = await OwnerRepo.get_by_email(
             session, payload.email
         )
         if existing_owner_by_email:
@@ -90,7 +91,7 @@ class RegistrationService:
             )
 
             # Step 2b: Create Owner linked to Organization
-            owner = await OrganizationRepo.create_owner(
+            owner = await OwnerRepo.create(
                 session=session,
                 owner_id=owner_uuid,
                 email=payload.email,

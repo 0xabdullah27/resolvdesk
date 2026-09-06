@@ -12,6 +12,7 @@ from app.schemas.organization import (
     WidgetUpdateRequest,
 )
 from app.services.organization_service import OrganizationService
+from app.services.owner_service import OwnerService
 from app.services.widget_service import WidgetService
 
 router = APIRouter()
@@ -28,7 +29,7 @@ async def get_current_owner_profile(
     current_owner: CurrentOwner,
     session: AsyncSession = Depends(get_db),
 ) -> OwnerProfileResponse:
-    return await OrganizationService.get_owner_profile(current_owner, session=session)
+    return await OwnerService.get_owner_profile(current_owner, session=session)
 
 
 @router.get(
