@@ -1,5 +1,5 @@
 from typing import List, Union
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -69,6 +69,7 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION_NAME: str = "resolvdesk_documents"
 
     # Provider-Agnostic Embeddings (OpenAI-compatible)
+    OPENAI_API_KEY: Union[str, None] = None
     EMBEDDING_API_BASE: str = "https://api.openai.com/v1"
     EMBEDDING_API_KEY: str = "mock-key"
     EMBEDDING_MODEL_NAME: str = "text-embedding-3-small"
@@ -81,7 +82,7 @@ class Settings(BaseSettings):
     LLM_API_KEY: Union[str, None] = None
     LLM_MODEL: str = "gpt-4o-mini"
 
-    # Ingestion Constraints & Limits
+    # Ingestion Constraints & Limits (Configured in code, no need to set in .env)
     MAX_DOCUMENT_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
     MAX_DOCUMENTS_PER_ORG: int = 50
     MAX_RAW_TEXT_CHARS: int = 100_000
@@ -91,6 +92,30 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_CHAT_PER_MINUTE: int = 30
     RATE_LIMIT_WINDOW_SECONDS: int = 60
+
+    @model_validator(mode="after")
+    def populate_derived_settings(self):
+        # 1. Derive JWKS URL and Issuer from BETTER_AUTH_URL if changed from localhost
+        base_auth = self.BETTER_AUTH_URL.rstrip("/")
+        if base_auth != "http://localhost:3000":
+            if self.AUTH_JWKS_URL == "http://localhost:3000/api/auth/.well-known/jwks.json":
+                self.AUTH_JWKS_URL = f"{base_auth}/api/auth/.well-known/jwks.json"
+            if self.AUTH_ISSUER == "http://localhost:3000":
+                self.AUTH_ISSUER = base_auth
+
+        # 2. Derive Embedding and LLM keys from OPENAI_API_KEY if provided
+        if self.OPENAI_API_KEY:
+            if not self.EMBEDDING_API_KEY or self.EMBEDDING_API_KEY == "mock-key":
+                self.EMBEDDING_API_KEY = self.OPENAI_API_KEY
+            if not self.LLM_API_KEY:
+                self.LLM_API_KEY = self.OPENAI_API_KEY
+
+        # 3. Automatically disable dev auth bypass in production or Vercel
+        import os
+        if self.ENVIRONMENT.lower() in ("production", "prod") or os.getenv("VERCEL") == "1":
+            self.DEV_AUTH_BYPASS = False
+
+        return self
 
     model_config = SettingsConfigDict(
         env_file=["backend/.env", ".env"],

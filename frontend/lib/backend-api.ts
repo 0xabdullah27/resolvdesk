@@ -2,7 +2,11 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
 const BACKEND_BASE_URL =
-  process.env.BACKEND_API_URL || "http://localhost:8000";
+  process.env.BACKEND_API_URL ||
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+  "http://localhost:8000";
 
 export class BackendApiError extends Error {
   constructor(

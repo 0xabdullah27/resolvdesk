@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
-const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8000";
+const backendUrl =
+  process.env.BACKEND_API_URL ||
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+  "http://localhost:8000";
 
 const nextConfig: NextConfig = {
   async rewrites() {
