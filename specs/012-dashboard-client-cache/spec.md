@@ -8,6 +8,13 @@
 
 **Input**: User description: "I think we should use the provider and only load the data when the user comes to the dashbaord so that no quering goes again and agian to the db like i go to the widget and then go to the overview and when i click the widget agian so the widget page is rerender and it is showing the loading state for now. that i don't want. so i mean tosay that if the user update the data like for examplw mark escalated chat as resolved so the ui should be instantly update while the req is gone to hte backend and if req failed so revert and show the error toash. and on the page navigaiton of the dashbaord the page should not show the ladoing state and should not fetch the data every time"
 
+## Clarifications
+
+### Session 2026-09-07
+- Q: How should the dashboard client cache determine when to refresh data if the user stays on the dashboard without refreshing the browser? → A: Manual & Mutation Only: Data remains in memory indefinitely until the user presses F5/Refresh or performs a mutation (zero automatic background network requests).
+- Q: Since data stays cached indefinitely without automatic background timers, where and how should the manual refresh action be provided in the user interface? → A: Unified Header Refresh: A single "↻ Refresh" button in the persistent dashboard top navigation bar that re-syncs all domain resources with a subtle "Last updated X min ago" label.
+- Q: Which user actions across the dashboard should support optimistic UI updates with automatic rollback? → A: Ticket Status & Document Deletion: Optimistically update conversation ticket status (open/in_progress/resolved) and document list removals immediately upon user action, while keeping file uploads on explicit loading progress.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Instant Navigation Without Repeated Data Fetching or Loading Flashes (Priority: P1)
@@ -67,13 +74,13 @@ As a business owner monitoring my overall operations, when I perform an action i
 ### Functional Requirements
 
 - **FR-001**: System MUST maintain an in-memory client state store for dashboard domain resources (overview analytics, widget settings, conversation stats, and document summaries) across route transitions.
-- **FR-002**: System MUST load each dashboard domain resource on-demand upon first visit and avoid refetching on subsequent intra-dashboard navigations unless explicitly invalidated or refreshed.
+- **FR-002**: System MUST load each dashboard domain resource on-demand upon first visit and retain it in memory indefinitely during the active session without automatic background refetches, only refreshing upon an explicit user action (e.g. page reload or manual refresh) or after a mutation event.
 - **FR-003**: System MUST prevent display of full-page loading skeletons or layout shifts when navigating to a previously loaded dashboard route within the active session.
-- **FR-004**: System MUST perform optimistic state updates immediately upon user-initiated mutations (including conversation ticket status changes and widget profile updates).
+- **FR-004**: System MUST perform optimistic state updates immediately upon user-initiated mutations for conversation ticket status changes and document deletions, while maintaining explicit loading indicators for multi-step binary file uploads.
 - **FR-005**: System MUST capture a rollback snapshot before applying any optimistic mutation.
 - **FR-006**: System MUST automatically revert the UI to the rollback snapshot and display a user-friendly error notification if the background mutation request fails.
 - **FR-007**: System MUST synchronize shared data points across different dashboard views so that changes made in one view immediately update related metrics across other views.
-- **FR-008**: System MUST allow users to explicitly force a data refresh to fetch fresh canonical state from the server.
+- **FR-008**: System MUST provide a unified "↻ Refresh" control in the persistent dashboard top header that invalidates the client cache, re-fetches canonical state from the server, and updates a visible "Last updated" relative timestamp.
 
 ### Key Entities *(include if feature involves data)*
 
