@@ -99,19 +99,19 @@ export default async function DashboardPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/dashboard/conversations"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={buttonVariants({ variant: "outline" })}
             >
-              <Inbox className="mr-2 size-4" />
+              <Inbox className="size-4" />
               Support Inbox
             </Link>
             <Link
               href="/dashboard/documents"
-              className={buttonVariants({ size: "sm" })}
+              className={buttonVariants({ variant: "default" })}
             >
-              <FileText className="mr-2 size-4" />
+              <FileText className="size-4" />
               {docCount > 0 ? "Manage Knowledge" : "Upload Knowledge"}
             </Link>
           </div>
