@@ -173,7 +173,7 @@ export default function Image() {
               color: "#71717a",
             }}
           >
-            resolvdesk.vercel.app
+            resolvdesk.online
           </div>
         </div>
       </div>

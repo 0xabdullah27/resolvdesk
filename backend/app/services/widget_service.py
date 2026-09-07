@@ -56,9 +56,14 @@ class WidgetService:
                 detail="Failed to rotate widget key.",
             )
 
+        base_url = (
+            settings.BETTER_AUTH_URL.rstrip("/")
+            if settings.BETTER_AUTH_URL and not settings.BETTER_AUTH_URL.startswith("http://localhost")
+            else "https://resolvdesk.online"
+        )
         embed_snippet = (
-            f'<script src="https://resolvdesk.com/widget.js" '
-            f'data-widget-key="{new_key}"></script>'
+            f'<script src="{base_url}/widget.js" '
+            f'data-widget-key="{new_key}" defer></script>'
         )
 
         logger.info(
@@ -156,9 +161,14 @@ class WidgetService:
         )
 
         has_grace = bool(widget.previous_widget_key and widget.grace_expires_at)
+        base_url = (
+            settings.BETTER_AUTH_URL.rstrip("/")
+            if settings.BETTER_AUTH_URL and not settings.BETTER_AUTH_URL.startswith("http://localhost")
+            else "https://resolvdesk.online"
+        )
         embed_snippet = (
-            f'<script src="https://resolvdesk.com/widget.js" '
-            f'data-widget-key="{widget.widget_key}"></script>'
+            f'<script src="{base_url}/widget.js" '
+            f'data-widget-key="{widget.widget_key}" defer></script>'
         )
 
         return WidgetProfileDetails(

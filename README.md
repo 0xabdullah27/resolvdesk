@@ -8,7 +8,7 @@ Businesses can upload their documents and FAQs, customize their chatbot, monitor
 
 **Built & maintained by Abdullah Qureshi**
 
-[Live Demo](https://resolvdesk.vercel.app) · [Product Screenshots](#product-screenshots) · [Architecture](#architecture) · [Early Usage](#early-usage) · [Engineering Decisions](#engineering-decisions) · [Tech Stack](#tech-stack)
+[Live Demo](https://resolvdesk.online) · [Product Screenshots](#product-screenshots) · [Architecture](#architecture) · [Early Usage](#early-usage) · [Engineering Decisions](#engineering-decisions) · [Tech Stack](#tech-stack)
 
 ---
 

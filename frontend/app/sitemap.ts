@@ -6,7 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     (process.env.NEXT_PUBLIC_APP_URL &&
     !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
       ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://resolvdesk.vercel.app");
+      : "https://resolvdesk.online");
   const now = new Date();
 
   return [

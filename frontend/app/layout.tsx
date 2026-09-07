@@ -19,7 +19,7 @@ const siteUrl =
   (process.env.NEXT_PUBLIC_APP_URL &&
   !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
     ? process.env.NEXT_PUBLIC_APP_URL
-    : "https://resolvdesk.vercel.app");
+    : "https://resolvdesk.online");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -132,7 +132,7 @@ const jsonLd = {
       },
       sameAs: [
         "https://github.com/abdullahqureshi27/resolvdesk",
-        "https://resolvdesk.vercel.app",
+        "https://resolvdesk.online",
       ],
       knowsAbout: [
         "Free AI Chatbot for Website",

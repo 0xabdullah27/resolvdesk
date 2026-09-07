@@ -178,7 +178,7 @@ export function WidgetEmbedCard({
 
   const cleanSnippet =
     embedSnippet ||
-    `<script src="https://resolvdesk.com/widget.js" data-widget-key="${widgetKey}" defer></script>`;
+    `<script src="${typeof window !== "undefined" ? window.location.origin : "https://resolvdesk.online"}/widget.js" data-widget-key="${widgetKey}" defer></script>`;
 
   const handleCopySnippet = async () => {
     try {

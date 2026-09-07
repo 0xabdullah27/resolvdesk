@@ -143,7 +143,7 @@ export async function updateWidgetConfigAction(
       allowed_origins: res.allowed_origins || "*",
       embed_snippet:
         res.embed_snippet ||
-        `<script src="https://resolvdesk.com/widget.js" data-widget-key="${res.widget_key}"></script>`,
+        `<script src="https://resolvdesk.online/widget.js" data-widget-key="${res.widget_key}" defer></script>`,
     };
 
     return { success: true, data: updatedConfig };

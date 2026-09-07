@@ -34,7 +34,11 @@ export const auth = betterAuth({
     process.env.BETTER_AUTH_SECRET ||
     "resolvdesk-development-auth-secret-key-32chars",
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    "https://resolvdesk.online",
+    "https://www.resolvdesk.online",
+    "https://resolvdesk.vercel.app",
     "http://localhost:3000",
   ],
   plugins: [

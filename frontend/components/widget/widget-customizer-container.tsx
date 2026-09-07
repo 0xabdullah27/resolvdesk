@@ -16,7 +16,7 @@ const fallbackConfig: WidgetConfig = {
   primary_color: "#4F46E5",
   widget_placement: "bottom-right",
   allowed_origins: "*",
-  embed_snippet: '<script src="https://resolvdesk.com/widget.js" data-widget-key="rd_live_default" defer></script>',
+  embed_snippet: '<script src="https://resolvdesk.online/widget.js" data-widget-key="rd_live_default" defer></script>',
 };
 
 export function WidgetCustomizerContainer() {

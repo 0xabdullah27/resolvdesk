@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     (process.env.NEXT_PUBLIC_APP_URL &&
     !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
       ? process.env.NEXT_PUBLIC_APP_URL
-      : "https://resolvdesk.vercel.app");
+      : "https://resolvdesk.online");
 
   return {
     rules: {

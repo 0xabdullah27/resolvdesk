@@ -40,6 +40,9 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3001",
+        "https://resolvdesk.online",
+        "https://www.resolvdesk.online",
+        "https://resolvdesk.vercel.app",
         "https://homesprint.store",
     ]
 
@@ -55,6 +58,9 @@ class Settings(BaseSettings):
             "http://127.0.0.1:3000",
             "http://localhost:3001",
             "http://127.0.0.1:3001",
+            "https://resolvdesk.online",
+            "https://www.resolvdesk.online",
+            "https://resolvdesk.vercel.app",
             "https://homesprint.store",
         ]
 
