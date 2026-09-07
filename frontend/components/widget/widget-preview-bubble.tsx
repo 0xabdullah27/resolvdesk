@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MessageSquare, X } from "lucide-react";
+import { Bot, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WidgetPreviewBubbleProps {
@@ -32,7 +32,7 @@ export function WidgetPreviewBubble({
       {isOpen ? (
         <X className="size-6 text-white stroke-[2.5] transition-transform duration-200 rotate-0" />
       ) : (
-        <MessageSquare className="size-6 text-white stroke-[2.2] transition-transform duration-200" />
+        <Bot className="size-6 text-white stroke-[2.2] transition-transform duration-200" />
       )}
     </button>
   );
