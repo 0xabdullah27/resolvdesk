@@ -133,13 +133,16 @@ class AnalyticsService:
         session: AsyncSession,
         organization_id: uuid.UUID,
         limit: int = 10,
+        days: Optional[int] = 30,
     ) -> KnowledgeGapsResponse:
         """Groups and ranks unanswered customer questions to highlight missing knowledge base topics."""
         limit = min(max(1, limit), 50)
+        start_date = utc_now() - datetime.timedelta(days=days) if days and days > 0 else None
         raw_fallbacks = await analytics_repo.get_fallback_queries(
             session=session,
             organization_id=organization_id,
             limit=limit * 5,
+            start_date=start_date,
         )
 
         if not raw_fallbacks:
@@ -189,13 +192,16 @@ class AnalyticsService:
         session: AsyncSession,
         organization_id: uuid.UUID,
         limit: int = 10,
+        days: Optional[int] = 30,
     ) -> TopQuestionsResponse:
         """Aggregates and normalizes the most frequent customer inquiries."""
         limit = min(max(1, limit), 50)
+        start_date = utc_now() - datetime.timedelta(days=days) if days and days > 0 else None
         raw_msgs = await analytics_repo.get_visitor_questions(
             session=session,
             organization_id=organization_id,
             limit=limit * 10,
+            start_date=start_date,
         )
 
         if not raw_msgs:

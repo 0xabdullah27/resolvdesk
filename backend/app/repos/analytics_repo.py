@@ -110,17 +110,22 @@ class AnalyticsRepo:
         session: AsyncSession,
         organization_id: uuid.UUID,
         limit: int = 50,
+        start_date: Optional[datetime.datetime] = None,
     ) -> List[Dict[str, Any]]:
         """Extracts visitor queries that triggered assistant fallback messages or lacked knowledge base citations."""
         # 1. Fetch assistant messages that responded with fallback
+        conditions = [
+            Conversation.organization_id == organization_id,
+            Message.role == "assistant",
+            Message.content.ilike("%I don't have information about that in my knowledge base%"),
+        ]
+        if start_date:
+            conditions.append(Message.created_at >= start_date)
+
         fallback_stmt = (
             select(Message.conversation_id, Message.created_at)
             .join(Conversation, Message.conversation_id == Conversation.id)
-            .where(
-                Conversation.organization_id == organization_id,
-                Message.role == "assistant",
-                Message.content.ilike("%I don't have information about that in my knowledge base%"),
-            )
+            .where(*conditions)
             .order_by(Message.created_at.desc())
             .limit(limit)
         )
@@ -167,15 +172,20 @@ class AnalyticsRepo:
         session: AsyncSession,
         organization_id: uuid.UUID,
         limit: int = 100,
+        start_date: Optional[datetime.datetime] = None,
     ) -> List[Tuple[str, datetime.datetime]]:
         """Retrieves raw visitor messages for the organization to compute top asked questions."""
+        conditions = [
+            Conversation.organization_id == organization_id,
+            Message.role == "visitor",
+        ]
+        if start_date:
+            conditions.append(Message.created_at >= start_date)
+
         stmt = (
             select(Message.content, Message.created_at)
             .join(Conversation, Message.conversation_id == Conversation.id)
-            .where(
-                Conversation.organization_id == organization_id,
-                Message.role == "visitor",
-            )
+            .where(*conditions)
             .order_by(Message.created_at.desc())
             .limit(limit)
         )

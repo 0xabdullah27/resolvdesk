@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -60,12 +62,14 @@ async def get_analytics_trends(
 async def get_knowledge_gaps(
     current_owner: CurrentOwner,
     limit: int = Query(default=10, ge=1, le=50, description="Max unanswered questions to return"),
+    days: Optional[int] = Query(default=30, ge=1, le=365, description="Filter inquiries within the last N days"),
     session: AsyncSession = Depends(get_db),
 ) -> KnowledgeGapsResponse:
     return await analytics_service.get_knowledge_gaps(
         session=session,
         organization_id=current_owner.organization_id,
         limit=limit,
+        days=days,
     )
 
 
@@ -79,10 +83,12 @@ async def get_knowledge_gaps(
 async def get_top_questions(
     current_owner: CurrentOwner,
     limit: int = Query(default=10, ge=1, le=50, description="Max top questions to return"),
+    days: Optional[int] = Query(default=30, ge=1, le=365, description="Filter inquiries within the last N days"),
     session: AsyncSession = Depends(get_db),
 ) -> TopQuestionsResponse:
     return await analytics_service.get_top_questions(
         session=session,
         organization_id=current_owner.organization_id,
         limit=limit,
+        days=days,
     )
