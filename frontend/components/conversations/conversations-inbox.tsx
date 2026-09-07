@@ -11,7 +11,6 @@ import type {
 } from "@/types/conversation";
 import {
   listConversationsAction,
-  getConversationTranscriptAction,
   getConversationStatsAction,
 } from "@/actions/conversation-actions";
 import { ConversationStatsCards } from "@/components/conversations/conversation-stats-cards";
@@ -44,7 +43,11 @@ export function ConversationsInbox({
   const {
     conversations: cachedConversations,
     conversationStats: cachedStats,
+    transcripts: cachedTranscripts,
+    selectedConversationId,
     loadConversations,
+    loadTranscript,
+    setSelectedConversationId,
     optimisticUpdateTicketStatus,
   } = useDashboard();
 
@@ -59,8 +62,14 @@ export function ConversationsInbox({
   const router = useRouter();
   const pathname = usePathname();
 
-  // URL-driven selected ID
+  // URL-driven or Provider-cached selected ID
   const urlSelectedId = searchParams.get("id") || initialSelectedId || null;
+  const initialEffectiveId =
+    urlSelectedId ||
+    selectedConversationId ||
+    (cachedConversations.data?.items[0]?.id) ||
+    (initialConversations[0]?.id) ||
+    null;
 
   // Local state
   const [conversations, setConversations] = React.useState<ConversationSummary[]>(
@@ -72,7 +81,7 @@ export function ConversationsInbox({
   const [stats, setStats] = React.useState<ConversationStats>(
     cachedStats.data ? cachedStats.data : initialStats
   );
-  const [selectedId, setSelectedId] = React.useState<string | null>(urlSelectedId);
+  const [selectedId, setSelectedId] = React.useState<string | null>(initialEffectiveId);
 
   // Filters & Pagination
   const [activeFilter, setActiveFilter] = React.useState<InboxFilterTab>("all");
@@ -96,65 +105,125 @@ export function ConversationsInbox({
   // Loading & Error States
   const [isLoadingList, setIsLoadingList] = React.useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
-  const [transcript, setTranscript] = React.useState<ConversationDetail | null>(null);
-  const [isLoadingTranscript, setIsLoadingTranscript] = React.useState<boolean>(false);
+  const [transcript, setTranscript] = React.useState<ConversationDetail | null>(
+    (initialEffectiveId && cachedTranscripts[initialEffectiveId]) || null
+  );
+  const [isLoadingTranscript, setIsLoadingTranscript] = React.useState<boolean>(
+    Boolean(initialEffectiveId && !cachedTranscripts[initialEffectiveId])
+  );
   const [isTranscriptError, setIsTranscriptError] = React.useState<boolean>(false);
 
   // Mobile Drill-down view state
-  const [isMobileDetailOpen, setIsMobileDetailOpen] = React.useState<boolean>(Boolean(urlSelectedId));
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = React.useState<boolean>(Boolean(initialEffectiveId));
 
-  // Sync selectedId with URL parameter changes
+  // Sync selectedId with URL & DashboardProvider cache without triggering full Next.js server re-renders
   const updateSelectedIdInUrl = React.useCallback(
     (newId: string | null) => {
       setSelectedId(newId);
-      const params = new URLSearchParams(searchParams.toString());
+      setSelectedConversationId(newId);
+
+      // Instant synchronous render if transcript is already cached
+      if (newId && cachedTranscripts[newId]) {
+        setTranscript(cachedTranscripts[newId]);
+        setIsLoadingTranscript(false);
+        setIsTranscriptError(false);
+      }
+
       if (newId) {
-        params.set("id", newId);
         setIsMobileDetailOpen(true);
       } else {
-        params.delete("id");
         setIsMobileDetailOpen(false);
       }
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+      // Update URL quietly without triggering Next.js RSC re-fetch
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        if (newId) {
+          url.searchParams.set("id", newId);
+        } else {
+          url.searchParams.delete("id");
+        }
+        window.history.replaceState(null, "", url.toString());
+      }
     },
-    [pathname, router, searchParams]
+    [cachedTranscripts, setSelectedConversationId]
   );
 
   // Auto-select first conversation on desktop if none is selected
   React.useEffect(() => {
-    if (!urlSelectedId && conversations.length > 0) {
+    if (!selectedId && conversations.length > 0) {
       if (typeof window !== "undefined" && window.innerWidth >= 768) {
         updateSelectedIdInUrl(conversations[0].id);
       }
     }
-  }, [conversations, updateSelectedIdInUrl, urlSelectedId]);
+  }, [conversations, selectedId, updateSelectedIdInUrl]);
 
-  // Load transcript whenever selectedId changes
-  const fetchTranscript = React.useCallback(async (id: string) => {
-    try {
-      setIsLoadingTranscript(true);
+  // Synchronize transcript with cache & fetch if not yet in cache
+  React.useEffect(() => {
+    if (!selectedId) {
+      setTranscript(null);
+      setIsLoadingTranscript(false);
       setIsTranscriptError(false);
-      const res = await getConversationTranscriptAction(id);
-      if (res.success && res.data) {
-        setTranscript(res.data);
+      return;
+    }
+
+    // 1. If already cached, instant synchronous render!
+    if (cachedTranscripts[selectedId]) {
+      setTranscript(cachedTranscripts[selectedId]);
+      setIsLoadingTranscript(false);
+      setIsTranscriptError(false);
+      return;
+    }
+
+    // 2. Not cached yet: fetch once and store in cache
+    let isCancelled = false;
+    setIsLoadingTranscript(true);
+    setIsTranscriptError(false);
+
+    loadTranscript(selectedId)
+      .then((data) => {
+        if (!isCancelled) {
+          if (data) {
+            setTranscript(data);
+          } else {
+            setIsTranscriptError(true);
+          }
+        }
+      })
+      .catch((err) => {
+        if (!isCancelled) {
+          console.error("Failed to load transcript:", err);
+          setIsTranscriptError(true);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsLoadingTranscript(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedId, cachedTranscripts, loadTranscript]);
+
+  const handleRetryTranscript = React.useCallback(async () => {
+    if (!selectedId) return;
+    setIsLoadingTranscript(true);
+    setIsTranscriptError(false);
+    try {
+      const data = await loadTranscript(selectedId, true);
+      if (data) {
+        setTranscript(data);
       } else {
         setIsTranscriptError(true);
       }
-    } catch (err) {
-      console.error("Failed to fetch transcript:", err);
+    } catch {
       setIsTranscriptError(true);
     } finally {
       setIsLoadingTranscript(false);
     }
-  }, []);
-
-  React.useEffect(() => {
-    if (selectedId) {
-      fetchTranscript(selectedId);
-    } else {
-      setTranscript(null);
-    }
-  }, [selectedId, fetchTranscript]);
+  }, [selectedId, loadTranscript]);
 
   // Fetch list on filter or page change
   const fetchConversationsList = React.useCallback(
@@ -209,7 +278,10 @@ export function ConversationsInbox({
         setStats(statsRes.data);
       }
       if (selectedId) {
-        await fetchTranscript(selectedId);
+        const refreshed = await loadTranscript(selectedId, true);
+        if (refreshed) {
+          setTranscript(refreshed);
+        }
       }
     } finally {
       setIsRefreshing(false);
@@ -342,7 +414,7 @@ export function ConversationsInbox({
             transcript={transcript}
             isLoading={isLoadingTranscript}
             isError={isTranscriptError}
-            onRetry={() => selectedId && fetchTranscript(selectedId)}
+            onRetry={handleRetryTranscript}
             onStatusChange={handleStatusChange}
             onBackToList={handleMobileBackToList}
           />

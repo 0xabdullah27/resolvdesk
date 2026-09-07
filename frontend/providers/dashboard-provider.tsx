@@ -18,6 +18,7 @@ import type {
 import type { DocumentListResponse } from "@/types/document";
 import type { WidgetConfig } from "@/types/widget";
 import type {
+  ConversationDetail,
   ConversationListResponse,
   ConversationStats,
   TicketStatus,
@@ -35,6 +36,7 @@ import { listDocumentsAction, deleteDocumentAction } from "@/actions/document-ac
 import {
   listConversationsAction,
   getConversationStatsAction,
+  getConversationTranscriptAction,
   updateTicketStatusAction,
 } from "@/actions/conversation-actions";
 
@@ -64,6 +66,8 @@ export function DashboardProvider({
   const [documents, setDocuments] = React.useState<AsyncResource<DocumentListResponse>>(createInitialResource);
   const [conversations, setConversations] = React.useState<AsyncResource<ConversationListResponse>>(createInitialResource);
   const [conversationStats, setConversationStats] = React.useState<AsyncResource<ConversationStats>>(createInitialResource);
+  const [transcripts, setTranscripts] = React.useState<Record<string, ConversationDetail>>({});
+  const [selectedConversationId, setSelectedConversationId] = React.useState<string | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
 
@@ -234,6 +238,34 @@ export function DashboardProvider({
         error: null,
         lastLoadedAt: Date.now(),
       });
+
+      // Automatically prefetch transcripts in background so switching conversations has 0ms delay
+      const items = convRes.data.items;
+      if (items.length > 0) {
+        setSelectedConversationId((prev) => prev || items[0].id);
+
+        const firstId = items[0].id;
+        getConversationTranscriptAction(firstId).then((firstRes) => {
+          if (firstRes.success && firstRes.data) {
+            setTranscripts((prev) => ({
+              ...prev,
+              [firstId]: firstRes.data!,
+            }));
+          }
+
+          // Prefetch remaining conversations on page in background
+          items.slice(1, 10).forEach((item) => {
+            getConversationTranscriptAction(item.id).then((res) => {
+              if (res.success && res.data) {
+                setTranscripts((prev) => ({
+                  ...prev,
+                  [item.id]: res.data!,
+                }));
+              }
+            });
+          });
+        });
+      }
     } else {
       setConversations((prev) => ({
         ...prev,
@@ -260,6 +292,31 @@ export function DashboardProvider({
     return convRes.data || null;
   }, [conversations.data, conversations.status]);
 
+  const loadTranscript = React.useCallback(
+    async (conversationId: string, force = false): Promise<ConversationDetail | null> => {
+      if (!force && transcripts[conversationId]) {
+        return transcripts[conversationId];
+      }
+      const res = await getConversationTranscriptAction(conversationId);
+      if (res.success && res.data) {
+        setTranscripts((prev) => ({
+          ...prev,
+          [conversationId]: res.data!,
+        }));
+        return res.data;
+      }
+      return null;
+    },
+    [transcripts]
+  );
+
+  // Background pre-load conversations on mount if idle so inbox is instantly ready
+  React.useEffect(() => {
+    if (conversations.status === "idle") {
+      loadConversations(20, 0);
+    }
+  }, [conversations.status, loadConversations]);
+
   // Optimistic Mutations
   const optimisticUpdateTicketStatus = React.useCallback(
     async (conversationId: string, status: TicketStatus): Promise<boolean> => {
@@ -267,8 +324,19 @@ export function DashboardProvider({
       const previousConversations = conversations.data;
       const previousStats = conversationStats.data;
       const previousOverview = overview.data;
+      const previousTranscripts = transcripts;
 
       // 2. Compute optimistic state
+      if (transcripts[conversationId]) {
+        setTranscripts((prev) => ({
+          ...prev,
+          [conversationId]: {
+            ...prev[conversationId],
+            ticket_status: status,
+          },
+        }));
+      }
+
       if (conversations.data) {
         const target = conversations.data.items.find((c) => c.id === conversationId);
         const prevStatus = target?.ticket_status;
@@ -353,11 +421,12 @@ export function DashboardProvider({
         setConversations((prev) => ({ ...prev, data: previousConversations }));
         setConversationStats((prev) => ({ ...prev, data: previousStats }));
         setOverview((prev) => ({ ...prev, data: previousOverview }));
+        setTranscripts(previousTranscripts);
         toast.error(err?.message || "Could not update ticket status. Changes reverted.");
         return false;
       }
     },
-    [conversations.data, conversationStats.data, overview.data]
+    [conversations.data, conversationStats.data, overview.data, transcripts]
   );
 
   const optimisticDeleteDocument = React.useCallback(
@@ -437,6 +506,8 @@ export function DashboardProvider({
     documents,
     conversations,
     conversationStats,
+    transcripts,
+    selectedConversationId,
     owner: owner || null,
     lastRefreshedAt,
     isRefreshing,
@@ -447,6 +518,8 @@ export function DashboardProvider({
     loadWidgetConfig,
     loadDocuments,
     loadConversations,
+    loadTranscript,
+    setSelectedConversationId,
     updateWidgetConfigCache,
     optimisticUpdateTicketStatus,
     optimisticDeleteDocument,

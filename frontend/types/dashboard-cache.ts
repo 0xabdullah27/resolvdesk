@@ -8,6 +8,7 @@ import type {
 import type { DocumentItem, DocumentListResponse } from "@/types/document";
 import type { WidgetConfig } from "@/types/widget";
 import type {
+  ConversationDetail,
   ConversationListResponse,
   ConversationStats,
   TicketStatus,
@@ -46,6 +47,8 @@ export interface DashboardState {
   documents: AsyncResource<DocumentListResponse>;
   conversations: AsyncResource<ConversationListResponse>;
   conversationStats: AsyncResource<ConversationStats>;
+  transcripts: Record<string, ConversationDetail>;
+  selectedConversationId: string | null;
   owner: OwnerProfile | null;
   lastRefreshedAt: Date | null;
   isRefreshing: boolean;
@@ -60,6 +63,8 @@ export interface DashboardContextValue extends DashboardState {
   loadWidgetConfig: (force?: boolean) => Promise<WidgetConfig | null>;
   loadDocuments: (force?: boolean) => Promise<DocumentListResponse | null>;
   loadConversations: (limit?: number, offset?: number, force?: boolean) => Promise<ConversationListResponse | null>;
+  loadTranscript: (conversationId: string, force?: boolean) => Promise<ConversationDetail | null>;
+  setSelectedConversationId: (id: string | null) => void;
 
   // Cache Updates
   updateWidgetConfigCache: (config: WidgetConfig) => void;

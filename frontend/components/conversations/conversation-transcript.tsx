@@ -158,8 +158,8 @@ export function ConversationTranscript({
     );
   }
 
-  // 2. Loading state
-  if (isLoading) {
+  // 2. Loading state: only show full skeleton if transcript is missing for this conversation
+  if (isLoading && (!transcript || transcript.id !== conversationId)) {
     return (
       <div className="flex flex-col h-full min-h-[500px] border border-border rounded-xl bg-card p-6 space-y-6">
         <div className="flex items-center justify-between border-b border-border/60 pb-4">
