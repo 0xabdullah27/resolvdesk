@@ -15,7 +15,6 @@ import { Calendar, Loader2, Sparkles } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import type { AnalyticsTrends, DailyVolumePoint, TrendRange } from "@/types/analytics";
-import { getAnalyticsTrendsAction } from "@/actions/analytics-actions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -85,31 +84,22 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export function VolumeTrendsChart({ initialData }: VolumeTrendsChartProps) {
   const [range, setRange] = React.useState<TrendRange>(
-    (initialData.range_days as TrendRange) || 7
+    (initialData.range_days as TrendRange) || 30
   );
-  const [data, setData] = React.useState<DailyVolumePoint[]>(initialData.points || []);
-  const [isLoading, setIsLoading] = React.useState(false);
   const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const handleRangeChange = async (newRange: TrendRange) => {
-    if (newRange === range || isLoading) return;
-    setRange(newRange);
-    setIsLoading(true);
+  // Client-side instant slicing: 7D, 14D, or 30D from the upfront fetched dataset without backend roundtrips
+  const data = React.useMemo(() => {
+    const allPoints = initialData.points || [];
+    return allPoints.slice(-range);
+  }, [initialData.points, range]);
 
-    try {
-      const res = await getAnalyticsTrendsAction(newRange);
-      if (res.success && res.data) {
-        setData(res.data.points);
-      }
-    } catch (err) {
-      console.error("Failed to load range data:", err);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRangeChange = (newRange: TrendRange) => {
+    setRange(newRange);
   };
 
   const totalRangeChats = React.useMemo(
@@ -155,16 +145,12 @@ export function VolumeTrendsChart({ initialData }: VolumeTrendsChartProps) {
               variant={range === r ? "default" : "ghost"}
               size="sm"
               onClick={() => handleRangeChange(r)}
-              disabled={isLoading}
-              className={`h-7 px-2.5 text-xs font-medium rounded-md transition-all ${
+              className={`h-7 px-2.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
                 range === r
                   ? "bg-background text-foreground shadow-xs hover:bg-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {isLoading && range === r ? (
-                <Loader2 className="mr-1 size-3 animate-spin" />
-              ) : null}
               {r}D
             </Button>
           ))}

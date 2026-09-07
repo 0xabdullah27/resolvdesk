@@ -48,7 +48,7 @@ export default async function DashboardPage() {
     getOwnerContextAction(),
     listDocumentsAction(),
     getAnalyticsOverviewAction(),
-    getAnalyticsTrendsAction(7),
+    getAnalyticsTrendsAction(30),
     getKnowledgeGapsAction(5),
     getTopQuestionsAction(5),
   ]);
