@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "ResolvDesk - Autonomous Multi-Tenant AI Support Platform";
+export const alt = "ResolvDesk - Free AI Chatbot for Website & Ecommerce";
 export const size = {
   width: 1200,
   height: 630,
@@ -78,16 +78,16 @@ export default function Image() {
               alignItems: "center",
               padding: "8px 18px",
               borderRadius: "9999px",
-              backgroundColor: "rgba(255, 255, 255, 0.08)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
+              backgroundColor: "rgba(34, 197, 94, 0.15)",
+              border: "1px solid rgba(34, 197, 94, 0.3)",
               fontSize: "14px",
-              fontWeight: 600,
-              color: "#a1a1aa",
+              fontWeight: 700,
+              color: "#4ade80",
               letterSpacing: "0.5px",
               textTransform: "uppercase",
             }}
           >
-            Autonomous AI Support
+            100% Free Website Chatbot
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default function Image() {
               margin: 0,
             }}
           >
-            Ground your storefront support in real knowledge.
+            Free AI Chatbot for Your Website &amp; Store.
           </h1>
           <p
             style={{
@@ -120,8 +120,8 @@ export default function Image() {
               margin: 0,
             }}
           >
-            Multi-tenant AI support agent platform featuring grounded RAG,
-            instant embeddable widget, and real-time ticket escalation.
+            Add a 24/7 intelligent customer support assistant in under 2 minutes
+            with just 1 line of HTML code. Works on Shopify, WooCommerce &amp; any site.
           </p>
         </div>
 
@@ -142,24 +142,27 @@ export default function Image() {
               gap: "12px",
             }}
           >
-            {["Grounded RAG", "1-Line Storefront Widget", "Human Escalation", "Multi-Tenant"].map(
-              (pill) => (
-                <div
-                  key={pill}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "8px",
-                    backgroundColor: "rgba(79, 70, 229, 0.15)",
-                    border: "1px solid rgba(99, 102, 241, 0.3)",
-                    color: "#c7d2fe",
-                    fontSize: "15px",
-                    fontWeight: 500,
-                  }}
-                >
-                  {pill}
-                </div>
-              )
-            )}
+            {[
+              "100% Free Forever",
+              "1 Line of Code",
+              "Shopify & WooCommerce",
+              "24/7 Live Support",
+            ].map((pill) => (
+              <div
+                key={pill}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(79, 70, 229, 0.15)",
+                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  color: "#c7d2fe",
+                  fontSize: "15px",
+                  fontWeight: 500,
+                }}
+              >
+                {pill}
+              </div>
+            ))}
           </div>
 
           <div

@@ -24,21 +24,25 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "ResolvDesk - Autonomous Multi-Tenant AI Support Platform",
-    template: "%s | ResolvDesk",
+    default:
+      "ResolvDesk - Free AI Chatbot for Website & Ecommerce | 1-Line Embed",
+    template: "%s | ResolvDesk - Free AI Chatbot for Website",
   },
   description:
-    "Empower your website and ecommerce storefront with an autonomous, grounded AI customer support assistant featuring instant RAG search, embeddable widget, and human ticket escalation.",
+    "Add a free AI chatbot to your website or ecommerce store in 2 minutes. Just paste 1 line of HTML code to answer customer questions 24/7, resolve tickets, and boost sales.",
   keywords: [
-    "AI Customer Support",
-    "Autonomous Support Agent",
-    "Grounded RAG",
-    "Ecommerce Chatbot",
-    "Shopify Support Bot",
-    "WooCommerce AI Support",
-    "Embeddable Chat Widget",
-    "Ticket Escalation",
-    "Multi-Tenant AI Helpdesk",
+    "free ai chatbot for website",
+    "free ecommerce chatbot",
+    "add chatbot to website",
+    "1 line code chatbot",
+    "free shopify ai chatbot",
+    "woocommerce ai chatbot",
+    "free customer support bot",
+    "website chat widget",
+    "ai assistant for online store",
+    "embed ai chatbot",
+    "free website chatbot",
+    "customer service chatbot",
     "ResolvDesk",
     "Abdullah Qureshi",
   ],
@@ -57,9 +61,9 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "ResolvDesk - Autonomous Multi-Tenant AI Support Platform",
+    title: "ResolvDesk - Free AI Chatbot for Website & Ecommerce | 1-Line Embed",
     description:
-      "Autonomous multi-tenant AI customer support platform with grounded RAG, embeddable storefront widget, and real-time ticket escalation.",
+      "Add a free AI customer support chatbot to any website in under 2 minutes with 1 line of code. Completely free, works on Shopify, WooCommerce, and custom websites.",
     url: siteUrl,
     siteName: "ResolvDesk",
     locale: "en_US",
@@ -67,9 +71,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ResolvDesk - Autonomous Multi-Tenant AI Support Platform",
+    title: "ResolvDesk - Free AI Chatbot for Website & Ecommerce | 1-Line Embed",
     description:
-      "Autonomous multi-tenant AI customer support platform with grounded RAG, embeddable storefront widget, and real-time ticket escalation.",
+      "Add a free AI customer support chatbot to any website in under 2 minutes with 1 line of code. Completely free, works on Shopify, WooCommerce, and custom websites.",
     creator: "@abdullahqureshi",
   },
   robots: {
@@ -99,10 +103,14 @@ const jsonLd = {
       "@type": ["Organization", "SoftwareApplication"],
       "@id": `${siteUrl}/#organization`,
       name: "ResolvDesk",
-      alternateName: ["ResolvDesk AI", "ResolvDesk Platform"],
+      alternateName: [
+        "ResolvDesk Free AI Chatbot",
+        "ResolvDesk Website Chatbot Widget",
+        "ResolvDesk Ecommerce Bot",
+      ],
       url: siteUrl,
       description:
-        "Autonomous multi-tenant AI customer support platform with grounded RAG, embeddable storefront widget, and real-time ticket escalation.",
+        "Free AI customer support chatbot for websites and ecommerce stores. Add an intelligent 24/7 assistant to Shopify, WooCommerce, or any website with a single line of HTML code.",
       applicationCategory: "BusinessApplication",
       operatingSystem: "All (Web-based)",
       offers: {
@@ -110,7 +118,7 @@ const jsonLd = {
         price: "0",
         priceCurrency: "USD",
         description:
-          "Free tier with premium multi-tenant customer support capabilities",
+          "100% Free AI chatbot with unlimited website visitor support",
       },
       founder: {
         "@type": "Person",
@@ -126,30 +134,30 @@ const jsonLd = {
         "https://resolvdesk.vercel.app",
       ],
       knowsAbout: [
-        "Autonomous AI Customer Support",
-        "Retrieval-Augmented Generation (RAG)",
-        "Storefront Support Widgets",
-        "Shopify & WooCommerce AI Chatbots",
-        "Multi-Tenant Database Isolation",
-        "Real-Time Human Escalation",
+        "Free AI Chatbot for Website",
+        "Ecommerce Customer Support",
+        "Shopify AI Chatbot",
+        "WooCommerce Support Widget",
+        "1-Line Website Embed",
+        "24/7 Customer Service Automation",
+        "Ticket Escalation",
       ],
       featureList: [
-        "Autonomous streaming AI responses grounded strictly in merchant documentation",
-        "Universal 1-line script embed for Shopify, WooCommerce, Wix, Squarespace, and custom websites",
-        "Automated human ticket escalation with complete preserved conversation transcripts",
-        "Multi-tenant data isolation enforced at database query level",
-        "Instant sub-16ms client-side cached dashboard navigation",
-        "Zero-downtime 24-hour dual-key API key rotation",
-        "Multi-format document ingestion (PDF, DOCX, TXT, MD) with semantic chunking",
+        "100% Free AI customer support chatbot for websites and online stores",
+        "Simple 1-line HTML copy-paste embed code (ready in under 2 minutes)",
+        "Answers visitor questions 24/7 automatically from your store FAQs & documents",
+        "Seamless compatibility with Shopify, WooCommerce, Wix, Squarespace, and custom websites",
+        "Instant human ticket escalation with complete preserved conversation history",
+        "Fast dashboard with instant document uploads and key management",
       ],
     },
     {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: "ResolvDesk - AI Support Agent Platform",
+      name: "ResolvDesk - Free AI Chatbot for Website",
       description:
-        "Empower your ecommerce storefront and web app with an autonomous, grounded AI customer support assistant.",
+        "Add a free AI customer support chatbot to your website or online store in 2 minutes with 1 line of code.",
       publisher: {
         "@id": `${siteUrl}/#organization`,
       },

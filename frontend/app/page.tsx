@@ -73,20 +73,20 @@ export default async function HomePage() {
           <div className="container mx-auto max-w-5xl px-4 sm:px-6 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-muted/60 px-3.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md mb-6">
               <span className="flex size-2 rounded-full bg-primary" />
-              Autonomous Support Agent Platform
+              100% Free • Add to Any Website in 1 Line of Code
             </div>
 
             <h1 className="font-heading text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground max-w-3xl mx-auto leading-tight">
-              AI Support for Your Store.{" "}
+              Free AI Chatbot for Your Website.{" "}
               <span className="text-muted-foreground">
-                Grounded in your actual knowledge.
+                Live in 2 minutes with 1 line of code.
               </span>
             </h1>
 
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Equip your website with an intelligent assistant that resolves
-              visitor questions directly from your documentation, catalogs, and
-              FAQs — with seamless human handoff when needed.
+              Equip your online store or website with an intelligent AI support
+              chatbot that answers customer questions 24/7 directly from your FAQs and
+              products — with seamless human handoff when needed.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -111,7 +111,7 @@ export default async function HomePage() {
                       className: "h-12 px-8 text-base",
                     })}
                   >
-                    Start Free Trial
+                    Get Started Free
                     <ArrowRight className="ml-2 size-4" />
                   </Link>
                   <Link
