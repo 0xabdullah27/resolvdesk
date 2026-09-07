@@ -177,10 +177,23 @@ export default async function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border/60 py-8 bg-background">
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ResolvDesk Inc. All rights reserved.</p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p>© {new Date().getFullYear()} ResolvDesk Inc. All rights reserved.</p>
+            <span className="hidden sm:inline text-border">•</span>
+            <p>
+              Designed &amp; Built by{" "}
+              <a
+                href="https://abdullah-qureshi.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
+              >
+                Abdullah Qureshi
+              </a>
+            </p>
+          </div>
           <div className="flex items-center gap-6">
             {owner ? (
               <Link href="/dashboard" className="hover:text-foreground transition-colors">

@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ResolvDesk Frontend & Dashboard
 
-## Getting Started
+Modern, high-performance web interface for ResolvDesk built with **Next.js 16 App Router**, **TypeScript**, **Tailwind CSS v4**, **Better Auth**, and **Redux Toolkit**.
 
-First, run the development server:
+<p align="center">
+  <strong>Developed by <a href="https://abdullah-qureshi.vercel.app">Abdullah Qureshi</a></strong>
+</p>
+
+---
+
+## 🚀 Key Highlights
+
+- **Next.js 16 App Router**: Leverages Turbopack, React Server Components (RSC), and Server Actions for optimal performance and SEO.
+- **Client-Side In-Memory Caching (<16ms)**: Persistent `DashboardProvider` caches overview metrics, documents, conversations, transcripts, and widget settings for zero-latency intra-dashboard navigation.
+- **Better Auth Integration**: Stateful session management with automatic cookie issuance and an exposed JWKS public keys endpoint for stateless backend token verification.
+- **Live Embeddable Storefront Widget**: Embeddable floating chat widget with online status indicator, bot customization preview, and non-technical installation guides for Shopify, WordPress, Wix, and Squarespace.
+- **Optimistic UI Updates**: Status toggles (open/resolved) and document removals update the interface immediately with automatic rollback on network failure.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 16 (App Router with Turbopack)
+- **Language**: TypeScript 5+
+- **Styling**: Tailwind CSS v4, shadcn/ui
+- **State Management**: Redux Toolkit & React Context
+- **Authentication**: Better Auth with JWT & JWKS plugin
+- **Icons & Visualization**: Lucide React, Recharts
+
+---
+
+## 💻 Local Development
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables**:
+   Create a `.env.local` file in `frontend/`:
+   ```env
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   BETTER_AUTH_URL=http://localhost:3000
+   BETTER_AUTH_SECRET=resolvdesk-development-auth-secret-key-32chars
+   DATABASE_URL=postgresql://<username>:<password>@<neon-host>/<database>?sslmode=require
+   BACKEND_API_URL=http://localhost:8000
+   ```
+
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+   Access the app at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## 🧪 Verification Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Type check without emitting files
+npx tsc --noEmit
+
+# Production build verification
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 👤 Author
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Abdullah Qureshi**
+- 🌐 [Portfolio](https://abdullah-qureshi.vercel.app)
+- 💼 [LinkedIn](https://www.linkedin.com/in/abdullahqureshi27)
+- 🐙 [GitHub](https://github.com/abdullahqureshi27)
