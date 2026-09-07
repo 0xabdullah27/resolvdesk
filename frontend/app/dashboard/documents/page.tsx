@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import { listDocumentsAction } from "@/actions/document-actions";
 import { DocumentsView } from "@/components/documents/documents-view";
 
 export const metadata: Metadata = {
@@ -8,11 +7,7 @@ export const metadata: Metadata = {
   description: "Manage grounded support documents, catalogs, and FAQs.",
 };
 
-export default async function DocumentsPage() {
-  const result = await listDocumentsAction();
-  const initialDocuments = result.success && result.data ? result.data.items : [];
-  const initialTotal = result.success && result.data ? result.data.total : 0;
-
+export default function DocumentsPage() {
   return (
     <div className="space-y-6">
       <div>
@@ -24,10 +19,7 @@ export default async function DocumentsPage() {
         </p>
       </div>
 
-      <DocumentsView
-        initialDocuments={initialDocuments}
-        initialTotal={initialTotal}
-      />
+      <DocumentsView />
     </div>
   );
 }

@@ -1,9 +1,5 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import {
-  listConversationsAction,
-  getConversationStatsAction,
-} from "@/actions/conversation-actions";
 import { ConversationsInbox } from "@/components/conversations/conversations-inbox";
 
 export const metadata: Metadata = {
@@ -19,29 +15,6 @@ export default async function ConversationsPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const initialSelectedId = resolvedParams.id || null;
 
-  const [conversationsResult, statsResult] = await Promise.all([
-    listConversationsAction(20, 0),
-    getConversationStatsAction(),
-  ]);
-
-  const initialConversations =
-    conversationsResult.success && conversationsResult.data
-      ? conversationsResult.data.items
-      : [];
-  const initialTotal =
-    conversationsResult.success && conversationsResult.data
-      ? conversationsResult.data.total
-      : 0;
-  const initialStats =
-    statsResult.success && statsResult.data
-      ? statsResult.data
-      : {
-          total_conversations: 0,
-          total_messages: 0,
-          escalated_conversations: 0,
-          active_last_24h: 0,
-        };
-
   return (
     <div className="space-y-6">
       <div>
@@ -53,12 +26,7 @@ export default async function ConversationsPage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <ConversationsInbox
-        initialConversations={initialConversations}
-        initialTotal={initialTotal}
-        initialStats={initialStats}
-        initialSelectedId={initialSelectedId}
-      />
+      <ConversationsInbox initialSelectedId={initialSelectedId} />
     </div>
   );
 }

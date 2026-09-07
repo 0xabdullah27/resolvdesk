@@ -47,19 +47,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 3. Root landing page: redirect authenticated owners to /dashboard
-  if (pathname === "/") {
-    if (isAuthenticated) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-  }
-
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/",
     "/dashboard/:path*",
     "/login",
     "/widget.js",

@@ -2,18 +2,30 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { useDashboard } from "@/hooks/use-dashboard";
 
 interface DashboardHeaderProps {
   ownerName?: string;
   ownerEmail?: string;
   organizationName?: string;
+}
+
+function formatRelativeTime(date: Date | null): string {
+  if (!date) return "";
+  const diffMs = Date.now() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return "just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  return `${diffHours}h ago`;
 }
 
 export function DashboardHeader({
@@ -23,6 +35,20 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const { refreshAll, isRefreshing, lastRefreshedAt } = useDashboard();
+  const [relativeTime, setRelativeTime] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (!lastRefreshedAt) {
+      setRelativeTime("");
+      return;
+    }
+    setRelativeTime(formatRelativeTime(lastRefreshedAt));
+    const timer = setInterval(() => {
+      setRelativeTime(formatRelativeTime(lastRefreshedAt));
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [lastRefreshedAt]);
 
   // Derive route title
   let routeTitle = "Overview";
@@ -70,6 +96,30 @@ export function DashboardHeader({
 
       {/* Right Header Actions */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Unified Cache Refresh Button */}
+        <div className="flex items-center gap-2">
+          {relativeTime && (
+            <span className="hidden lg:inline text-xs text-muted-foreground">
+              Updated {relativeTime}
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshAll}
+            disabled={isRefreshing}
+            className="cursor-pointer gap-1.5 text-xs font-medium h-8"
+            title={
+              lastRefreshedAt
+                ? `Last refreshed: ${lastRefreshedAt.toLocaleTimeString()}`
+                : "Refresh dashboard data"
+            }
+          >
+            <RefreshCw className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+        </div>
+
         <ThemeToggle />
         <UserMenu name={ownerName} email={ownerEmail} />
       </div>

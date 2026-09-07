@@ -12,20 +12,36 @@ import {
   listDocumentsAction,
   deleteDocumentAction,
 } from "@/actions/document-actions";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { MAX_DOCUMENTS_LIMIT } from "@/lib/validations/document";
 import type { DocumentItem, DocumentStatus } from "@/types/document";
 import { Button } from "@/components/ui/button";
 
 interface DocumentsViewProps {
-  initialDocuments: DocumentItem[];
-  initialTotal: number;
+  initialDocuments?: DocumentItem[];
+  initialTotal?: number;
 }
 
 export function DocumentsView({
-  initialDocuments,
-  initialTotal,
+  initialDocuments = [],
+  initialTotal = 0,
 }: DocumentsViewProps) {
-  const [documents, setDocuments] = React.useState<DocumentItem[]>(initialDocuments);
+  const {
+    documents: cachedDocs,
+    loadDocuments,
+    optimisticDeleteDocument,
+  } = useDashboard();
+
+  // Lazy load on first mount if idle
+  React.useEffect(() => {
+    if (cachedDocs.status === "idle") {
+      loadDocuments();
+    }
+  }, [cachedDocs.status, loadDocuments]);
+
+  // Use cached documents if available, falling back to initial props
+  const documents = cachedDocs.data ? cachedDocs.data.items : initialDocuments;
+
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<"all" | DocumentStatus>("all");
 
@@ -38,18 +54,10 @@ export function DocumentsView({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
 
-  // Synchronize state if SSR props change
-  React.useEffect(() => {
-    setDocuments(initialDocuments);
-  }, [initialDocuments]);
-
   // Refresh document list
   const refreshDocuments = React.useCallback(async () => {
-    const res = await listDocumentsAction();
-    if (res.success && res.data) {
-      setDocuments(res.data.items);
-    }
-  }, []);
+    await loadDocuments(true);
+  }, [loadDocuments]);
 
   // Conditional 3-second polling while any document is in active processing
   const hasActiveProcessing = React.useMemo(() => {
@@ -74,31 +82,19 @@ export function DocumentsView({
     setIsPreviewOpen(true);
   };
 
-  // Row Delete trigger handler
-  const handleDeleteTrigger = (doc: DocumentItem) => {
+  // Open deletion confirmation dialog
+  const handleDeleteClick = (doc: DocumentItem) => {
     setDeleteDoc(doc);
     setIsDeleteDialogOpen(true);
   };
 
-  // Confirm permanent deletion
+  // Confirm permanent deletion with optimistic UI update
   const handleDeleteConfirm = async () => {
     if (!deleteDoc) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteDocumentAction(deleteDoc.id);
-      if (res.success) {
-        setDocuments((prev) => prev.filter((d) => d.id !== deleteDoc.id));
-        toast.success(`"${deleteDoc.title}" deleted from knowledge base.`);
-        setIsDeleteDialogOpen(false);
-        setDeleteDoc(null);
-      } else {
-        toast.error(res.error || "Failed to delete document.");
-      }
-    } catch {
-      toast.error("An unexpected error occurred during deletion.");
-    } finally {
-      setIsDeleting(false);
-    }
+    const docToDelete = deleteDoc;
+    setIsDeleteDialogOpen(false);
+    setDeleteDoc(null);
+    await optimisticDeleteDocument(docToDelete.id);
   };
 
   // Client-side real-time search & status filtering
@@ -135,7 +131,16 @@ export function DocumentsView({
       />
 
       {/* 3. Document List Table or Empty State (US2) */}
-      {documents.length === 0 ? (
+      {cachedDocs.status === "loading" && !cachedDocs.data && documents.length === 0 ? (
+        <div className="rounded-xl border border-border/70 bg-card p-4 space-y-3">
+          <div className="h-9 w-full rounded-lg bg-muted/30 animate-pulse" />
+          <div className="space-y-2 pt-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-14 w-full rounded-lg bg-muted/20 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      ) : documents.length === 0 ? (
         <DocumentEmptyState />
       ) : filteredDocuments.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border/80 p-12 text-center bg-card/40">
@@ -161,7 +166,7 @@ export function DocumentsView({
         <DocumentTable
           documents={filteredDocuments}
           onPreview={handlePreview}
-          onDelete={handleDeleteTrigger}
+          onDelete={handleDeleteClick}
         />
       )}
 

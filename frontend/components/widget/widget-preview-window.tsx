@@ -75,7 +75,7 @@ export function WidgetPreviewWindow({
             className="flex size-7 shrink-0 items-center justify-center rounded-full text-white text-xs mt-0.5"
             style={{ backgroundColor: primaryColor }}
           >
-            <Sparkles className="size-3.5" />
+            <Bot className="size-3.5" />
           </div>
           <div className="space-y-1">
             <div className="rounded-2xl rounded-tl-xs bg-muted/80 border border-border/50 px-3.5 py-2.5 text-xs text-foreground leading-relaxed shadow-xs break-words">

@@ -1,37 +1,60 @@
 import * as React from "react";
 import Link from "next/link";
-import { Bot, ArrowRight, ShieldCheck, Zap, Users2 } from "lucide-react";
+import { Bot, ArrowRight, ShieldCheck, Zap, Users2, LayoutDashboard } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { getOwnerContextAction } from "@/actions/auth-actions";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const owner = await getOwnerContextAction();
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Navigation Bar */}
       <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-85"
+          >
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
               <Bot className="size-5" />
             </div>
             <span className="font-heading text-lg font-bold tracking-tight">
               ResolvDesk
             </span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className={buttonVariants({ size: "sm" })}
-            >
-              Get Started
-              <ArrowRight className="ml-1.5 size-4" />
-            </Link>
+            {owner ? (
+              <>
+                <span className="text-xs text-muted-foreground hidden sm:inline font-medium">
+                  {owner.organizationName}
+                </span>
+                <Link
+                  href="/dashboard"
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  <LayoutDashboard className="mr-1.5 size-4" />
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={buttonVariants({ variant: "ghost", size: "sm" })}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  Get Started
+                  <ArrowRight className="ml-1.5 size-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -67,26 +90,42 @@ export default function HomePage() {
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/register"
-                className={buttonVariants({
-                  size: "lg",
-                  className: "h-12 px-8 text-base",
-                })}
-              >
-                Start Free Trial
-                <ArrowRight className="ml-2 size-4" />
-              </Link>
-              <Link
-                href="/login"
-                className={buttonVariants({
-                  variant: "outline",
-                  size: "lg",
-                  className: "h-12 px-8 text-base",
-                })}
-              >
-                Existing Owner Sign In
-              </Link>
+              {owner ? (
+                <Link
+                  href="/dashboard"
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "h-12 px-8 text-base",
+                  })}
+                >
+                  <LayoutDashboard className="mr-2 size-5" />
+                  Open Dashboard
+                  <ArrowRight className="ml-2 size-4" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className={buttonVariants({
+                      size: "lg",
+                      className: "h-12 px-8 text-base",
+                    })}
+                  >
+                    Start Free Trial
+                    <ArrowRight className="ml-2 size-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "lg",
+                      className: "h-12 px-8 text-base",
+                    })}
+                  >
+                    Existing Owner Sign In
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -143,12 +182,20 @@ export default function HomePage() {
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} ResolvDesk Inc. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="/login" className="hover:text-foreground transition-colors">
-              Sign In
-            </Link>
-            <Link href="/register" className="hover:text-foreground transition-colors">
-              Create Workspace
-            </Link>
+            {owner ? (
+              <Link href="/dashboard" className="hover:text-foreground transition-colors">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-foreground transition-colors">
+                  Sign In
+                </Link>
+                <Link href="/register" className="hover:text-foreground transition-colors">
+                  Create Workspace
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </footer>

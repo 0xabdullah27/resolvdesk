@@ -88,11 +88,12 @@ export async function getAnalyticsTrendsAction(
  * Fetches knowledge base gaps (unanswered visitor inquiries triggering AI fallback)
  */
 export async function getKnowledgeGapsAction(
-  limit: number = 10
+  limit: number = 10,
+  days: number = 30
 ): Promise<ActionResult<KnowledgeGapsResponse>> {
   try {
     const data = await backendFetch<KnowledgeGapsResponse>(
-      `/api/v1/analytics/knowledge-gaps?limit=${limit}`,
+      `/api/v1/analytics/knowledge-gaps?limit=${limit}&days=${days}`,
       {
         method: "GET",
         requireAuth: true,
@@ -112,11 +113,12 @@ export async function getKnowledgeGapsAction(
  * Fetches most frequent customer questions asked across all chat interactions
  */
 export async function getTopQuestionsAction(
-  limit: number = 10
+  limit: number = 10,
+  days: number = 30
 ): Promise<ActionResult<TopQuestionsResponse>> {
   try {
     const data = await backendFetch<TopQuestionsResponse>(
-      `/api/v1/analytics/top-questions?limit=${limit}`,
+      `/api/v1/analytics/top-questions?limit=${limit}&days=${days}`,
       {
         method: "GET",
         requireAuth: true,
