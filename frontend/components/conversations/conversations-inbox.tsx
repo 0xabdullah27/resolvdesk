@@ -13,16 +13,17 @@ import {
   listConversationsAction,
   getConversationTranscriptAction,
   getConversationStatsAction,
-  updateTicketStatusAction,
 } from "@/actions/conversation-actions";
 import { ConversationStatsCards } from "@/components/conversations/conversation-stats-cards";
 import { ConversationList } from "@/components/conversations/conversation-list";
 import { ConversationTranscript } from "@/components/conversations/conversation-transcript";
+import { ConversationsSkeleton } from "@/components/conversations/conversations-skeleton";
+import { useDashboard } from "@/hooks/use-dashboard";
 
 interface ConversationsInboxProps {
-  initialConversations: ConversationSummary[];
-  initialTotal: number;
-  initialStats: ConversationStats;
+  initialConversations?: ConversationSummary[];
+  initialTotal?: number;
+  initialStats?: ConversationStats;
   initialSelectedId?: string | null;
 }
 
@@ -30,11 +31,30 @@ const PAGE_SIZE = 20;
 const POLLING_INTERVAL_MS = 30000;
 
 export function ConversationsInbox({
-  initialConversations,
-  initialTotal,
-  initialStats,
+  initialConversations = [],
+  initialTotal = 0,
+  initialStats = {
+    total_conversations: 0,
+    total_messages: 0,
+    escalated_conversations: 0,
+    active_last_24h: 0,
+  },
   initialSelectedId,
 }: ConversationsInboxProps) {
+  const {
+    conversations: cachedConversations,
+    conversationStats: cachedStats,
+    loadConversations,
+    optimisticUpdateTicketStatus,
+  } = useDashboard();
+
+  // Lazy load conversations on first mount if idle
+  React.useEffect(() => {
+    if (cachedConversations.status === "idle") {
+      loadConversations(PAGE_SIZE, 0);
+    }
+  }, [cachedConversations.status, loadConversations]);
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -43,15 +63,35 @@ export function ConversationsInbox({
   const urlSelectedId = searchParams.get("id") || initialSelectedId || null;
 
   // Local state
-  const [conversations, setConversations] = React.useState<ConversationSummary[]>(initialConversations);
-  const [totalCount, setTotalCount] = React.useState<number>(initialTotal);
-  const [stats, setStats] = React.useState<ConversationStats>(initialStats);
+  const [conversations, setConversations] = React.useState<ConversationSummary[]>(
+    cachedConversations.data ? cachedConversations.data.items : initialConversations
+  );
+  const [totalCount, setTotalCount] = React.useState<number>(
+    cachedConversations.data ? cachedConversations.data.total : initialTotal
+  );
+  const [stats, setStats] = React.useState<ConversationStats>(
+    cachedStats.data ? cachedStats.data : initialStats
+  );
   const [selectedId, setSelectedId] = React.useState<string | null>(urlSelectedId);
 
   // Filters & Pagination
   const [activeFilter, setActiveFilter] = React.useState<InboxFilterTab>("all");
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [currentPage, setCurrentPage] = React.useState<number>(1);
+
+  // Keep local list in sync with cache updates (e.g. from refreshAll or lazy load)
+  React.useEffect(() => {
+    if (cachedConversations.data && activeFilter === "all" && currentPage === 1 && !searchQuery) {
+      setConversations(cachedConversations.data.items);
+      setTotalCount(cachedConversations.data.total);
+    }
+  }, [cachedConversations.data, activeFilter, currentPage, searchQuery]);
+
+  React.useEffect(() => {
+    if (cachedStats.data) {
+      setStats(cachedStats.data);
+    }
+  }, [cachedStats.data]);
 
   // Loading & Error States
   const [isLoadingList, setIsLoadingList] = React.useState<boolean>(false);
@@ -230,27 +270,35 @@ export function ConversationsInbox({
 
     const previousStatus = transcript.ticket_status || "open";
 
-    // 1. Optimistic update
+    // 1. Optimistic update in local transcript & list
     setTranscript((prev) => (prev ? { ...prev, ticket_status: newStatus } : null));
     setConversations((prev) =>
       prev.map((c) => (c.id === selectedId ? { ...c, ticket_status: newStatus } : c))
     );
 
-    // 2. Persist to backend
-    const res = await updateTicketStatusAction(selectedId, newStatus);
-    if (!res.success) {
-      // Rollback on failure
+    // 2. Persist via DashboardProvider optimistic mutation (synchronizes KPIs and handles toast/rollback)
+    const success = await optimisticUpdateTicketStatus(selectedId, newStatus);
+    if (!success) {
+      // Rollback local state on failure
       setTranscript((prev) => (prev ? { ...prev, ticket_status: previousStatus } : null));
       setConversations((prev) =>
         prev.map((c) => (c.id === selectedId ? { ...c, ticket_status: previousStatus } : c))
       );
-      alert(res.error || "Failed to update ticket status.");
     }
   };
 
   const handleMobileBackToList = () => {
     updateSelectedIdInUrl(null);
   };
+
+  // Render skeleton during very first initial load if no cached data exists
+  if (
+    cachedConversations.status === "loading" &&
+    !cachedConversations.data &&
+    conversations.length === 0
+  ) {
+    return <ConversationsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

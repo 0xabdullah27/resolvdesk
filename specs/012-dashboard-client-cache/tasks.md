@@ -8,8 +8,8 @@
 
 **Purpose**: Define the TypeScript types, interfaces, and hooks needed for client-side state caching.
 
-- [ ] T001 [P] Create state types, resource status definitions, and snapshot interfaces in `frontend/types/dashboard-cache.ts`
-- [ ] T002 [P] Create typed consumer hook `useDashboard` in `frontend/hooks/use-dashboard.ts`
+- [x] T001 [P] Create state types, resource status definitions, and snapshot interfaces in `frontend/types/dashboard-cache.ts`
+- [x] T002 [P] Create typed consumer hook `useDashboard` in `frontend/hooks/use-dashboard.ts`
 
 ---
 
@@ -19,8 +19,8 @@
 
 **⚠️ CRITICAL**: Must be completed before user story page implementations can begin.
 
-- [ ] T003 Implement core in-memory cache provider `DashboardProvider` in `frontend/providers/dashboard-provider.tsx` with lazy loaders (`loadOverview`, `loadTrends`, `loadKnowledgeGaps`, `loadTopQuestions`, `loadWidgetProfile`, `loadDocuments`, `loadConversations`)
-- [ ] T004 Mount `<DashboardProvider>` inside `frontend/app/dashboard/layout.tsx` to maintain persistent in-memory client state across all dashboard sub-routes
+- [x] T003 Implement core in-memory cache provider `DashboardProvider` in `frontend/providers/dashboard-provider.tsx` with lazy loaders (`loadOverview`, `loadTrends`, `loadKnowledgeGaps`, `loadTopQuestions`, `loadWidgetProfile`, `loadDocuments`, `loadConversations`)
+- [x] T004 Mount `<DashboardProvider>` inside `frontend/app/dashboard/layout.tsx` to maintain persistent in-memory client state across all dashboard sub-routes
 
 **Checkpoint**: Foundation ready — dashboard provider is mounted and accessible across all sub-pages.
 
@@ -34,10 +34,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Update `frontend/app/dashboard/page.tsx` to consume cached analytics overview, trends, knowledge gaps, and top inquiries from `DashboardProvider`
-- [ ] T006 [P] [US1] Update `frontend/app/dashboard/widget/page.tsx` to load widget customizer profile into `DashboardProvider` on first visit and serve from cache on return visits
-- [ ] T007 [P] [US1] Update `frontend/app/dashboard/documents/page.tsx` to consume cached documents list from `DashboardProvider` on navigation
-- [ ] T008 [P] [US1] Update `frontend/app/dashboard/conversations/page.tsx` to consume cached conversations list and stats from `DashboardProvider` on navigation
+- [x] T005 [US1] Update `frontend/app/dashboard/page.tsx` to consume cached analytics overview, trends, knowledge gaps, and top inquiries from `DashboardProvider`
+- [x] T006 [P] [US1] Update `frontend/app/dashboard/widget/page.tsx` to load widget customizer profile into `DashboardProvider` on first visit and serve from cache on return visits
+- [x] T007 [P] [US1] Update `frontend/app/dashboard/documents/page.tsx` to consume cached documents list from `DashboardProvider` on navigation
+- [x] T008 [P] [US1] Update `frontend/app/dashboard/conversations/page.tsx` to consume cached conversations list and stats from `DashboardProvider` on navigation
 
 **Checkpoint**: User Story 1 is fully functional. Intra-dashboard navigation between all 4 tabs is instant with zero loading skeleton flashes.
 
@@ -51,10 +51,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Implement `optimisticUpdateTicketStatus` in `frontend/providers/dashboard-provider.tsx` with previous-state snapshot, immediate local ticket state update, counter decrement, background server action call, and Sonner error rollback
-- [ ] T010 [US2] Connect `ConversationsInbox` in `frontend/components/conversations/conversations-inbox.tsx` to use `optimisticUpdateTicketStatus` for instantaneous badge and list response
-- [ ] T011 [US2] Implement `optimisticDeleteDocument` in `frontend/providers/dashboard-provider.tsx` with snapshot capture, immediate item removal, and Sonner error rollback
-- [ ] T012 [US2] Connect `DocumentList` in `frontend/components/documents/document-list.tsx` to use `optimisticDeleteDocument`
+- [x] T009 [US2] Implement `optimisticUpdateTicketStatus` in `frontend/providers/dashboard-provider.tsx` with previous-state snapshot, immediate local ticket state update, counter decrement, background server action call, and Sonner error rollback
+- [x] T010 [US2] Connect `ConversationsInbox` in `frontend/components/conversations/conversations-inbox.tsx` to use `optimisticUpdateTicketStatus` for instantaneous badge and list response
+- [x] T011 [US2] Implement `optimisticDeleteDocument` in `frontend/providers/dashboard-provider.tsx` with snapshot capture, immediate item removal, and Sonner error rollback
+- [x] T012 [US2] Connect `DocumentList` in `frontend/components/documents/document-list.tsx` to use `optimisticDeleteDocument`
 
 **Checkpoint**: User Stories 1 and 2 work seamlessly together. Status toggles and document deletions are instantaneous with safe failure rollback.
 
@@ -68,9 +68,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Implement `refreshAll` and `lastRefreshedAt` in `frontend/providers/dashboard-provider.tsx` to invalidate cache and fetch fresh canonical state for active resources
-- [ ] T014 [US3] Add unified "↻ Refresh" button and relative timestamp label ("Updated just now") to `frontend/components/dashboard/header.tsx`
-- [ ] T015 [US3] Verify synchronized counter updates between `ConversationsInbox` ticket status toggles and `AnalyticsKpiCards` open ticket count in `frontend/components/dashboard/analytics-kpi-cards.tsx`
+- [x] T013 [US3] Implement `refreshAll` and `lastRefreshedAt` in `frontend/providers/dashboard-provider.tsx` to invalidate cache and fetch fresh canonical state for active resources
+- [x] T014 [US3] Add unified "↻ Refresh" button and relative timestamp label ("Updated just now") to `frontend/components/dashboard/header.tsx`
+- [x] T015 [US3] Verify synchronized counter updates between `ConversationsInbox` ticket status toggles and `AnalyticsKpiCards` open ticket count in `frontend/components/dashboard/analytics-kpi-cards.tsx`
 
 **Checkpoint**: All user stories functional. Merchants have instant navigation, optimistic actions, synchronized counters, and a manual refresh trigger.
 
@@ -80,8 +80,8 @@
 
 **Purpose**: Final verification, code cleanup, and performance validation across all dashboard routes.
 
-- [ ] T016 Run quickstart validation scenarios in `specs/012-dashboard-client-cache/quickstart.md` covering tab navigation, optimistic mutations, rollback alerts, and header refresh
-- [ ] T017 [P] Clean up any obsolete loading states or dead code in dashboard components
+- [x] T016 Run quickstart validation scenarios in `specs/012-dashboard-client-cache/quickstart.md` covering tab navigation, optimistic mutations, rollback alerts, and header refresh
+- [x] T017 [P] Clean up any obsolete loading states or dead code in dashboard components
 
 ---
 

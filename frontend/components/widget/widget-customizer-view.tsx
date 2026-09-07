@@ -24,9 +24,13 @@ import { WidgetRotateDialog } from "./widget-rotate-dialog";
 
 interface WidgetCustomizerViewProps {
   initialConfig: WidgetConfig;
+  onConfigUpdated?: (config: WidgetConfig) => void;
 }
 
-export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProps) {
+export function WidgetCustomizerView({
+  initialConfig,
+  onConfigUpdated,
+}: WidgetCustomizerViewProps) {
   // Live widget key and grace window state (updated on key rotation)
   const [currentConfig, setCurrentConfig] = React.useState<WidgetConfig>(initialConfig);
 
@@ -79,6 +83,7 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
 
       if (res.success && res.data) {
         setCurrentConfig(res.data);
+        onConfigUpdated?.(res.data);
         reset({
           bot_display_name: res.data.bot_display_name,
           welcome_message: res.data.welcome_message,
@@ -115,14 +120,16 @@ export function WidgetCustomizerView({ initialConfig }: WidgetCustomizerViewProp
     try {
       const res = await rotateWidgetKeyAction();
       if (res.success && res.data) {
-        setCurrentConfig((prev) => ({
-          ...prev,
-          widget_key: res.data!.new_widget_key,
-          previous_widget_key: res.data!.previous_widget_key,
-          grace_expires_at: res.data!.grace_expires_at,
+        const rotatedConfig: WidgetConfig = {
+          ...currentConfig,
+          widget_key: res.data.new_widget_key,
+          previous_widget_key: res.data.previous_widget_key,
+          grace_expires_at: res.data.grace_expires_at,
           has_grace_key: true,
-          embed_snippet: res.data!.embed_snippet,
-        }));
+          embed_snippet: res.data.embed_snippet,
+        };
+        setCurrentConfig(rotatedConfig);
+        onConfigUpdated?.(rotatedConfig);
         setIsRotateDialogOpen(false);
         toast.success("Widget key rotated successfully! 24-hour grace period started.");
       } else {
