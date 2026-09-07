@@ -1,43 +1,50 @@
 # ResolvDesk
 
-<p align="center">
-  <strong>Autonomous Multi-Tenant AI Customer Support Platform with Grounded RAG, Embeddable Storefront Widget, and Real-Time Ticket Escalation</strong>
-</p>
+### AI Customer Support for Business Websites
 
-<p align="center">
-  <a href="https://resolvdesk.vercel.app"><strong>Live Demo</strong></a> •
-  <a href="https://abdullah-qureshi.vercel.app"><strong>Portfolio</strong></a> •
-  <a href="https://www.linkedin.com/in/abdullahqureshi27"><strong>LinkedIn</strong></a> •
-  <a href="https://github.com/abdullahqureshi27"><strong>GitHub</strong></a> •
-  <a href="https://x.com/abdullahqur27"><strong>X (Twitter)</strong></a>
-</p>
+ResolvDesk is a multi-tenant AI customer-support platform that lets businesses
+deploy a knowledge-grounded chatbot on their website using a single embed script.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js" alt="Next.js 16" />
-  <img src="https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white" alt="Python 3.12" />
-  <img src="https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Vector_DB-Qdrant-DC2626?logo=qdrant" alt="Qdrant" />
-  <img src="https://img.shields.io/badge/Auth-Better_Auth_(JWKS)-7C3AED" alt="Better Auth" />
-  <img src="https://img.shields.io/badge/Tests-86_Passed-success" alt="Tests Passed" />
-</p>
+Businesses can upload their documents and FAQs, customize their chatbot,
+monitor conversations, and escalate conversations to human support.
+
+**Built & maintained by Abdullah Qureshi**
+
+[Live Demo](https://resolvdesk.vercel.app) ·
+[Architecture](#architecture) ·
+[Tech Stack](#tech-stack)
 
 ---
 
-> **Created and Maintained by [Abdullah Qureshi](https://abdullah-qureshi.vercel.app)** — Full-Stack & AI Systems Engineer.
+## Why I Built This
+
+Most small businesses want an AI support chatbot but don't want to build
+their own RAG pipeline, knowledge ingestion system, authentication layer,
+and embeddable widget.
+
+ResolvDesk combines these pieces into a self-serve platform.
 
 ---
 
-## 🌟 Key Features
+## Product Flow
 
-- **🤖 Autonomous AI Customer Support**: Provides real-time streaming answers grounded strictly in merchant-provided documents using Retrieval-Augmented Generation (RAG).
-- **🛍️ Universal Embeddable Storefront Widget**: Works with a 1-line script tag on **Shopify, WooCommerce, Wix, Squarespace**, or custom websites with zero configuration required.
-- **🔄 Seamless Human Escalation & Ticket Management**: When an inquiry needs human intervention, the AI creates an escalation ticket with full conversation context preserved for owner review.
-- **⚡ Instant Dashboard Navigation (<16ms)**: Persistent in-memory client caching eliminates loading skeleton flashes when switching between Overview, Conversations, Documents, and Widget settings.
-- **🛡️ Multi-Tenant Isolation & Zero-Leak Guarantee**: Queries enforce tenant filtering at the database query level (`WHERE organization_id = ...`) ensuring complete cross-tenant boundary isolation.
-- **🔐 Safe API Key Rotation**: Rotate public widget keys with an automatic 24-hour dual-key grace period so existing website embeds never drop traffic during updates.
-- **📚 Multi-Format Knowledge Base**: Upload and ingest `.md`, `.txt`, `.pdf`, and `.docx` files with automated token-aware semantic chunking and vector indexing.
-
+Business signs up
+↓
+Creates organization
+↓
+Uploads knowledge
+↓
+Documents are chunked and embedded
+↓
+Vectors stored in Qdrant
+↓
+Customer asks a question
+↓
+Relevant knowledge retrieved
+↓
+AI generates grounded response
+↓
+Conversation can be escalated to human support
 ---
 
 ## 🏗️ System Architecture
