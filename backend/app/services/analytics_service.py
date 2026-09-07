@@ -1,4 +1,5 @@
 import datetime
+import re
 import uuid
 from collections import defaultdict
 from typing import List, Optional
@@ -16,6 +17,17 @@ from app.schemas.analytics import (
     TopQuestionItem,
     TopQuestionsResponse,
 )
+
+
+def normalize_query_text(text: str) -> str:
+    """Normalizes inquiry text by lowercasing, stripping punctuation, and collapsing whitespace."""
+    if not text:
+        return ""
+    cleaned = text.strip().lower()
+    cleaned = re.sub(r"['`\"]+", "", cleaned)
+    cleaned = re.sub(r"[^\w\s]+", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
 
 
 class AnalyticsService:
@@ -133,17 +145,17 @@ class AnalyticsService:
         if not raw_fallbacks:
             return KnowledgeGapsResponse(items=[], total=0)
 
-        # Group by normalized lowercase question string
+        # Group by normalized lowercase question string without punctuation
         grouped: dict[str, dict] = {}
         for item in raw_fallbacks:
             q_text = item["question"]
-            norm_key = q_text.lower().strip()
+            norm_key = normalize_query_text(q_text)
             if not norm_key:
                 continue
 
             if norm_key not in grouped:
                 grouped[norm_key] = {
-                    "question": q_text,
+                    "question": q_text.strip(),
                     "frequency": 0,
                     "last_asked_at": item["asked_at"],
                     "conversation_id": item["conversation_id"],
@@ -194,14 +206,14 @@ class AnalyticsService:
 
         grouped: dict[str, dict] = {}
         for content, created_at in raw_msgs:
-            clean = content.strip()
-            norm_key = clean.lower()
-            if not clean or norm_key in ignored_greetings or len(clean) < 3:
+            display_text = content.strip()
+            norm_key = normalize_query_text(display_text)
+            if not norm_key or norm_key in ignored_greetings or len(norm_key) < 3:
                 continue
 
             if norm_key not in grouped:
                 grouped[norm_key] = {
-                    "question": clean,
+                    "question": display_text,
                     "frequency": 0,
                     "last_asked_at": created_at,
                 }
