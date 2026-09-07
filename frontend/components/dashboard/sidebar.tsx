@@ -59,8 +59,8 @@ export function DashboardSidebar({
       {/* Brand & Organization Header */}
       <div className="flex h-16 shrink-0 flex-col justify-center border-b border-sidebar-border px-5">
         <Link
-          href="/dashboard"
-          className="flex items-center gap-2.5 font-heading text-base font-bold text-sidebar-foreground"
+          href="/"
+          className="flex items-center gap-2.5 font-heading text-base font-bold text-sidebar-foreground transition-opacity hover:opacity-85"
           onClick={onNavigate}
         >
           <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
