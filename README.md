@@ -2,25 +2,19 @@
 
 ### AI Customer Support for Business Websites
 
-ResolvDesk is a multi-tenant AI customer-support platform that lets businesses
-deploy a knowledge-grounded chatbot on their website using a single embed script.
+ResolvDesk is a multi-tenant AI customer-support platform that lets businesses deploy a knowledge-grounded chatbot on their website using a single embed script.
 
-Businesses can upload their documents and FAQs, customize their chatbot,
-monitor conversations, and escalate conversations to human support.
+Businesses can upload their documents and FAQs, customize their chatbot, monitor conversations, and escalate conversations to human support.
 
 **Built & maintained by Abdullah Qureshi**
 
-[Live Demo](https://resolvdesk.vercel.app) ·
-[Architecture](#architecture) ·
-[Tech Stack](#tech-stack)
+[Live Demo](https://resolvdesk.vercel.app) · [Product Screenshots](#product-screenshots) · [Architecture](#architecture) · [Early Usage](#early-usage) · [Engineering Decisions](#engineering-decisions) · [Tech Stack](#tech-stack)
 
 ---
 
 ## Why I Built This
 
-Most small businesses want an AI support chatbot but don't want to build
-their own RAG pipeline, knowledge ingestion system, authentication layer,
-and embeddable widget.
+Most small businesses want an AI support chatbot but don't want to build their own RAG pipeline, knowledge ingestion system, authentication layer, and embeddable widget.
 
 ResolvDesk combines these pieces into a self-serve platform.
 
@@ -28,26 +22,29 @@ ResolvDesk combines these pieces into a self-serve platform.
 
 ## Product Flow
 
+```text
 Business signs up
-↓
+       ↓
 Creates organization
-↓
+       ↓
 Uploads knowledge
-↓
+       ↓
 Documents are chunked and embedded
-↓
+       ↓
 Vectors stored in Qdrant
-↓
+       ↓
 Customer asks a question
-↓
+       ↓
 Relevant knowledge retrieved
-↓
+       ↓
 AI generates grounded response
-↓
+       ↓
 Conversation can be escalated to human support
+```
+
 ---
 
-## 🏗️ System Architecture
+## <a id="architecture"></a>🏗️ System Architecture
 
 ```mermaid
 graph TD
@@ -88,7 +85,61 @@ graph TD
 
 ---
 
-## 🛠️ Technology Stack
+## <a id="product-screenshots"></a>📸 Product Screenshots
+
+### Merchant Dashboard
+Live overview displaying real-time conversation volume, automated deflection rates, total processed messages, and active ticket metrics.
+![Dashboard](docs/images/dashboard.png)
+
+### Knowledge Base
+Drag-and-drop document ingestion (PDF, DOCX, TXT, Markdown) and manual FAQ entry with automatic chunking, embedding, and vector index status.
+![Knowledge Base](docs/images/knowledge-base.png)
+
+### Website Chatbot
+Real-time widget styling, custom greetings, brand colors, placement settings, CORS origin restrictions, and interactive storefront simulation preview.
+![Chat Widget](docs/images/chat-widget.png)
+
+### Conversation Management
+Real-time visitor inbox monitoring, session inspection, grounded citation tracking, and conversation transcripts.
+![Conversations](docs/images/conversations.png)
+
+### Ticket Escalation & Human Handoff
+Intelligent fallbacks and human escalation triggers when queries exceed knowledge base scope, preserving full conversation context for support staff.
+![Ticket Escalation](docs/images/ticket-escalation.png)
+
+---
+
+## <a id="early-usage"></a>📈 Early Usage
+
+ResolvDesk is currently being used by early merchants in real-world website environments.
+
+The platform has been tested against real merchant knowledge bases and customer-support workflows.
+
+> Usage metrics will be updated as the platform grows.
+
+---
+
+## <a id="engineering-decisions"></a>🧠 Engineering Decisions
+
+### Why Qdrant?
+
+ResolvDesk requires tenant-aware semantic retrieval over merchant knowledge. Qdrant provides vector search while allowing the application to enforce organization-level isolation.
+
+### Why a separate FastAPI backend?
+
+The backend is responsible for resource APIs, ingestion, retrieval, authentication verification, and AI workflows, allowing the frontend and AI infrastructure to evolve independently.
+
+### Why JWKS-based JWT verification?
+
+The API acts as a resource server and validates tokens against the authentication provider's public JWKS endpoint rather than trusting client-provided identity information.
+
+### Why tenant isolation at the data layer?
+
+Every organization-owned query is scoped by organization ID so that one merchant's knowledge cannot be retrieved by another merchant.
+
+---
+
+## <a id="tech-stack"></a>🛠️ Technology Stack
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
