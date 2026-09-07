@@ -80,3 +80,4 @@ uv run pytest -v
 - 🌐 [Portfolio](https://abdullah-qureshi.vercel.app)
 - 💼 [LinkedIn](https://www.linkedin.com/in/abdullahqureshi27)
 - 🐙 [GitHub](https://github.com/abdullahqureshi27)
+- 🐦 [X (Twitter)](https://x.com/abdullahqur27)

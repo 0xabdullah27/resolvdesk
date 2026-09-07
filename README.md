@@ -8,7 +8,8 @@
   <a href="https://resolvdesk.vercel.app"><strong>Live Demo</strong></a> •
   <a href="https://abdullah-qureshi.vercel.app"><strong>Portfolio</strong></a> •
   <a href="https://www.linkedin.com/in/abdullahqureshi27"><strong>LinkedIn</strong></a> •
-  <a href="https://github.com/abdullahqureshi27"><strong>GitHub</strong></a>
+  <a href="https://github.com/abdullahqureshi27"><strong>GitHub</strong></a> •
+  <a href="https://x.com/abdullahqur27"><strong>X (Twitter)</strong></a>
 </p>
 
 <p align="center">
@@ -182,6 +183,7 @@ To deploy:
 - 🌐 **Portfolio & Personal Website**: [abdullah-qureshi.vercel.app](https://abdullah-qureshi.vercel.app)
 - 💼 **LinkedIn**: [linkedin.com/in/abdullahqureshi27](https://www.linkedin.com/in/abdullahqureshi27)
 - 🐙 **GitHub**: [@abdullahqureshi27](https://github.com/abdullahqureshi27)
+- 🐦 **X (Twitter)**: [@abdullahqur27](https://x.com/abdullahqur27)
 - ✉️ **Contact**: [mabdullahqureshi583@gmail.com](mailto:mabdullahqureshi583@gmail.com)
 
 ---

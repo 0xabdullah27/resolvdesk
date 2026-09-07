@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title: "ResolvDesk - Free AI Chatbot for Website & Ecommerce | 1-Line Embed",
     description:
       "Add a free AI customer support chatbot to any website in under 2 minutes with 1 line of code. Completely free, works on Shopify, WooCommerce, and custom websites.",
-    creator: "@abdullahqureshi",
+    creator: "@abdullahqur27",
   },
   robots: {
     index: true,
@@ -127,6 +127,7 @@ const jsonLd = {
         sameAs: [
           "https://www.linkedin.com/in/abdullahqureshi27",
           "https://github.com/abdullahqureshi27",
+          "https://x.com/abdullahqur27",
         ],
       },
       sameAs: [
