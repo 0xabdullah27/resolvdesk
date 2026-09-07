@@ -59,6 +59,22 @@ export function WidgetCustomizerView({
 
   const { watch, handleSubmit, reset } = form;
 
+  // Synchronize internal state & form when initialConfig updates from server or cache
+  React.useEffect(() => {
+    setCurrentConfig(initialConfig);
+    const resolvedDomains =
+      !initialConfig.allowed_origins || initialConfig.allowed_origins.trim() === "*"
+        ? "localhost"
+        : initialConfig.allowed_origins;
+    reset({
+      bot_display_name: initialConfig.bot_display_name || WIDGET_DEFAULTS.bot_display_name,
+      welcome_message: initialConfig.welcome_message || WIDGET_DEFAULTS.welcome_message,
+      primary_color: initialConfig.primary_color || WIDGET_DEFAULTS.primary_color,
+      widget_placement: initialConfig.widget_placement || WIDGET_DEFAULTS.widget_placement,
+      restricted_domains: resolvedDomains,
+    });
+  }, [initialConfig, reset]);
+
   // Real-time reactive preview synchronization (<50ms via watch)
   const watchedBotName = watch("bot_display_name");
   const watchedGreeting = watch("welcome_message");

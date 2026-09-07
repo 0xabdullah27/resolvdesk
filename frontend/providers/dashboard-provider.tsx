@@ -310,12 +310,15 @@ export function DashboardProvider({
     [transcripts]
   );
 
-  // Background pre-load conversations on mount if idle so inbox is instantly ready
+  // Background pre-load conversations and widget config on mount if idle so pages are instantly ready
   React.useEffect(() => {
     if (conversations.status === "idle") {
       loadConversations(20, 0);
     }
-  }, [conversations.status, loadConversations]);
+    if (widgetConfig.status === "idle") {
+      loadWidgetConfig();
+    }
+  }, [conversations.status, widgetConfig.status, loadConversations, loadWidgetConfig]);
 
   // Optimistic Mutations
   const optimisticUpdateTicketStatus = React.useCallback(

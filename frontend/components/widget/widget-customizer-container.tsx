@@ -1,8 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { WidgetCustomizerView } from "@/components/widget/widget-customizer-view";
+import { WidgetCustomizerSkeleton } from "@/components/widget/widget-skeleton";
+import { Button } from "@/components/ui/button";
 import type { WidgetConfig } from "@/types/widget";
 
 const fallbackConfig: WidgetConfig = {
@@ -25,10 +28,42 @@ export function WidgetCustomizerContainer() {
     }
   }, [widgetConfig.status, loadWidgetConfig]);
 
+  // If initial load is in progress and we do not have cached data yet, show skeleton
+  if (!widgetConfig.data && (widgetConfig.status === "idle" || widgetConfig.status === "loading")) {
+    return <WidgetCustomizerSkeleton />;
+  }
+
+  // Error state with retry
+  if (widgetConfig.status === "error" && !widgetConfig.data) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 border border-destructive/30 rounded-xl bg-card text-center space-y-4">
+        <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+          <AlertCircle className="size-6" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-foreground">Failed to Load Widget Configuration</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {widgetConfig.error || "An error occurred while fetching your widget branding settings."}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => loadWidgetConfig(true)}
+          className="cursor-pointer"
+        >
+          <RefreshCw className="mr-2 size-4" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   const config = widgetConfig.data || fallbackConfig;
 
   return (
     <WidgetCustomizerView
+      key={config.widget_key}
       initialConfig={config}
       onConfigUpdated={updateWidgetConfigCache}
     />
