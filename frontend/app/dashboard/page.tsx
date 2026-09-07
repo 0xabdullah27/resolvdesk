@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { Metadata } from "next";
 
-import { getOwnerContextAction } from "@/actions/auth-actions";
 import { DashboardOverviewView } from "@/components/dashboard/dashboard-overview-view";
 
 export const metadata: Metadata = {
@@ -9,8 +8,6 @@ export const metadata: Metadata = {
   description: "Manage your AI support workspace, deflection metrics, and knowledge base.",
 };
 
-export default async function DashboardPage() {
-  const owner = await getOwnerContextAction();
-
-  return <DashboardOverviewView owner={owner} />;
+export default function DashboardPage() {
+  return <DashboardOverviewView />;
 }

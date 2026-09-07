@@ -27,22 +27,25 @@ import { TopQuestionsCard } from "@/components/dashboard/top-questions-card";
 import type { OwnerProfile } from "@/types/dashboard";
 
 interface DashboardOverviewViewProps {
-  owner: OwnerProfile | null;
+  owner?: OwnerProfile | null;
 }
 
-export function DashboardOverviewView({ owner }: DashboardOverviewViewProps) {
+export function DashboardOverviewView({ owner: propOwner }: DashboardOverviewViewProps = {}) {
   const {
     overview,
     trends,
     knowledgeGaps,
     topQuestions,
     documents,
+    owner: cachedOwner,
     loadOverview,
     loadTrends,
     loadKnowledgeGaps,
     loadTopQuestions,
     loadDocuments,
   } = useDashboard();
+
+  const owner = propOwner ?? cachedOwner;
 
   // Lazy-load domain resources on first mount; subsequent visits render immediately from cache
   React.useEffect(() => {

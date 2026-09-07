@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Calendar, Loader2, Sparkles } from "lucide-react";
+import { Calendar, Sparkles } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import type { AnalyticsTrends, DailyVolumePoint, TrendRange } from "@/types/analytics";
@@ -160,10 +160,7 @@ export function VolumeTrendsChart({ initialData }: VolumeTrendsChartProps) {
       <CardContent>
         <div className="h-[280px] w-full min-w-0 pt-2">
           {!isMounted ? (
-            <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
-              <Loader2 className="size-4 animate-spin mr-2" />
-              Loading chart...
-            </div>
+            <div className="h-full w-full" />
           ) : data.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-6 text-muted-foreground">
               <Calendar className="size-8 stroke-1 mb-2 opacity-50" />

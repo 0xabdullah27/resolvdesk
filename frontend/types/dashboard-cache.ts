@@ -12,6 +12,7 @@ import type {
   ConversationStats,
   TicketStatus,
 } from "@/types/conversation";
+import type { OwnerProfile } from "@/types/dashboard";
 
 export type AsyncStatus = "idle" | "loading" | "loaded" | "error";
 
@@ -45,6 +46,7 @@ export interface DashboardState {
   documents: AsyncResource<DocumentListResponse>;
   conversations: AsyncResource<ConversationListResponse>;
   conversationStats: AsyncResource<ConversationStats>;
+  owner: OwnerProfile | null;
   lastRefreshedAt: Date | null;
   isRefreshing: boolean;
 }

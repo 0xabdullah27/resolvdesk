@@ -19,7 +19,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardProvider>
+    <DashboardProvider owner={owner}>
       <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
         {/* Desktop Persistent Sidebar */}
         <DashboardSidebar

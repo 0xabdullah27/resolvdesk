@@ -22,6 +22,7 @@ import type {
   ConversationStats,
   TicketStatus,
 } from "@/types/conversation";
+import type { OwnerProfile } from "@/types/dashboard";
 
 import {
   getAnalyticsOverviewAction,
@@ -48,7 +49,13 @@ function createInitialResource<T>(): AsyncResource<T> {
 
 export const DashboardContext = React.createContext<DashboardContextValue | null>(null);
 
-export function DashboardProvider({ children }: { children: React.ReactNode }) {
+export function DashboardProvider({
+  children,
+  owner,
+}: {
+  children: React.ReactNode;
+  owner?: OwnerProfile | null;
+}) {
   const [overview, setOverview] = React.useState<AsyncResource<AnalyticsOverview>>(createInitialResource);
   const [trends, setTrends] = React.useState<AsyncResource<AnalyticsTrends>>(createInitialResource);
   const [knowledgeGaps, setKnowledgeGaps] = React.useState<AsyncResource<KnowledgeGapsResponse>>(createInitialResource);
@@ -430,6 +437,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     documents,
     conversations,
     conversationStats,
+    owner: owner || null,
     lastRefreshedAt,
     isRefreshing,
     loadOverview,
