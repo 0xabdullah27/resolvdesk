@@ -452,41 +452,6 @@
       "  align-items: center;",
       "  gap: 6px;",
       "}",
-      ".rd-theme-toggle-btn {",
-      "  background: transparent;",
-      "  border: none;",
-      "  color: var(--rd-primary-contrast);",
-      "  cursor: pointer;",
-      "  padding: 4px;",
-      "  display: flex;",
-      "  align-items: center;",
-      "  justify-content: center;",
-      "  opacity: 0.85;",
-      "  border-radius: 4px;",
-      "  transition: opacity 0.15s ease;",
-      "}",
-      ".rd-theme-toggle-btn:hover {",
-      "  opacity: 1;",
-      "}",
-      ".rd-theme-toggle-btn svg {",
-      "  width: 17px;",
-      "  height: 17px;",
-      "  fill: currentColor;",
-      "}",
-      ".rd-icon-sun {",
-      "  display: none;",
-      "}",
-      ".rd-icon-moon {",
-      "  display: block;",
-      "}",
-      ".rd-dark .rd-icon-moon,",
-      ":host([data-theme='dark']) .rd-icon-moon {",
-      "  display: none;",
-      "}",
-      ".rd-dark .rd-icon-sun,",
-      ":host([data-theme='dark']) .rd-icon-sun {",
-      "  display: block;",
-      "}",
       ".rd-close-btn {",
       "  background: transparent;",
       "  border: none;",
@@ -872,10 +837,6 @@
       '    </div>',
       "  </div>",
       '  <div class="rd-header-actions">',
-      '    <button class="rd-theme-toggle-btn" aria-label="Toggle theme" title="Toggle theme">',
-      '      <svg class="rd-icon-moon" viewBox="0 0 24 24"><path d="M12.3 4.9c.4-.2.6-.7.5-1.1-.1-.5-.6-.8-1.1-.8C6.2 3.3 2 7.8 2 13.5 2 19.3 6.7 24 12.5 24c5.7 0 10.2-4.2 10.5-9.7.1-.5-.3-1-.8-1.1-.5-.1-.9.1-1.1.5-1.1 2.3-3.5 3.8-6.1 3.8-3.9 0-7-3.1-7-7 0-2.6 1.5-5 3.8-6.1z"/></svg>',
-      '      <svg class="rd-icon-sun" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.29 1.29c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.29-1.29zm0-10.96l1.29-1.29c.39-.39.39-1.02 0-1.41a.996.996 0 00-1.41 0l-1.29 1.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zM7.28 17.66l-1.29 1.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.29-1.29c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0z"/></svg>',
-      '    </button>',
       '    <button class="rd-close-btn" aria-label="Close chat">×</button>',
       '  </div>',
       "</header>",
@@ -897,7 +858,6 @@
     var textInput = chatWindow.querySelector(".rd-text-input");
     var sendBtn = chatWindow.querySelector(".rd-send-btn");
     var closeBtn = chatWindow.querySelector(".rd-close-btn");
-    var themeToggleBtn = chatWindow.querySelector(".rd-theme-toggle-btn");
 
     if (messageContainer) {
       messageContainer.setAttribute("data-lenis-prevent", "true");
@@ -965,15 +925,6 @@
     );
 
     // --- Automatic Theme Detection & Reactive Syncing ---
-    // Clean up any stale permanent localStorage override from testing so auto-detection works
-    try {
-      localStorage.removeItem("resolvdesk_theme_mode");
-    } catch (e) {}
-
-    var userSessionOverride = null;
-    try {
-      userSessionOverride = sessionStorage.getItem("resolvdesk_theme_mode");
-    } catch (e) {}
 
     function extractHostColors() {
       var candidates = [
@@ -1197,11 +1148,7 @@
       applyAdaptiveHostPalette(theme);
     }
 
-    function syncTheme(forceHost) {
-      if (!forceHost && userSessionOverride) {
-        applyTheme(userSessionOverride);
-        return;
-      }
+    function syncTheme() {
       var detected = detectHostTheme();
       applyTheme(detected);
     }
@@ -1214,29 +1161,10 @@
     setTimeout(function () { syncTheme(); }, 600);
     setTimeout(function () { syncTheme(); }, 1600);
 
-    // Theme toggle button handler
-    if (themeToggleBtn) {
-      themeToggleBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var currentTheme = hostContainer.getAttribute("data-theme") || detectHostTheme();
-        var nextTheme = currentTheme === "dark" ? "light" : "dark";
-        userSessionOverride = nextTheme;
-        try {
-          sessionStorage.setItem("resolvdesk_theme_mode", nextTheme);
-        } catch (err) {}
-        applyTheme(nextTheme);
-      });
-    }
-
     // Live reactive theme sync via MutationObserver
     try {
       var themeObserver = new MutationObserver(function () {
-        // When host website changes theme, reset user session override and follow host
-        userSessionOverride = null;
-        try {
-          sessionStorage.removeItem("resolvdesk_theme_mode");
-        } catch (err) {}
-        syncTheme(true);
+        syncTheme();
       });
       themeObserver.observe(document.documentElement, {
         attributes: true,
@@ -1255,13 +1183,11 @@
         var mql = window.matchMedia("(prefers-color-scheme: dark)");
         if (mql.addEventListener) {
           mql.addEventListener("change", function () {
-            userSessionOverride = null;
-            syncTheme(true);
+            syncTheme();
           });
         } else if (mql.addListener) {
           mql.addListener(function () {
-            userSessionOverride = null;
-            syncTheme(true);
+            syncTheme();
           });
         }
       } catch (e) {}
