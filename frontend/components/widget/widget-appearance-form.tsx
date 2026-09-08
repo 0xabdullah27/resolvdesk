@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { Sliders, RotateCcw, Save, Loader2, AlignRight, AlignLeft } from "lucide-react";
+import { Sliders, RotateCcw, Save, Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { WidgetColorPicker } from "./widget-color-picker";
+import { WidgetPositionPicker } from "./widget-position-picker";
 import { WidgetDomainsCard } from "./widget-domains-card";
 import type { WidgetFormValues } from "@/lib/validations/widget";
 
@@ -126,63 +126,17 @@ export function WidgetAppearanceForm({
             error={errors.primary_color?.message}
           />
 
-          {/* Widget Placement */}
-          <div className="space-y-2 pt-1">
-            <Label className="text-xs font-medium text-foreground">
-              Screen Placement
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Choose which corner of the browser window the widget bubble anchors to.
-            </p>
-            <RadioGroup
-              value={widgetPlacement}
-              onValueChange={(val) =>
-                setValue("widget_placement", val as "bottom-right" | "bottom-left", {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-              className="grid grid-cols-2 gap-3 pt-1"
-            >
-              <div
-                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
-                  widgetPlacement === "bottom-left"
-                    ? "border-primary bg-primary/5"
-                    : "border-border/60 hover:border-border bg-card"
-                }`}
-                onClick={() =>
-                  setValue("widget_placement", "bottom-left", { shouldDirty: true, shouldValidate: true })
-                }
-              >
-                <RadioGroupItem value="bottom-left" id="placement-left" />
-                <div className="flex items-center gap-2">
-                  <AlignLeft className="size-4 text-muted-foreground" />
-                  <Label htmlFor="placement-left" className="text-xs font-medium cursor-pointer">
-                    Bottom Left
-                  </Label>
-                </div>
-              </div>
-
-              <div
-                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
-                  widgetPlacement === "bottom-right"
-                    ? "border-primary bg-primary/5"
-                    : "border-border/60 hover:border-border bg-card"
-                }`}
-                onClick={() =>
-                  setValue("widget_placement", "bottom-right", { shouldDirty: true, shouldValidate: true })
-                }
-              >
-                <RadioGroupItem value="bottom-right" id="placement-right" />
-                <div className="flex items-center gap-2">
-                  <AlignRight className="size-4 text-muted-foreground" />
-                  <Label htmlFor="placement-right" className="text-xs font-medium cursor-pointer">
-                    Bottom Right (Default)
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
-          </div>
+          {/* Widget Position Picker */}
+          <WidgetPositionPicker
+            value={widgetPlacement}
+            onChange={(val) =>
+              setValue("widget_placement", val, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+            error={errors.widget_placement?.message}
+          />
         </CardContent>
       </Card>
 

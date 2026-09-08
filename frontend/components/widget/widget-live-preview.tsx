@@ -8,6 +8,8 @@ import { WidgetPreviewWindow } from "./widget-preview-window";
 import type { WidgetPlacement } from "@/types/widget";
 import { cn } from "@/lib/utils";
 
+import { parsePlacement } from "@/lib/validations/widget";
+
 interface WidgetLivePreviewProps {
   botName: string;
   greeting: string;
@@ -24,7 +26,18 @@ export function WidgetLivePreview({
   // Start with preview window open so owner immediately sees header & greeting
   const [isOpen, setIsOpen] = React.useState(true);
 
-  const isBottomLeft = placement === "bottom-left";
+  const parsed = React.useMemo(() => parsePlacement(placement), [placement]);
+  const isLeft = parsed.corner === "bottom-left" || parsed.corner === "top-left";
+  const isTop = parsed.corner === "top-left" || parsed.corner === "top-right";
+
+  // Scale offset safely for simulator frame preview (clamp max 50px so it stays comfortably inside frame)
+  const previewOffsetY = Math.min(Math.max(parsed.offsetY, 8), 50);
+  const previewOffsetX = Math.min(Math.max(parsed.offsetX, 8), 50);
+
+  const anchorStyle: React.CSSProperties = {
+    [isTop ? "top" : "bottom"]: `${previewOffsetY}px`,
+    [isLeft ? "left" : "right"]: `${previewOffsetX}px`,
+  };
 
   return (
     <Card className="border-border/70 bg-card overflow-hidden shadow-sm">
@@ -84,26 +97,50 @@ export function WidgetLivePreview({
           {/* Interactive Widget Overlay Anchor */}
           <div
             className={cn(
-              "absolute bottom-4 flex flex-col gap-3 z-10",
-              isBottomLeft ? "left-4 items-start" : "right-4 items-end"
+              "absolute flex flex-col gap-3 z-10 transition-all duration-200",
+              isLeft ? "items-start" : "items-end"
             )}
+            style={anchorStyle}
           >
-            {/* Expanded Chat Window */}
-            {isOpen && (
-              <WidgetPreviewWindow
-                botName={botName}
-                greeting={greeting}
-                primaryColor={primaryColor}
-                onClose={() => setIsOpen(false)}
-              />
-            )}
+            {isTop ? (
+              <>
+                {/* Floating Bubble Launcher */}
+                <WidgetPreviewBubble
+                  isOpen={isOpen}
+                  onToggle={() => setIsOpen(!isOpen)}
+                  primaryColor={primaryColor}
+                />
 
-            {/* Floating Bubble Launcher */}
-            <WidgetPreviewBubble
-              isOpen={isOpen}
-              onToggle={() => setIsOpen(!isOpen)}
-              primaryColor={primaryColor}
-            />
+                {/* Expanded Chat Window */}
+                {isOpen && (
+                  <WidgetPreviewWindow
+                    botName={botName}
+                    greeting={greeting}
+                    primaryColor={primaryColor}
+                    onClose={() => setIsOpen(false)}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                {/* Expanded Chat Window */}
+                {isOpen && (
+                  <WidgetPreviewWindow
+                    botName={botName}
+                    greeting={greeting}
+                    primaryColor={primaryColor}
+                    onClose={() => setIsOpen(false)}
+                  />
+                )}
+
+                {/* Floating Bubble Launcher */}
+                <WidgetPreviewBubble
+                  isOpen={isOpen}
+                  onToggle={() => setIsOpen(!isOpen)}
+                  primaryColor={primaryColor}
+                />
+              </>
+            )}
           </div>
         </div>
 

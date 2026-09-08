@@ -41,7 +41,11 @@ class WidgetUpdateRequest(BaseModel):
     bot_display_name: Optional[str] = Field(None, min_length=1, max_length=100)
     welcome_message: Optional[str] = Field(None, min_length=1, max_length=500)
     primary_color: Optional[str] = Field(None, pattern=r"^#([A-Fa-f0-9]{6})$")
-    widget_placement: Optional[str] = Field(None, pattern=r"^(bottom-right|bottom-left)$")
+    widget_placement: Optional[str] = Field(
+        None,
+        max_length=64,
+        pattern=r"^(bottom-right|bottom-left|top-right|top-left)(:\d{1,4}:\d{1,4})?$",
+    )
     allowed_origins: Optional[str] = Field(None, max_length=500)
 
     @field_validator("allowed_origins")

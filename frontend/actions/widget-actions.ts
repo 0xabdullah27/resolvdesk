@@ -6,6 +6,7 @@ import type {
   WidgetConfig,
   WidgetUpdatePayload,
   WidgetKeyRotationResult,
+  WidgetPlacement,
 } from "@/types/widget";
 
 interface OrganizationProfileApiResponse {
@@ -19,7 +20,7 @@ interface OrganizationProfileApiResponse {
     primary_color: string;
     bot_display_name: string;
     welcome_message: string;
-    widget_placement: "bottom-right" | "bottom-left";
+    widget_placement: WidgetPlacement;
     allowed_origins: string;
     has_grace_key: boolean;
     grace_expires_at?: string | null;
@@ -33,7 +34,7 @@ interface WidgetProfileApiResponse {
   primary_color: string;
   bot_display_name: string;
   welcome_message: string;
-  widget_placement: "bottom-right" | "bottom-left";
+  widget_placement: WidgetPlacement;
   allowed_origins: string;
   has_grace_key: boolean;
   grace_expires_at?: string | null;

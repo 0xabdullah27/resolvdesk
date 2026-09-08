@@ -6,7 +6,7 @@ class PublicWidgetConfigResponse(BaseModel):
     bot_display_name: str = Field(..., description="Chat assistant display name")
     welcome_message: str = Field(..., description="Initial greeting message")
     primary_color: str = Field(..., description="Widget branding color (hex code)")
-    widget_placement: str = Field(..., description="Placement on host page (bottom-right / bottom-left)")
+    widget_placement: str = Field(..., description="Placement on host page (e.g. bottom-right, bottom-left, top-right, top-left with optional :offsetX:offsetY)")
     allowed_origins: str = Field(default="*", description="Allowed domains/origins for widget embed")
     is_active: bool = Field(default=True, description="Whether the widget configuration is active")
 

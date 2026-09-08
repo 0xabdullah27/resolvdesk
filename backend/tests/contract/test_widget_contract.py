@@ -239,6 +239,22 @@ async def test_update_widget_config_validation_and_isolation(
     )
     assert bad_placement_resp.status_code == 422
 
+    bad_offset_resp = await client.patch(
+        "/api/v1/organization/widget",
+        headers={"Authorization": f"Bearer {token1}"},
+        json={"widget_placement": "bottom-right:abc:20"},
+    )
+    assert bad_offset_resp.status_code == 422
+
+    # 2b. Valid custom placements: top-right and with pixel offsets
+    valid_custom_resp = await client.patch(
+        "/api/v1/organization/widget",
+        headers={"Authorization": f"Bearer {token1}"},
+        json={"widget_placement": "top-right:32:16"},
+    )
+    assert valid_custom_resp.status_code == 200
+    assert valid_custom_resp.json()["widget_placement"] == "top-right:32:16"
+
     # 3. Validation failure: wildcard '*' in allowed_origins
     wildcard_resp = await client.patch(
         "/api/v1/organization/widget",

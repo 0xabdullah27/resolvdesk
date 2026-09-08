@@ -16,7 +16,7 @@ class WidgetConfigurationBase(SQLModel):
     primary_color: str = Field(default="#4F46E5", max_length=9, nullable=False)
     bot_display_name: str = Field(default="Support Assistant", max_length=100, nullable=False)
     welcome_message: str = Field(default="Hi! How can I help you today?", max_length=500, nullable=False)
-    widget_placement: str = Field(default="bottom-right", max_length=20, nullable=False)
+    widget_placement: str = Field(default="bottom-right", max_length=64, nullable=False)
     allowed_origins: str = Field(
         default="*",
         max_length=500,

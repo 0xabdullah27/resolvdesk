@@ -109,7 +109,29 @@
     var primaryColor = config.primary_color || "#059669";
     var botName = config.bot_display_name || "ResolvDesk Assistant";
     var welcomeGreeting = config.welcome_message || "Hello! How can we assist you today?";
-    var placement = config.widget_placement === "bottom-left" ? "bottom-left" : "bottom-right";
+    function parseWidgetPlacement(raw) {
+      var fallback = { corner: "bottom-right", offsetX: 24, offsetY: 24 };
+      if (!raw || typeof raw !== "string") return fallback;
+      var parts = raw.trim().split(":");
+      var corner = parts[0];
+      var validCorners = ["bottom-right", "bottom-left", "top-right", "top-left"];
+      if (validCorners.indexOf(corner) === -1) {
+        return fallback;
+      }
+      var ox = parts.length > 1 ? parseInt(parts[1], 10) : 24;
+      var oy = parts.length > 2 ? parseInt(parts[2], 10) : 24;
+      return {
+        corner: corner,
+        offsetX: !isNaN(ox) && ox >= 0 ? ox : 24,
+        offsetY: !isNaN(oy) && oy >= 0 ? oy : 24,
+      };
+    }
+    var parsedPlacement = parseWidgetPlacement(config.widget_placement);
+    var vSide = (parsedPlacement.corner === "top-left" || parsedPlacement.corner === "top-right") ? "top" : "bottom";
+    var hSide = (parsedPlacement.corner === "top-left" || parsedPlacement.corner === "bottom-left") ? "left" : "right";
+    var launcherOffset = parsedPlacement.offsetY;
+    var chatOffset = parsedPlacement.offsetY + 72;
+    var initialTransform = vSide === "top" ? "translateY(-20px) scale(0.98)" : "translateY(20px) scale(0.98)";
 
     // Create host element
     var hostContainer = document.createElement("div");
@@ -314,8 +336,8 @@
       "/* Launcher Button */",
       ".rd-launcher {",
       "  position: fixed;",
-      "  bottom: 24px;",
-      placement === "bottom-left" ? "left: 24px;" : "right: 24px;",
+      "  " + vSide + ": " + launcherOffset + "px;",
+      "  " + hSide + ": " + parsedPlacement.offsetX + "px;",
       "  width: 60px;",
       "  height: 60px;",
       "  border-radius: 50%;",
@@ -361,8 +383,8 @@
       "/* Chat Window */",
       ".rd-chat-window {",
       "  position: fixed;",
-      "  bottom: 96px;",
-      placement === "bottom-left" ? "left: 24px;" : "right: 24px;",
+      "  " + vSide + ": " + chatOffset + "px;",
+      "  " + hSide + ": " + parsedPlacement.offsetX + "px;",
       "  width: 380px;",
       "  max-width: calc(100vw - 48px);",
       "  height: 600px;",
@@ -379,7 +401,7 @@
       "  -webkit-overflow-scrolling: touch;",
       "  z-index: var(--rd-z);",
       "  opacity: 0;",
-      "  transform: translateY(20px) scale(0.98);",
+      "  transform: " + initialTransform + ";",
       "  pointer-events: none;",
       "  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease;",
       "}",

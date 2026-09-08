@@ -1,4 +1,5 @@
-export type WidgetPlacement = "bottom-right" | "bottom-left";
+export type WidgetPlacementCorner = "bottom-right" | "bottom-left" | "top-right" | "top-left";
+export type WidgetPlacement = WidgetPlacementCorner | string;
 
 export interface WidgetConfig {
   widget_key: string;
