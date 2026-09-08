@@ -1,12 +1,28 @@
 import * as React from "react";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { Bot } from "lucide-react";
+import { auth } from "@/lib/auth";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  try {
+    const headerList = await headers();
+    const session = await auth.api.getSession({
+      headers: headerList,
+    });
+    if (session?.user) {
+      redirect("/dashboard");
+    }
+  } catch (err: any) {
+    if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw err;
+    }
+  }
   return (
     <div className="relative min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 bg-background">
       {/* Background ambient lighting */}

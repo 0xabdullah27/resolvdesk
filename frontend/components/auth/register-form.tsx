@@ -17,6 +17,7 @@ export function RegisterForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
   const [serverError, setServerError] = React.useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   const {
     register,
@@ -33,6 +34,8 @@ export function RegisterForm() {
     },
   });
 
+  const isPending = isSubmitting || isRedirecting;
+
   const onSubmit = async (values: RegisterFormValues) => {
     setServerError(null);
     try {
@@ -43,12 +46,15 @@ export function RegisterForm() {
         return;
       }
 
-      toast.success("Workspace provisioned! Welcome to ResolvDesk.");
+      setIsRedirecting(true);
+      toast.success("Workspace provisioned! Redirecting to dashboard...");
       router.push("/dashboard");
+      router.refresh();
     } catch {
       const fallbackMsg = "An unexpected error occurred. Please try again.";
       setServerError(fallbackMsg);
       toast.error(fallbackMsg);
+      setIsRedirecting(false);
     }
   };
 
@@ -70,7 +76,7 @@ export function RegisterForm() {
           type="text"
           placeholder="e.g. Alice Johnson"
           autoComplete="name"
-          disabled={isSubmitting}
+          disabled={isPending}
           aria-invalid={!!errors.fullName}
           {...register("fullName")}
         />
@@ -86,7 +92,7 @@ export function RegisterForm() {
           type="email"
           placeholder="name@business.com"
           autoComplete="email"
-          disabled={isSubmitting}
+          disabled={isPending}
           aria-invalid={!!errors.email}
           {...register("email")}
         />
@@ -103,7 +109,7 @@ export function RegisterForm() {
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             autoComplete="new-password"
-            disabled={isSubmitting}
+            disabled={isPending}
             aria-invalid={!!errors.password}
             className="pr-10"
             {...register("password")}
@@ -134,7 +140,7 @@ export function RegisterForm() {
           id="businessName"
           type="text"
           placeholder="e.g. Chronos Watches"
-          disabled={isSubmitting}
+          disabled={isPending}
           aria-invalid={!!errors.businessName}
           {...register("businessName")}
         />
@@ -151,7 +157,7 @@ export function RegisterForm() {
           id="websiteUrl"
           type="text"
           placeholder="e.g. mystore.com or https://mystore.com"
-          disabled={isSubmitting}
+          disabled={isPending}
           aria-invalid={!!errors.websiteUrl}
           {...register("websiteUrl")}
         />
@@ -169,9 +175,14 @@ export function RegisterForm() {
       <Button
         type="submit"
         className="w-full mt-2 cursor-pointer"
-        disabled={isSubmitting}
+        disabled={isPending}
       >
-        {isSubmitting ? (
+        {isRedirecting ? (
+          <>
+            <Loader2 className="mr-2 size-4 animate-spin" />
+            Opening Dashboard...
+          </>
+        ) : isSubmitting ? (
           <>
             <Loader2 className="mr-2 size-4 animate-spin" />
             Provisioning Workspace...

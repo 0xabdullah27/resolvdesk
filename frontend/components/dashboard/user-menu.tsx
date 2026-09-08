@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { signOutOwnerAction } from "@/actions/auth-actions";
@@ -39,12 +39,11 @@ export function UserMenu({ name, email }: UserMenuProps) {
     setIsSigningOut(true);
     try {
       await signOutOwnerAction();
-      toast.success("Signed out successfully");
+      toast.success("Signed out successfully. Redirecting...");
       router.push("/login");
       router.refresh();
     } catch {
       toast.error("Failed to sign out. Please try again.");
-    } finally {
       setIsSigningOut(false);
     }
   };
@@ -55,6 +54,7 @@ export function UserMenu({ name, email }: UserMenuProps) {
         render={
           <Button
             variant="ghost"
+            disabled={isSigningOut}
             className="relative size-9 rounded-full p-0 cursor-pointer focus-visible:ring-ring"
             aria-label="Open user menu"
           >
@@ -87,7 +87,11 @@ export function UserMenu({ name, email }: UserMenuProps) {
           onClick={handleSignOut}
           className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
         >
-          <LogOut className="mr-2 size-4" />
+          {isSigningOut ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <LogOut className="mr-2 size-4" />
+          )}
           <span>{isSigningOut ? "Signing out..." : "Sign Out"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

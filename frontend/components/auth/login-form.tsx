@@ -20,6 +20,7 @@ export function LoginForm() {
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = React.useState(false);
 
   const {
     register,
@@ -33,6 +34,8 @@ export function LoginForm() {
     },
   });
 
+  const isPending = isSubmitting || isRedirecting;
+
   const onSubmit = async (values: LoginFormValues) => {
     setErrorMessage(null);
     try {
@@ -43,12 +46,15 @@ export function LoginForm() {
         return;
       }
 
-      toast.success("Signed in successfully!");
+      setIsRedirecting(true);
+      toast.success("Signed in successfully! Redirecting to dashboard...");
       router.push(callbackUrl);
+      router.refresh();
     } catch {
       const fallbackMsg = "Invalid email or password";
       setErrorMessage(fallbackMsg);
       toast.error(fallbackMsg);
+      setIsRedirecting(false);
     }
   };
 
@@ -70,7 +76,7 @@ export function LoginForm() {
           type="email"
           placeholder="name@business.com"
           autoComplete="email"
-          disabled={isSubmitting}
+          disabled={isPending}
           aria-invalid={!!errors.email}
           {...register("email")}
         />
@@ -87,7 +93,7 @@ export function LoginForm() {
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             autoComplete="current-password"
-            disabled={isSubmitting}
+            disabled={isPending}
             aria-invalid={!!errors.password}
             className="pr-10"
             {...register("password")}
@@ -113,9 +119,14 @@ export function LoginForm() {
       <Button
         type="submit"
         className="w-full mt-2 cursor-pointer"
-        disabled={isSubmitting}
+        disabled={isPending}
       >
-        {isSubmitting ? (
+        {isRedirecting ? (
+          <>
+            <Loader2 className="mr-2 size-4 animate-spin" />
+            Redirecting to Dashboard...
+          </>
+        ) : isSubmitting ? (
           <>
             <Loader2 className="mr-2 size-4 animate-spin" />
             Signing In...
