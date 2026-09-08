@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Loader2 } from "lucide-react";
+import { LogOut, User, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { signOutOwnerAction } from "@/actions/auth-actions";
@@ -21,9 +21,10 @@ import { Button } from "@/components/ui/button";
 interface UserMenuProps {
   name?: string;
   email?: string;
+  role?: string;
 }
 
-export function UserMenu({ name, email }: UserMenuProps) {
+export function UserMenu({ name, email, role }: UserMenuProps) {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = React.useState(false);
 
@@ -82,6 +83,18 @@ export function UserMenu({ name, email }: UserMenuProps) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        {role === "superadmin" && (
+          <>
+            <DropdownMenuItem
+              onClick={() => router.push("/admin")}
+              className="cursor-pointer text-primary focus:bg-primary/10 focus:text-primary flex items-center gap-2"
+            >
+              <ShieldCheck className="size-4" />
+              <span>Admin Console</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem
           disabled={isSigningOut}
           onClick={handleSignOut}

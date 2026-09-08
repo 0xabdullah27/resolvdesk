@@ -33,6 +33,7 @@ export default async function DashboardLayout({
             ownerName={owner.name || owner.fullName}
             ownerEmail={owner.email}
             organizationName={owner.organizationName}
+            role={owner.role}
           />
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
             <div className="mx-auto max-w-6xl">{children}</div>

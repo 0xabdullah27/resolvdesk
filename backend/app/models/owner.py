@@ -15,9 +15,15 @@ class OwnerStatus(str, Enum):
     SUSPENDED = "suspended"
 
 
+class OwnerRole(str, Enum):
+    OWNER = "owner"
+    SUPERADMIN = "superadmin"
+
+
 class OwnerBase(SQLModel):
     email: str = Field(max_length=320, index=True, unique=True, nullable=False)
     full_name: str = Field(max_length=200, nullable=False)
+    role: str = Field(default=OwnerRole.OWNER.value, max_length=20, nullable=False, index=True)
     status: str = Field(default=OwnerStatus.ACTIVE.value, max_length=20, nullable=False)
 
 

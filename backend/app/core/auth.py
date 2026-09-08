@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.owner import Owner, OwnerStatus
+from app.models.owner import Owner, OwnerRole, OwnerStatus
 from app.repos.owner_repo import OwnerRepo
 
 logger = logging.getLogger(__name__)
@@ -128,6 +128,24 @@ async def get_current_owner(
 
 
 CurrentOwner = Annotated[Owner, Depends(get_current_owner)]
+
+
+async def get_current_superadmin(
+    owner: CurrentOwner,
+) -> Owner:
+    """Dependency resolving authenticated Owner and verifying superadmin platform privileges.
+
+    Blocks regular owners with HTTP 403 Forbidden.
+    """
+    if owner.role != OwnerRole.SUPERADMIN.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required. Access restricted to platform creator.",
+        )
+    return owner
+
+
+CurrentSuperadmin = Annotated[Owner, Depends(get_current_superadmin)]
 
 
 def create_dev_test_token(

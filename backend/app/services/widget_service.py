@@ -109,6 +109,13 @@ class WidgetService:
                 detail="Domain not authorized for this widget.",
             )
 
+        # Check if owning merchant account is suspended
+        from app.models.owner import Owner, OwnerStatus
+        from sqlmodel import select
+        owner_stmt = select(Owner).where(Owner.organization_id == widget.organization_id)
+        owner = (await session.exec(owner_stmt)).first()
+        is_active = bool(owner and owner.status == OwnerStatus.ACTIVE.value)
+
         return PublicWidgetConfigResponse(
             widget_key=key,  # Return the queried key that authorized this view
             bot_display_name=widget.bot_display_name,
@@ -116,7 +123,7 @@ class WidgetService:
             primary_color=widget.primary_color,
             widget_placement=widget.widget_placement,
             allowed_origins=widget.allowed_origins,
-            is_active=True,
+            is_active=is_active,
         )
 
     @staticmethod

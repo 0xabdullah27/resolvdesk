@@ -7,8 +7,11 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.core.database import async_session_factory
 from app.core.exceptions import ResolvDeskException
 from app.core.logging import CorrelationIdMiddleware, logger
+from app.repos.admin_repo import AdminRepo
+from app.routers.admin import router as admin_router
 from app.routers.analytics import router as analytics_router
 from app.routers.conversations import router as conversations_router
 from app.routers.documents import router as documents_router
@@ -20,6 +23,14 @@ from app.routers.widget import router as widget_router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting ResolvDesk API resource server in %s mode", settings.ENVIRONMENT)
+    if settings.PLATFORM_OWNER_EMAIL:
+        try:
+            async with async_session_factory() as session:
+                bootstrapped = await AdminRepo.bootstrap_superadmin(session, settings.PLATFORM_OWNER_EMAIL)
+                if bootstrapped:
+                    logger.info("Bootstrapped superadmin role for %s", settings.PLATFORM_OWNER_EMAIL)
+        except Exception as e:
+            logger.warning("Superadmin bootstrap failed during startup: %s", e)
     yield
     logger.info("Shutting down ResolvDesk API resource server")
 
@@ -48,6 +59,10 @@ tags_metadata = [
     {
         "name": "Health",
         "description": "API health and liveness checks",
+    },
+    {
+        "name": "Platform Admin",
+        "description": "Platform creator KPI observability, user directory, and account access governance",
     },
 ]
 
@@ -142,3 +157,4 @@ app.include_router(documents_router, prefix="/api/v1/documents", tags=["Knowledg
 app.include_router(widget_router, prefix="/api/v1/widget", tags=["Widget"])
 app.include_router(conversations_router, prefix="/api/v1/conversations", tags=["Conversations"])
 app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytics"])
+app.include_router(admin_router, prefix="/api/v1/admin", tags=["Platform Admin"])

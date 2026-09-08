@@ -15,6 +15,7 @@ interface DashboardHeaderProps {
   ownerName?: string;
   ownerEmail?: string;
   organizationName?: string;
+  role?: string;
 }
 
 function formatRelativeTime(date: Date | null): string {
@@ -32,6 +33,7 @@ export function DashboardHeader({
   ownerName,
   ownerEmail,
   organizationName,
+  role,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -121,7 +123,7 @@ export function DashboardHeader({
         </div>
 
         <ThemeToggle />
-        <UserMenu name={ownerName} email={ownerEmail} />
+        <UserMenu name={ownerName} email={ownerEmail} role={role} />
       </div>
     </header>
   );

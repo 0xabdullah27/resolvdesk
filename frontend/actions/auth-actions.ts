@@ -179,6 +179,7 @@ export async function getOwnerContextAction(): Promise<OwnerProfile | null> {
         email: profile.email || session.user.email,
         name: profile.name || profile.full_name || session.user.name,
         fullName: profile.full_name || profile.name || session.user.name,
+        role: profile.role || "owner",
         status: profile.status || "active",
         organizationId: profile.organization_id,
         organizationName: profile.organization_name || "My Workspace",

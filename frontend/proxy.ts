@@ -15,15 +15,15 @@ export function proxy(request: NextRequest) {
     request.cookies.get("__Secure-better-auth.session_token")?.value;
 
   const isAuthPage = pathname === "/login" || pathname === "/register";
-  const isDashboardPage = pathname.startsWith("/dashboard");
+  const isProtectedPage = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
 
   // 1. Authenticated users should never see /login or /register
   if (isAuthPage && sessionToken) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // 2. Unauthenticated visitors should not access protected /dashboard routes
-  if (isDashboardPage && !sessionToken) {
+  // 2. Unauthenticated visitors should not access protected /dashboard or /admin routes
+  if (isProtectedPage && !sessionToken) {
     const callbackUrl = encodeURIComponent(pathname);
     return NextResponse.redirect(
       new URL(`/login?callbackUrl=${callbackUrl}`, request.url)
@@ -36,6 +36,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/admin/:path*",
     "/login",
     "/register",
   ],
