@@ -1,0 +1,240 @@
+openapi: 3.1.0
+info:
+  title: ResolvDesk Platform Admin API
+  version: 1.0.0
+  description: Administrative endpoints for the platform creator to inspect users, track workspace metrics, and manage account access.
+paths:
+  /api/v1/admin/metrics:
+    get:
+      summary: Get platform KPI summary metrics
+      description: Returns platform-wide aggregated counts across users, organizations, documents, and conversations.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Aggregated platform metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformMetricsResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - requires superadmin role
+
+  /api/v1/admin/users:
+    get:
+      summary: List registered users with workspace metrics
+      description: Returns a paginated list of users and their organizations, supporting search by name/email/org and filtering by status.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search term across user full name, email, or organization display name
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, active, suspended]
+            default: all
+          description: Filter users by account status
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Paginated directory list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserListResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - requires superadmin role
+
+  /api/v1/admin/users/{user_id}:
+    get:
+      summary: Get workspace metrics for a specific user
+      description: Returns user profile, linked organization, and resource utilization counters.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User detail and workspace statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserItem'
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden - requires superadmin role
+
+  /api/v1/admin/users/{user_id}/status:
+    patch:
+      summary: Update user account status (Suspend or Reactivate)
+      description: Allows superadmin to suspend or reactivate an account. Self-suspension is prevented.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserStatusUpdateRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformUserItem'
+        '400':
+          description: Cannot modify own superadmin status
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden - requires superadmin role
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PlatformMetricsResponse:
+      type: object
+      required:
+        - total_users
+        - active_users
+        - suspended_users
+        - total_organizations
+        - total_documents
+        - total_conversations
+      properties:
+        total_users:
+          type: integer
+        active_users:
+          type: integer
+        suspended_users:
+          type: integer
+        total_organizations:
+          type: integer
+        total_documents:
+          type: integer
+        total_conversations:
+          type: integer
+
+    PlatformUserItem:
+      type: object
+      required:
+        - id
+        - email
+        - full_name
+        - role
+        - status
+        - organization_id
+        - organization_name
+        - created_at
+        - documents_count
+        - conversations_count
+        - tickets_count
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        role:
+          type: string
+          enum: [owner, superadmin]
+        status:
+          type: string
+          enum: [active, suspended]
+        organization_id:
+          type: string
+          format: uuid
+        organization_name:
+          type: string
+        website_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        documents_count:
+          type: integer
+        conversations_count:
+          type: integer
+        tickets_count:
+          type: integer
+
+    PlatformUserListResponse:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - page_size
+        - total_pages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformUserItem'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_pages:
+          type: integer
+
+    UserStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [active, suspended]
+        reason:
+          type: string
+          nullable: true
