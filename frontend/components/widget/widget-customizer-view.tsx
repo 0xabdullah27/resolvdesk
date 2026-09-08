@@ -130,6 +130,85 @@ export function WidgetCustomizerView({
     toast.info("Form reset to defaults. Click 'Save Changes' to apply.");
   };
 
+  // Smart Bidirectional Sticky Sidebar for desktop live preview
+  const previewStickyRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = previewStickyRef.current;
+    if (!el) return;
+
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateSticky = () => {
+      // Only apply custom sticky logic on large screens (lg = 1024px+)
+      if (window.innerWidth < 1024) {
+        el.style.position = "";
+        el.style.top = "";
+        return;
+      }
+
+      const topPadding = 16;
+      const bottomPadding = 16;
+      const viewportHeight = window.innerHeight;
+      const elHeight = el.offsetHeight;
+
+      el.style.position = "sticky";
+
+      // If sidebar preview fits within the viewport, standard sticky at topPadding
+      if (elHeight + topPadding + bottomPadding <= viewportHeight) {
+        el.style.top = `${topPadding}px`;
+        return;
+      }
+
+      // Sidebar is taller than viewport: Bidirectional Smart Sticky
+      const scrollY = window.scrollY;
+      const delta = scrollY - lastScrollY;
+      lastScrollY = scrollY;
+
+      const minTop = viewportHeight - elHeight - bottomPadding;
+      const maxTop = topPadding;
+
+      const rect = el.getBoundingClientRect();
+      const targetTop = rect.top - delta;
+      const clampedTop = Math.max(minTop, Math.min(maxTop, targetTop));
+
+      el.style.top = `${clampedTop}px`;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateSticky();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const handleResize = () => {
+      lastScrollY = window.scrollY;
+      updateSticky();
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSticky();
+    });
+    resizeObserver.observe(el);
+
+    // Initial setup on mount
+    updateSticky();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   // Safe key rotation handler
   const handleConfirmRotate = async () => {
     setIsRotating(true);
@@ -192,7 +271,7 @@ export function WidgetCustomizerView({
 
         {/* Right Column: Sticky Live Interactive Preview Sandbox */}
         <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-4">
+          <div ref={previewStickyRef}>
             <WidgetLivePreview
               botName={watchedBotName}
               greeting={watchedGreeting}
