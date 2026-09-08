@@ -30,16 +30,10 @@ const CORNERS: {
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   {
-    id: "bottom-right",
-    label: "Bottom Right",
-    sublabel: "Recommended default",
-    icon: CornerDownRight,
-  },
-  {
-    id: "bottom-left",
-    label: "Bottom Left",
-    sublabel: "Alternative bottom side",
-    icon: CornerDownLeft,
+    id: "top-left",
+    label: "Top Left",
+    sublabel: "Upper left screen corner",
+    icon: CornerUpLeft,
   },
   {
     id: "top-right",
@@ -48,10 +42,16 @@ const CORNERS: {
     icon: CornerUpRight,
   },
   {
-    id: "top-left",
-    label: "Top Left",
-    sublabel: "Upper left screen corner",
-    icon: CornerUpLeft,
+    id: "bottom-left",
+    label: "Bottom Left",
+    sublabel: "Alternative bottom side",
+    icon: CornerDownLeft,
+  },
+  {
+    id: "bottom-right",
+    label: "Bottom Right",
+    sublabel: "Recommended default",
+    icon: CornerDownRight,
   },
 ];
 
