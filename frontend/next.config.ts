@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
           { key: "Access-Control-Allow-Private-Network", value: "true" },
           { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,HEAD" },
           { key: "Access-Control-Allow-Headers", value: "X-Widget-Key, Content-Type, Accept, Access-Control-Request-Private-Network" },
-          { key: "Cache-Control", value: "public, max-age=3600" },
+          { key: "Cache-Control", value: "no-cache, must-revalidate" },
         ],
       },
     ];
