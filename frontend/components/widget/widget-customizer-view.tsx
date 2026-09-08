@@ -130,7 +130,7 @@ export function WidgetCustomizerView({
     toast.info("Form reset to defaults. Click 'Save Changes' to apply.");
   };
 
-  // Smart Bidirectional Sticky Sidebar for desktop live preview
+  // Native bottom-boundary sticky sidebar for desktop live preview
   const previewStickyRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -153,20 +153,11 @@ export function WidgetCustomizerView({
     const scrollParent = getScrollParent(el);
     const isWindow = scrollParent === window;
 
-    const getScrollY = () =>
-      isWindow ? window.scrollY : (scrollParent as HTMLElement).scrollTop;
-
     const getViewportHeight = () =>
       isWindow ? window.innerHeight : (scrollParent as HTMLElement).clientHeight;
 
-    const getContainerTop = () =>
-      isWindow ? 0 : (scrollParent as HTMLElement).getBoundingClientRect().top;
-
-    let lastScrollY = getScrollY();
-    let ticking = false;
-
     const updateSticky = () => {
-      // Only apply custom sticky logic on large screens (lg = 1024px+)
+      // Standard layout on mobile/tablet screens (< 1024px)
       if (window.innerWidth < 1024) {
         el.style.position = "";
         el.style.top = "";
@@ -180,58 +171,28 @@ export function WidgetCustomizerView({
 
       el.style.position = "sticky";
 
-      // If sidebar preview fits within viewport, standard sticky at topPadding
+      // If sidebar preview fits within viewport, stick at top padding
       if (elHeight + topPadding + bottomPadding <= viewportHeight) {
         el.style.top = `${topPadding}px`;
-        return;
-      }
-
-      // Sidebar is taller than viewport: Bidirectional Smart Sticky
-      const scrollY = getScrollY();
-      const delta = scrollY - lastScrollY;
-      lastScrollY = scrollY;
-
-      const minTop = viewportHeight - elHeight - bottomPadding;
-      const maxTop = topPadding;
-
-      const rect = el.getBoundingClientRect();
-      const containerTop = getContainerTop();
-      const relativeTop = rect.top - containerTop;
-      const targetTop = relativeTop - delta;
-      const clampedTop = Math.max(minTop, Math.min(maxTop, targetTop));
-
-      el.style.top = `${clampedTop}px`;
-    };
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          updateSticky();
-          ticking = false;
-        });
-        ticking = true;
+      } else {
+        // Taller than viewport: both scroll from top, and right locks at bottom edge
+        // On upward scroll, it stays pinned until scroll reaches back to the top of the section
+        const minTop = viewportHeight - elHeight - bottomPadding;
+        el.style.top = `${minTop}px`;
       }
     };
 
-    const handleResize = () => {
-      lastScrollY = getScrollY();
-      updateSticky();
-    };
-
-    scrollParent.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", updateSticky);
 
     const resizeObserver = new ResizeObserver(() => {
       updateSticky();
     });
     resizeObserver.observe(el);
 
-    // Initial setup on mount
     updateSticky();
 
     return () => {
-      scrollParent.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", updateSticky);
       resizeObserver.disconnect();
     };
   }, []);
