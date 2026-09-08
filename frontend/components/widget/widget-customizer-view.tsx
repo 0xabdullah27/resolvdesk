@@ -137,7 +137,32 @@ export function WidgetCustomizerView({
     const el = previewStickyRef.current;
     if (!el) return;
 
-    let lastScrollY = window.scrollY;
+    // Detect closest scrollable ancestor (<main className="overflow-y-auto"> in dashboard or window)
+    const getScrollParent = (node: HTMLElement | null): HTMLElement | Window => {
+      let parent = node?.parentElement;
+      while (parent && parent !== document.body && parent !== document.documentElement) {
+        const { overflowY } = window.getComputedStyle(parent);
+        if (overflowY === "auto" || overflowY === "scroll") {
+          return parent;
+        }
+        parent = parent.parentElement;
+      }
+      return window;
+    };
+
+    const scrollParent = getScrollParent(el);
+    const isWindow = scrollParent === window;
+
+    const getScrollY = () =>
+      isWindow ? window.scrollY : (scrollParent as HTMLElement).scrollTop;
+
+    const getViewportHeight = () =>
+      isWindow ? window.innerHeight : (scrollParent as HTMLElement).clientHeight;
+
+    const getContainerTop = () =>
+      isWindow ? 0 : (scrollParent as HTMLElement).getBoundingClientRect().top;
+
+    let lastScrollY = getScrollY();
     let ticking = false;
 
     const updateSticky = () => {
@@ -150,19 +175,19 @@ export function WidgetCustomizerView({
 
       const topPadding = 16;
       const bottomPadding = 16;
-      const viewportHeight = window.innerHeight;
+      const viewportHeight = getViewportHeight();
       const elHeight = el.offsetHeight;
 
       el.style.position = "sticky";
 
-      // If sidebar preview fits within the viewport, standard sticky at topPadding
+      // If sidebar preview fits within viewport, standard sticky at topPadding
       if (elHeight + topPadding + bottomPadding <= viewportHeight) {
         el.style.top = `${topPadding}px`;
         return;
       }
 
       // Sidebar is taller than viewport: Bidirectional Smart Sticky
-      const scrollY = window.scrollY;
+      const scrollY = getScrollY();
       const delta = scrollY - lastScrollY;
       lastScrollY = scrollY;
 
@@ -170,7 +195,9 @@ export function WidgetCustomizerView({
       const maxTop = topPadding;
 
       const rect = el.getBoundingClientRect();
-      const targetTop = rect.top - delta;
+      const containerTop = getContainerTop();
+      const relativeTop = rect.top - containerTop;
+      const targetTop = relativeTop - delta;
       const clampedTop = Math.max(minTop, Math.min(maxTop, targetTop));
 
       el.style.top = `${clampedTop}px`;
@@ -187,11 +214,11 @@ export function WidgetCustomizerView({
     };
 
     const handleResize = () => {
-      lastScrollY = window.scrollY;
+      lastScrollY = getScrollY();
       updateSticky();
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    scrollParent.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
 
     const resizeObserver = new ResizeObserver(() => {
@@ -203,7 +230,7 @@ export function WidgetCustomizerView({
     updateSticky();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      scrollParent.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
       resizeObserver.disconnect();
     };
