@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-09
 
-**Status**: Draft
+**Status**: Ready for Planning
 
 **Input**: User description: "I want to create an owner dashboard where the owner can see how many users and everything about users created and more details that first of this team or what what I can track of the users. I think there is a active and something relative to this option like owner may have the ability to control this. And I need the owner dashboard in the ResolvDesk. I don't mean the owner who registered. The owner means I am, who I, I mean who I have created the website and I am the owner. So I want the owner dashboard for me, not for the owner of the root of my users. So I want to create control for myself where I can manage the users."
 
@@ -53,7 +53,7 @@ As the platform owner, I want the ability to toggle user account status (Activat
 
 1. **Given** an active user account in the admin directory, **When** the platform owner clicks "Suspend Account" and confirms, **Then** the user's status updates to `suspended`, their active sessions are invalidated, and their dashboard access is immediately blocked.
 2. **Given** a suspended user account, **When** the platform owner clicks "Reactivate Account", **Then** the user's status returns to `active` and they can log in normally.
-3. **Given** a suspended user account whose public chat widget is deployed on an external website, **When** a visitor loads the widget, **Then** the widget behaves according to the defined suspension policy [NEEDS CLARIFICATION: widget behavior on account suspension].
+3. **Given** a suspended user account whose public chat widget is deployed on an external website, **When** a visitor loads the widget, **Then** the widget displays an inactive notice ("Support is temporarily offline") and rejects new chat message submissions, preventing token consumption.
 
 ---
 
@@ -68,7 +68,7 @@ As the platform owner, I want to inspect individual workspace metrics (such as s
 **Acceptance Scenarios**:
 
 1. **Given** an organization profile in the admin portal, **When** the admin views workspace metrics, **Then** the system displays aggregated resource counters (documents count, total chats, tickets created, allowed origins).
-2. **Given** the admin inspection view, **When** displaying tenant data, **Then** private visitor conversation content is masked or presented in accordance with privacy settings [NEEDS CLARIFICATION: admin data inspection scope].
+2. **Given** the admin inspection view, **When** displaying tenant data, **Then** the system presents workspace health metrics and aggregated counters while strictly preserving customer chat transcript confidentiality.
 
 ---
 
@@ -84,7 +84,7 @@ As the platform owner, I want to inspect individual workspace metrics (such as s
 ### Functional Requirements
 
 - **FR-001**: System MUST provide a dedicated Platform Administration portal accessible only to authorized platform creators/super-admins.
-- **FR-002**: System MUST restrict admin portal access via [NEEDS CLARIFICATION: administrative authorization mechanism].
+- **FR-002**: System MUST restrict admin portal access using a dedicated administrative role flag (`role: "superadmin"`), blocking regular tenant owners with an unauthorized/forbidden response.
 - **FR-003**: System MUST display high-level platform KPI summary cards: Total Users, Total Organizations, Active Users, Suspended Users, Total Ingested Documents, and Total Visitor Conversations.
 - **FR-004**: System MUST display a paginated directory table of all registered platform users with columns for: Name, Email, Organization Name, Website URL, Status (Active / Suspended), Created Date, and Actions.
 - **FR-005**: System MUST support debounced text searching across user email, user name, and organization name.
@@ -93,7 +93,7 @@ As the platform owner, I want to inspect individual workspace metrics (such as s
 - **FR-008**: System MUST allow the platform administrator to reactivate a suspended user.
 - **FR-009**: System MUST prevent the platform administrator from suspending or modifying their own super-admin status.
 - **FR-010**: System MUST immediately terminate active sessions and block dashboard access for suspended accounts.
-- **FR-011**: System MUST handle visitor interactions on deployed widgets belonging to suspended accounts by [NEEDS CLARIFICATION: widget behavior on account suspension].
+- **FR-011**: System MUST handle visitor interactions on deployed widgets belonging to suspended accounts by displaying a clear inactive notice ("Support is temporarily offline") and blocking message submissions to prevent token consumption.
 - **FR-012**: System MUST log all administrative actions (account suspensions, reactivations) with admin identifier, target user identifier, timestamp, and action type.
 
 ### Key Entities

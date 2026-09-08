@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,7 +31,8 @@
 
 ## Notes
 
-- 3 [NEEDS CLARIFICATION] markers pending user clarification on:
-  1. Administrative authorization mechanism (FR-002)
-  2. Public chat widget behavior when account is suspended (FR-011)
-  3. Admin tenant inspection scope and conversation privacy (User Story 4)
+- All 3 clarification items resolved per user decision:
+  1. Administrative authorization mechanism: Dedicated database role flag (`role: "superadmin"`) with initial owner seeding/env; regular owners receive 403 Forbidden.
+  2. Public chat widget behavior on suspension: Deployed widget displays polite inactive notice ("Support is temporarily offline") and rejects message submissions to prevent token drain.
+  3. Admin inspection scope: Aggregate workspace metrics & health metadata only (preserving tenant customer chat transcript confidentiality).
+
