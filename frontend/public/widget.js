@@ -115,10 +115,60 @@
     var hostContainer = document.createElement("div");
     hostContainer.id = "resolvdesk-widget-root";
     hostContainer.setAttribute("aria-live", "polite");
+    // Lenis smooth scroll and host scroll interception prevention
+    hostContainer.setAttribute("data-lenis-prevent", "true");
+    hostContainer.setAttribute("data-lenis-prevent-wheel", "true");
+    hostContainer.setAttribute("data-lenis-prevent-touch", "true");
+    hostContainer.setAttribute("data-scroll-prevent", "true");
     document.body.appendChild(hostContainer);
 
     // Attach native Shadow DOM
     var shadow = hostContainer.attachShadow({ mode: "open" });
+
+    // Helper functions for dynamic contrast & color extraction
+    var _themeCanvasCtx = null;
+    function getRgbFromColor(colorStr) {
+      if (!colorStr || colorStr === "transparent" || colorStr === "rgba(0, 0, 0, 0)") {
+        return null;
+      }
+      var m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (m) {
+        var a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+        if (a < 0.1) return null;
+        return { r: parseInt(m[1], 10), g: parseInt(m[2], 10), b: parseInt(m[3], 10), a: a };
+      }
+      try {
+        if (!_themeCanvasCtx) {
+          var c = document.createElement("canvas");
+          c.width = 1;
+          c.height = 1;
+          _themeCanvasCtx = c.getContext("2d", { willReadFrequently: true });
+        }
+        if (_themeCanvasCtx) {
+          _themeCanvasCtx.clearRect(0, 0, 1, 1);
+          _themeCanvasCtx.fillStyle = colorStr;
+          _themeCanvasCtx.fillRect(0, 0, 1, 1);
+          var px = _themeCanvasCtx.getImageData(0, 0, 1, 1).data;
+          if (px[3] < 20) return null;
+          return { r: px[0], g: px[1], b: px[2], a: px[3] / 255 };
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function calcLuminance(r, g, b) {
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    // Dynamic contrast calculation for primaryColor
+    var primaryRgb = getRgbFromColor(primaryColor);
+    var primaryContrast = "#ffffff";
+    if (primaryRgb) {
+      var pLum = calcLuminance(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+      if (pLum > 155) {
+        primaryContrast = "#09090b";
+      }
+    }
 
     // State management
     var isOpen = false;
@@ -165,7 +215,7 @@
     styleTag.textContent = [
       ":host, .rd-chat-window {",
       "  --rd-primary: " + primaryColor + ";",
-      "  --rd-primary-contrast: #ffffff;",
+      "  --rd-primary-contrast: " + primaryContrast + ";",
       "  --rd-bg: #ffffff;",
       "  --rd-surface: #f8fafc;",
       "  --rd-surface-border: #e2e8f0;",
@@ -212,47 +262,47 @@
       "  --rd-window-shadow: 0 12px 36px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);",
       "}",
       ":host([data-theme='dark']), .rd-chat-window.rd-dark {",
-      "  --rd-bg: #0b0f19;",
-      "  --rd-surface: #151d2f;",
-      "  --rd-surface-border: #243048;",
-      "  --rd-text: #f8fafc;",
-      "  --rd-text-muted: #94a3b8;",
-      "  --rd-bubble-assistant-bg: #151d2f;",
-      "  --rd-bubble-assistant-text: #f8fafc;",
-      "  --rd-bubble-assistant-border: #243048;",
-      "  --rd-form-bg: #151d2f;",
-      "  --rd-form-border: #243048;",
-      "  --rd-input-bg: #0b0f19;",
-      "  --rd-input-border: #243048;",
-      "  --rd-badge-bg: #243048;",
-      "  --rd-badge-text: #cbd5e1;",
+      "  --rd-bg: #09090b;",
+      "  --rd-surface: #141416;",
+      "  --rd-surface-border: rgba(255, 255, 255, 0.09);",
+      "  --rd-text: #f4f4f5;",
+      "  --rd-text-muted: #a1a1aa;",
+      "  --rd-bubble-assistant-bg: #18181b;",
+      "  --rd-bubble-assistant-text: #f4f4f5;",
+      "  --rd-bubble-assistant-border: rgba(255, 255, 255, 0.08);",
+      "  --rd-form-bg: #141416;",
+      "  --rd-form-border: rgba(255, 255, 255, 0.1);",
+      "  --rd-input-bg: #09090b;",
+      "  --rd-input-border: rgba(255, 255, 255, 0.12);",
+      "  --rd-badge-bg: #27272a;",
+      "  --rd-badge-text: #e4e4e7;",
       "  --rd-ticket-bg: rgba(34, 197, 94, 0.12);",
       "  --rd-ticket-border: rgba(34, 197, 94, 0.3);",
       "  --rd-ticket-text: #86efac;",
-      "  --rd-window-border: #243048;",
+      "  --rd-window-border: rgba(255, 255, 255, 0.1);",
       "  --rd-window-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);",
       "}",
       "@media (prefers-color-scheme: dark) {",
       "  :host(:not([data-theme='light'])) .rd-chat-window:not(.rd-light),",
       "  :host(:not([data-theme='light'])) {",
-      "    --rd-bg: #0b0f19;",
-      "    --rd-surface: #151d2f;",
-      "    --rd-surface-border: #243048;",
-      "    --rd-text: #f8fafc;",
-      "    --rd-text-muted: #94a3b8;",
-      "    --rd-bubble-assistant-bg: #151d2f;",
-      "    --rd-bubble-assistant-text: #f8fafc;",
-      "    --rd-bubble-assistant-border: #243048;",
-      "    --rd-form-bg: #151d2f;",
-      "    --rd-form-border: #243048;",
-      "    --rd-input-bg: #0b0f19;",
-      "    --rd-input-border: #243048;",
-      "    --rd-badge-bg: #243048;",
-      "    --rd-badge-text: #cbd5e1;",
+      "    --rd-bg: #09090b;",
+      "    --rd-surface: #141416;",
+      "    --rd-surface-border: rgba(255, 255, 255, 0.09);",
+      "    --rd-text: #f4f4f5;",
+      "    --rd-text-muted: #a1a1aa;",
+      "    --rd-bubble-assistant-bg: #18181b;",
+      "    --rd-bubble-assistant-text: #f4f4f5;",
+      "    --rd-bubble-assistant-border: rgba(255, 255, 255, 0.08);",
+      "    --rd-form-bg: #141416;",
+      "    --rd-form-border: rgba(255, 255, 255, 0.1);",
+      "    --rd-input-bg: #09090b;",
+      "    --rd-input-border: rgba(255, 255, 255, 0.12);",
+      "    --rd-badge-bg: #27272a;",
+      "    --rd-badge-text: #e4e4e7;",
       "    --rd-ticket-bg: rgba(34, 197, 94, 0.12);",
       "    --rd-ticket-border: rgba(34, 197, 94, 0.3);",
       "    --rd-ticket-text: #86efac;",
-      "    --rd-window-border: #243048;",
+      "    --rd-window-border: rgba(255, 255, 255, 0.1);",
       "    --rd-window-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);",
       "  }",
       "}",
@@ -325,6 +375,8 @@
       "  display: flex;",
       "  flex-direction: column;",
       "  overflow: hidden;",
+      "  overscroll-behavior: contain;",
+      "  -webkit-overflow-scrolling: touch;",
       "  z-index: var(--rd-z);",
       "  opacity: 0;",
       "  transform: translateY(20px) scale(0.98);",
@@ -457,6 +509,9 @@
       ".rd-messages-stream {",
       "  flex: 1;",
       "  overflow-y: auto;",
+      "  overscroll-behavior: contain;",
+      "  -webkit-overflow-scrolling: touch;",
+      "  touch-action: pan-y;",
       "  padding: 20px 16px;",
       "  display: flex;",
       "  flex-direction: column;",
@@ -797,6 +852,11 @@
     chatWindow.className = "rd-chat-window";
     chatWindow.setAttribute("role", "dialog");
     chatWindow.setAttribute("aria-label", "ResolvDesk Customer Support Chat");
+    // Lenis smooth scroll and host scroll interception prevention
+    chatWindow.setAttribute("data-lenis-prevent", "true");
+    chatWindow.setAttribute("data-lenis-prevent-wheel", "true");
+    chatWindow.setAttribute("data-lenis-prevent-touch", "true");
+    chatWindow.setAttribute("data-scroll-prevent", "true");
     chatWindow.innerHTML = [
       '<header class="rd-header">',
       '  <div class="rd-header-title-box">',
@@ -839,6 +899,71 @@
     var closeBtn = chatWindow.querySelector(".rd-close-btn");
     var themeToggleBtn = chatWindow.querySelector(".rd-theme-toggle-btn");
 
+    if (messageContainer) {
+      messageContainer.setAttribute("data-lenis-prevent", "true");
+      messageContainer.setAttribute("data-lenis-prevent-wheel", "true");
+      messageContainer.setAttribute("data-lenis-prevent-touch", "true");
+      messageContainer.setAttribute("data-scroll-prevent", "true");
+    }
+
+    // Scroll isolation: prevent host page scroll hijacking (Lenis, Locomotive, native chaining)
+    chatWindow.addEventListener(
+      "wheel",
+      function (e) {
+        e.stopPropagation();
+        if (messageContainer) {
+          var canScrollUp = messageContainer.scrollTop > 0;
+          var canScrollDown =
+            messageContainer.scrollTop + messageContainer.clientHeight <
+            messageContainer.scrollHeight - 1;
+
+          if ((e.deltaY < 0 && canScrollUp) || (e.deltaY > 0 && canScrollDown)) {
+            messageContainer.scrollTop += e.deltaY;
+          }
+          // Always prevent default when hovering over the widget so the host page never moves
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+
+    var touchStartY = 0;
+    chatWindow.addEventListener(
+      "touchstart",
+      function (e) {
+        if (e.touches && e.touches[0]) {
+          touchStartY = e.touches[0].clientY;
+        }
+        e.stopPropagation();
+      },
+      { passive: true }
+    );
+
+    chatWindow.addEventListener(
+      "touchmove",
+      function (e) {
+        e.stopPropagation();
+        if (messageContainer && e.touches && e.touches[0]) {
+          var touchCurrentY = e.touches[0].clientY;
+          var deltaY = touchStartY - touchCurrentY;
+          touchStartY = touchCurrentY;
+
+          var canScrollUp = messageContainer.scrollTop > 0;
+          var canScrollDown =
+            messageContainer.scrollTop + messageContainer.clientHeight <
+            messageContainer.scrollHeight - 1;
+
+          if ((deltaY < 0 && canScrollUp) || (deltaY > 0 && canScrollDown)) {
+            messageContainer.scrollTop += deltaY;
+            e.preventDefault();
+          } else {
+            e.preventDefault();
+          }
+        }
+      },
+      { passive: false }
+    );
+
     // --- Automatic Theme Detection & Reactive Syncing ---
     // Clean up any stale permanent localStorage override from testing so auto-detection works
     try {
@@ -850,41 +975,117 @@
       userSessionOverride = sessionStorage.getItem("resolvdesk_theme_mode");
     } catch (e) {}
 
-    var _themeCanvasCtx = null;
-    function getRgbFromColor(colorStr) {
-      if (!colorStr || colorStr === "transparent" || colorStr === "rgba(0, 0, 0, 0)") {
-        return null;
-      }
-      var m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-      if (m) {
-        var a = m[4] !== undefined ? parseFloat(m[4]) : 1;
-        if (a < 0.1) return null;
-        return { r: parseInt(m[1], 10), g: parseInt(m[2], 10), b: parseInt(m[3], 10), a: a };
-      }
-      try {
-        if (!_themeCanvasCtx) {
-          var c = document.createElement("canvas");
-          c.width = 1;
-          c.height = 1;
-          _themeCanvasCtx = c.getContext("2d", { willReadFrequently: true });
+    function extractHostColors() {
+      var candidates = [
+        document.body,
+        document.documentElement,
+        document.querySelector("main"),
+        document.querySelector("#__next"),
+        document.querySelector("#root"),
+        document.body ? document.body.firstElementChild : null,
+      ];
+      var hostBg = null;
+      var hostFg = null;
+      for (var i = 0; i < candidates.length; i++) {
+        var el = candidates[i];
+        if (!el) continue;
+        var computed = window.getComputedStyle(el);
+        if (computed) {
+          if (!hostBg) {
+            var bg = getRgbFromColor(computed.backgroundColor);
+            if (bg && bg.a > 0.2) {
+              hostBg = bg;
+            }
+          }
+          if (!hostFg) {
+            var fg = getRgbFromColor(computed.color);
+            if (fg && fg.a > 0.5) {
+              hostFg = fg;
+            }
+          }
         }
-        if (_themeCanvasCtx) {
-          _themeCanvasCtx.clearRect(0, 0, 1, 1);
-          _themeCanvasCtx.fillStyle = colorStr;
-          _themeCanvasCtx.fillRect(0, 0, 1, 1);
-          var px = _themeCanvasCtx.getImageData(0, 0, 1, 1).data;
-          if (px[3] < 20) return null;
-          return { r: px[0], g: px[1], b: px[2], a: px[3] / 255 };
-        }
-      } catch (e) {}
-      return null;
+        if (hostBg && hostFg) break;
+      }
+      return { bg: hostBg, fg: hostFg };
     }
 
-    function calcLuminance(r, g, b) {
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    function applyAdaptiveHostPalette(theme) {
+      var host = extractHostColors();
+      if (!host.bg) {
+        chatWindow.style.removeProperty("--rd-bg");
+        chatWindow.style.removeProperty("--rd-surface");
+        chatWindow.style.removeProperty("--rd-surface-border");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-bg");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-border");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-text");
+        chatWindow.style.removeProperty("--rd-form-bg");
+        chatWindow.style.removeProperty("--rd-form-border");
+        chatWindow.style.removeProperty("--rd-input-bg");
+        chatWindow.style.removeProperty("--rd-text");
+        chatWindow.style.removeProperty("--rd-text-muted");
+        return;
+      }
+
+      var bgLum = calcLuminance(host.bg.r, host.bg.g, host.bg.b);
+      if (theme === "dark" && bgLum < 128) {
+        var r = host.bg.r;
+        var g = host.bg.g;
+        var b = host.bg.b;
+
+        var sR = Math.min(255, r + 14);
+        var sG = Math.min(255, g + 14);
+        var sB = Math.min(255, b + 14);
+
+        var bubR = Math.min(255, r + 22);
+        var bubG = Math.min(255, g + 22);
+        var bubB = Math.min(255, b + 22);
+
+        chatWindow.style.setProperty("--rd-bg", "rgb(" + r + "," + g + "," + b + ")");
+        chatWindow.style.setProperty("--rd-surface", "rgb(" + sR + "," + sG + "," + sB + ")");
+        chatWindow.style.setProperty("--rd-surface-border", "rgba(255, 255, 255, 0.09)");
+        chatWindow.style.setProperty("--rd-bubble-assistant-bg", "rgb(" + bubR + "," + bubG + "," + bubB + ")");
+        chatWindow.style.setProperty("--rd-bubble-assistant-border", "rgba(255, 255, 255, 0.08)");
+        chatWindow.style.setProperty("--rd-form-bg", "rgb(" + sR + "," + sG + "," + sB + ")");
+        chatWindow.style.setProperty("--rd-form-border", "rgba(255, 255, 255, 0.1)");
+        chatWindow.style.setProperty("--rd-input-bg", "rgb(" + r + "," + g + "," + b + ")");
+
+        if (host.fg) {
+          chatWindow.style.setProperty("--rd-text", "rgb(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ")");
+          chatWindow.style.setProperty("--rd-bubble-assistant-text", "rgb(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ")");
+          chatWindow.style.setProperty("--rd-text-muted", "rgba(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ", 0.65)");
+        }
+      } else if (theme === "light" && bgLum >= 128) {
+        if (bgLum < 248) {
+          chatWindow.style.setProperty("--rd-bg", "rgb(" + host.bg.r + "," + host.bg.g + "," + host.bg.b + ")");
+        } else {
+          chatWindow.style.removeProperty("--rd-bg");
+        }
+        chatWindow.style.removeProperty("--rd-surface");
+        chatWindow.style.removeProperty("--rd-surface-border");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-bg");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-border");
+        chatWindow.style.removeProperty("--rd-bubble-assistant-text");
+        chatWindow.style.removeProperty("--rd-form-bg");
+        chatWindow.style.removeProperty("--rd-form-border");
+        chatWindow.style.removeProperty("--rd-input-bg");
+        if (host.fg) {
+          chatWindow.style.setProperty("--rd-text", "rgb(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ")");
+          chatWindow.style.setProperty("--rd-bubble-assistant-text", "rgb(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ")");
+          chatWindow.style.setProperty("--rd-text-muted", "rgba(" + host.fg.r + "," + host.fg.g + "," + host.fg.b + ", 0.65)");
+        }
+      }
     }
 
     function detectHostTheme() {
+      // Check explicit data-theme attribute on widget script tag
+      var scriptTheme = scriptTag ? scriptTag.getAttribute("data-theme") : null;
+      if (scriptTheme) {
+        var stLower = scriptTheme.trim().toLowerCase();
+        if (stLower === "dark" || stLower === "light") {
+          return stLower;
+        }
+      }
+
       var docEl = document.documentElement;
       var body = document.body;
 
@@ -920,10 +1121,13 @@
         if (lower.indexOf("light") !== -1) return "light";
       }
 
-      // 4. Check host localStorage (next-themes, tailwind, etc.)
+      // 4. Check host localStorage (standard-theme-mode, next-themes, tailwind, etc.)
       try {
         var hostSavedTheme = 
+          localStorage.getItem("standard-theme-mode") ||
+          localStorage.getItem("next-theme") ||
           localStorage.getItem("theme") || 
+          localStorage.getItem("theme-mode") ||
           localStorage.getItem("color-theme") || 
           localStorage.getItem("chakra-ui-color-mode") ||
           localStorage.getItem("mantine-color-scheme-value");
@@ -990,6 +1194,7 @@
         chatWindow.classList.add("rd-light");
         chatWindow.classList.remove("rd-dark");
       }
+      applyAdaptiveHostPalette(theme);
     }
 
     function syncTheme(forceHost) {
