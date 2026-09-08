@@ -11,8 +11,8 @@ const rawConnectionString =
 const connectionString = rawConnectionString.replace(/[\?&]channel_binding=[^&]*/g, "");
 
 const pool = new Pool({ connectionString });
-pool.on("error", (err: any) => {
-  console.warn("Neon database connection pool event:", err?.message || err);
+pool.on("error", (err: unknown) => {
+  console.warn("Neon database connection pool event:", err instanceof Error ? err.message : err);
 });
 
 export const auth = betterAuth({
@@ -46,7 +46,7 @@ export const auth = betterAuth({
       jwks: {
         jwksPath: "/.well-known/jwks.json",
       },
-      definePayload: ({ user }: { user: any }) => ({
+      definePayload: ({ user }: { user: { id: string; email: string; name?: string } }) => ({
         sub: user.id,
         id: user.id,
         email: user.email,
@@ -66,9 +66,10 @@ export type Session = typeof auth.$Infer.Session;
 export async function rollbackBetterAuthUser(userId: string) {
   try {
     // 1. Attempt Better Auth internal adapter delete
-    if ("adapter" in auth && typeof (auth as any).adapter?.delete === "function") {
+    const authRecord = auth as unknown as { adapter?: { delete?: (opts: unknown) => Promise<unknown> } };
+    if (authRecord.adapter && typeof authRecord.adapter.delete === "function") {
       try {
-        await (auth as any).adapter.delete({
+        await authRecord.adapter.delete({
           model: "user",
           where: [{ field: "id", value: userId }],
         });

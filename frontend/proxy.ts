@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * - Redirects logged-in users away from /login and /register to /dashboard.
  * - Redirects unauthenticated users trying to access /dashboard to /login.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Better Auth session cookie (handles both dev and secure HTTPS production names)

@@ -25,12 +25,13 @@ export class BackendApiError extends Error {
 export async function getServerJwtToken(): Promise<string | null> {
   try {
     const headerList = await headers();
-    if ("getToken" in auth.api && typeof (auth.api as any).getToken === "function") {
-      const tokenRes = await (auth.api as any).getToken({
+    const authApi = auth.api as unknown as { getToken?: (opts: { headers: Headers }) => Promise<{ token?: string } | string | null> };
+    if (typeof authApi.getToken === "function") {
+      const tokenRes = await authApi.getToken({
         headers: headerList,
       });
       if (tokenRes && typeof tokenRes === "object" && "token" in tokenRes) {
-        return (tokenRes as any).token;
+        return tokenRes.token || null;
       }
       if (typeof tokenRes === "string") {
         return tokenRes;
@@ -77,7 +78,7 @@ export async function backendFetch<T = unknown>(
   });
 
   if (!response.ok) {
-    let errorData: any = null;
+    let errorData: unknown = null;
     const rawText = await response.text();
     try {
       errorData = JSON.parse(rawText);
@@ -85,7 +86,7 @@ export async function backendFetch<T = unknown>(
       errorData = rawText;
     }
     const message =
-      (typeof errorData === "object" && errorData?.detail) ||
+      (typeof errorData === "object" && errorData !== null && "detail" in errorData && typeof (errorData as { detail: unknown }).detail === "string" ? (errorData as { detail: string }).detail : null) ||
       (typeof errorData === "string" && errorData.length > 0 && errorData.length < 200 ? errorData : null) ||
       `Backend API call failed with status ${response.status}`;
     throw new BackendApiError(response.status, errorData, message);

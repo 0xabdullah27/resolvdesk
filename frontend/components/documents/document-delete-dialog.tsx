@@ -40,7 +40,7 @@ export function DocumentDeleteDialog({
             <AlertTriangle className="size-5" />
           </div>
           <AlertDialogTitle className="text-base font-semibold text-foreground">
-            Permanently delete "{document.title}"?
+            Permanently delete &quot;{document.title}&quot;?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed">
             This action will permanently delete this document from your database and purge all associated vector embeddings from Qdrant. The AI support assistant will immediately lose the ability to reference this knowledge. This action cannot be undone.
