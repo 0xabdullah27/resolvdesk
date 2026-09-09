@@ -115,7 +115,10 @@ class WidgetService:
         owner_stmt = select(Owner).where(Owner.organization_id == widget.organization_id)
         owner = (await session.exec(owner_stmt)).first()
         is_active = bool(owner and owner.status == OwnerStatus.ACTIVE.value)
-        support_email = (owner.email if owner and owner.email else settings.PLATFORM_OWNER_EMAIL) or "mabdullahqureshi583@gmail.com"
+        if not is_active:
+            support_email = settings.PLATFORM_OWNER_EMAIL or "mabdullahqureshi583@gmail.com"
+        else:
+            support_email = (owner.email if owner and owner.email else settings.PLATFORM_OWNER_EMAIL) or "mabdullahqureshi583@gmail.com"
 
         return PublicWidgetConfigResponse(
             widget_key=key,  # Return the queried key that authorized this view
