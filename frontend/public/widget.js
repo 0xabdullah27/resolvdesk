@@ -718,6 +718,36 @@
       "  color: var(--rd-ticket-text);",
       "  opacity: 0.95;",
       "}",
+      "/* Contact Card / Offline State */",
+      ".rd-contact-card {",
+      "  margin-top: 6px;",
+      "  display: flex;",
+      "  flex-direction: column;",
+      "  gap: 8px;",
+      "  width: 100%;",
+      "}",
+      ".rd-contact-support-btn {",
+      "  display: inline-flex;",
+      "  align-items: center;",
+      "  justify-content: center;",
+      "  gap: 8px;",
+      "  background: var(--rd-primary);",
+      "  color: var(--rd-primary-contrast);",
+      "  text-decoration: none;",
+      "  font-size: 13px;",
+      "  font-weight: 500;",
+      "  padding: 10px 14px;",
+      "  border-radius: 8px;",
+      "  transition: opacity 0.15s ease, transform 0.1s ease;",
+      "  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);",
+      "}",
+      ".rd-contact-support-btn:hover {",
+      "  opacity: 0.92;",
+      "  transform: translateY(-1px);",
+      "}",
+      ".rd-contact-support-btn:active {",
+      "  transform: translateY(0);",
+      "}",
       "/* Footer / Input Area */",
       ".rd-footer {",
       "  border-top: 1px solid var(--rd-surface-border);",
@@ -1397,7 +1427,28 @@
       textInput.placeholder = "Support is temporarily offline...";
       sendBtn.disabled = true;
 
-      renderMessage("assistant", "Support is temporarily offline. We are unable to accept new messages at this time.");
+      var contactEmail = config.support_email || "mabdullahqureshi583@gmail.com";
+
+      renderMessage(
+        "assistant",
+        "Support is temporarily offline. We are unable to accept new messages at this time. Please contact our support team directly for assistance."
+      );
+
+      var contactRow = document.createElement("div");
+      contactRow.className = "rd-message-row rd-assistant";
+      contactRow.innerHTML = [
+        '<div class="rd-contact-card">',
+        '  <a href="mailto:' + escapeHtml(contactEmail) + '" class="rd-contact-support-btn">',
+        '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+        '      <rect width="20" height="16" x="2" y="4" rx="2"/>',
+        '      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+        '    </svg>',
+        '    <span>Contact Support (' + escapeHtml(contactEmail) + ')</span>',
+        '  </a>',
+        '</div>',
+      ].join("");
+      messageContainer.appendChild(contactRow);
+      scrollToBottom();
     } else {
       // Initialize messages stream
       if (messages.length === 0) {
