@@ -185,7 +185,29 @@ export async function getOwnerContextAction(): Promise<OwnerProfile | null> {
         organizationName: profile.organization_name || "My Workspace",
         createdAt: profile.created_at || new Date().toISOString(),
       };
-    } catch (apiErr) {
+    } catch (apiErr: any) {
+      const isSuspended =
+        apiErr instanceof BackendApiError
+          ? apiErr.status === 403
+          : apiErr?.status === 403 ||
+            (typeof apiErr?.message === "string" &&
+              (apiErr.message.toLowerCase().includes("suspended") ||
+                apiErr.message.toLowerCase().includes("inactive")));
+
+      if (isSuspended) {
+        return {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          fullName: session.user.name,
+          role: "owner",
+          status: "suspended",
+          organizationId: "suspended",
+          organizationName: "Suspended Workspace",
+          createdAt: session.user.createdAt?.toISOString() || new Date().toISOString(),
+        };
+      }
+
       console.warn("Could not fetch owner profile from backend, falling back to session:", apiErr);
       return {
         id: session.user.id,
