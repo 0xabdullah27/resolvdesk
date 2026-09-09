@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "008_add_owner_role_and_audit_logs"
+revision: str = "008_owner_role_audit_logs"
 down_revision: Union[str, None] = "007_expand_widget_placement"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
