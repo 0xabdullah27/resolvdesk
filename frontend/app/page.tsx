@@ -1,14 +1,20 @@
 import * as React from "react";
 import Link from "next/link";
-import { Bot, ArrowRight, ShieldCheck, Zap, Users2, LayoutDashboard } from "lucide-react";
+import { Bot, ArrowRight, LayoutDashboard } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { getOwnerContextAction } from "@/actions/auth-actions";
+import { LandingFeatures } from "@/components/landing/landing-features";
+import { LandingInteractivePreview } from "@/components/landing/landing-interactive-preview";
+import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
+import { LandingCodeSnippet } from "@/components/landing/landing-code-snippet";
+import { LandingFAQ } from "@/components/landing/landing-faq";
+import { LandingCTA } from "@/components/landing/landing-cta";
 
 export default async function HomePage() {
   const owner = await getOwnerContextAction();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground scroll-smooth">
       {/* Navigation Bar */}
       <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -23,6 +29,19 @@ export default async function HomePage() {
               ResolvDesk
             </span>
           </Link>
+
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+            <a href="#features" className="hover:text-foreground transition-colors">
+              Features
+            </a>
+            <a href="#how-it-works" className="hover:text-foreground transition-colors">
+              How It Works
+            </a>
+            <a href="#faq" className="hover:text-foreground transition-colors">
+              FAQ
+            </a>
+          </nav>
 
           <div className="flex items-center gap-3">
             {owner ? (
@@ -50,7 +69,7 @@ export default async function HomePage() {
                   href="/register"
                   className={buttonVariants({ size: "sm" })}
                 >
-                  Get Started
+                  Get Started Free
                   <ArrowRight className="ml-1.5 size-4" />
                 </Link>
               </>
@@ -59,8 +78,9 @@ export default async function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Main Page Content */}
       <main className="flex-1">
+        {/* Original Hero Section */}
         <section className="relative overflow-hidden py-20 md:py-32">
           {/* Ambient lighting */}
           <div
@@ -130,60 +150,63 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Feature Pillars */}
-        <section className="border-t border-border/60 py-20 bg-muted/20">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                  <ShieldCheck className="size-5" />
-                </div>
-                <h3 className="font-heading text-lg font-semibold text-card-foreground">
-                  Grounded & Hallucination-Free
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Answers strictly cite your uploaded documents. If the knowledge
-                  base doesn’t contain the answer, the assistant never guesses.
-                </p>
-              </div>
+        {/* Interactive Live Preview */}
+        <LandingInteractivePreview />
 
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                  <Zap className="size-5" />
-                </div>
-                <h3 className="font-heading text-lg font-semibold text-card-foreground">
-                  Instant Embeddable Widget
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Drop a single script tag into any web store or SaaS landing page
-                  and start resolving visitor inquiries immediately.
-                </p>
-              </div>
+        {/* Features Bento Grid */}
+        <LandingFeatures />
 
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                  <Users2 className="size-5" />
-                </div>
-                <h3 className="font-heading text-lg font-semibold text-card-foreground">
-                  Human Safety Net
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Conversations requiring human review escalate straight to your
-                  inbox with full conversation history and context preserved.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* How It Works (3-Step Setup) */}
+        <LandingHowItWorks />
+
+        {/* 1-Line Code Integration Snippet */}
+        <LandingCodeSnippet />
+
+        {/* Frequently Asked Questions */}
+        <LandingFAQ />
+
+        {/* Bottom Call to Action Banner */}
+        <LandingCTA isLoggedIn={!!owner} />
       </main>
 
-      <footer className="border-t border-border/60 py-8 bg-background">
-        <div className="container mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+      {/* Footer */}
+      <footer className="border-t border-border/60 py-12 bg-background">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Bot className="size-4" />
+              </div>
+              <span className="font-heading text-base font-bold tracking-tight">
+                ResolvDesk
+              </span>
+              <span className="text-xs text-muted-foreground ml-2">
+                • Open Source AI Customer Support
+              </span>
+            </div>
+
+            {/* Quick Links */}
+            <div className="flex items-center gap-6 text-xs text-muted-foreground">
+              <a href="#features" className="hover:text-foreground transition-colors">
+                Features
+              </a>
+              <a href="#how-it-works" className="hover:text-foreground transition-colors">
+                How It Works
+              </a>
+              <a href="#faq" className="hover:text-foreground transition-colors">
+                FAQ
+              </a>
+              <Link href="/login" className="hover:text-foreground transition-colors">
+                Sign In
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <p>© {new Date().getFullYear()} ResolvDesk Inc. All rights reserved.</p>
-            <span className="hidden sm:inline text-border">•</span>
+
             <p>
-              Designed &amp; Built by{" "}
+              Designed &amp; Built with ❤️ by{" "}
               <a
                 href="https://abdullah-qureshi.vercel.app"
                 target="_blank"
@@ -193,22 +216,6 @@ export default async function HomePage() {
                 Abdullah Qureshi
               </a>
             </p>
-          </div>
-          <div className="flex items-center gap-6">
-            {owner ? (
-              <Link href="/dashboard" className="hover:text-foreground transition-colors">
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link href="/login" className="hover:text-foreground transition-colors">
-                  Sign In
-                </Link>
-                <Link href="/register" className="hover:text-foreground transition-colors">
-                  Create Workspace
-                </Link>
-              </>
-            )}
           </div>
         </div>
       </footer>
