@@ -9,5 +9,6 @@ class PublicWidgetConfigResponse(BaseModel):
     widget_placement: str = Field(..., description="Placement on host page (e.g. bottom-right, bottom-left, top-right, top-left with optional :offsetX:offsetY)")
     allowed_origins: str = Field(default="*", description="Allowed domains/origins for widget embed")
     is_active: bool = Field(default=True, description="Whether the widget configuration is active")
+    support_email: str | None = Field(default=None, description="Contact support email when widget is offline")
 
     model_config = ConfigDict(from_attributes=True)

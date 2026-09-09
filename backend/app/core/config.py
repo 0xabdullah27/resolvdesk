@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     SQL_ECHO: bool = False
 
+    # Platform Administration
+    PLATFORM_OWNER_EMAIL: str = "mabdullahqureshi583@gmail.com"
+
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/resolvdesk"
 

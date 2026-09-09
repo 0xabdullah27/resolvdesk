@@ -41,6 +41,18 @@ function parseErrorMessage(err: unknown, fallbackMessage: string): string {
   return fallbackMessage;
 }
 
+function logActionError(actionName: string, err: unknown) {
+  const isSuspended =
+    (err instanceof BackendApiError && err.status === 403) ||
+    (err as any)?.status === 403 ||
+    String((err as any)?.message || "").toLowerCase().includes("suspended");
+  if (isSuspended) {
+    console.warn(`[Suspended Account] ${actionName}: account is suspended or inactive.`);
+  } else {
+    console.error(actionName, err);
+  }
+}
+
 /**
  * Fetches executive overview KPIs and deflection rates for the authenticated organization
  */
@@ -52,7 +64,7 @@ export async function getAnalyticsOverviewAction(): Promise<ActionResult<Analyti
     });
     return { success: true, data };
   } catch (err) {
-    console.error("Failed to fetch analytics overview:", err);
+    logActionError("Failed to fetch analytics overview:", err);
     return {
       success: false,
       error: parseErrorMessage(err, "Failed to load analytics overview."),
@@ -76,7 +88,7 @@ export async function getAnalyticsTrendsAction(
     );
     return { success: true, data };
   } catch (err) {
-    console.error("Failed to fetch analytics volume trends:", err);
+    logActionError("Failed to fetch analytics volume trends:", err);
     return {
       success: false,
       error: parseErrorMessage(err, "Failed to load volume trends."),
@@ -101,7 +113,7 @@ export async function getKnowledgeGapsAction(
     );
     return { success: true, data };
   } catch (err) {
-    console.error("Failed to fetch knowledge base gaps:", err);
+    logActionError("Failed to fetch knowledge base gaps:", err);
     return {
       success: false,
       error: parseErrorMessage(err, "Failed to load knowledge gaps."),
@@ -126,7 +138,7 @@ export async function getTopQuestionsAction(
     );
     return { success: true, data };
   } catch (err) {
-    console.error("Failed to fetch top customer questions:", err);
+    logActionError("Failed to fetch top customer questions:", err);
     return {
       success: false,
       error: parseErrorMessage(err, "Failed to load top questions."),

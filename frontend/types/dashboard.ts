@@ -3,6 +3,7 @@ export interface OwnerProfile {
   email: string;
   name?: string;
   fullName?: string;
+  role?: "owner" | "superadmin" | string;
   status: "active" | "suspended" | "pending";
   organizationId: string;
   organizationName: string;

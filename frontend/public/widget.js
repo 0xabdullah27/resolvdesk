@@ -718,6 +718,36 @@
       "  color: var(--rd-ticket-text);",
       "  opacity: 0.95;",
       "}",
+      "/* Contact Card / Offline State */",
+      ".rd-contact-card {",
+      "  margin-top: 6px;",
+      "  display: flex;",
+      "  flex-direction: column;",
+      "  gap: 8px;",
+      "  width: 100%;",
+      "}",
+      ".rd-contact-support-btn {",
+      "  display: inline-flex;",
+      "  align-items: center;",
+      "  justify-content: center;",
+      "  gap: 8px;",
+      "  background: var(--rd-primary);",
+      "  color: var(--rd-primary-contrast);",
+      "  text-decoration: none;",
+      "  font-size: 13px;",
+      "  font-weight: 500;",
+      "  padding: 10px 14px;",
+      "  border-radius: 8px;",
+      "  transition: opacity 0.15s ease, transform 0.1s ease;",
+      "  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);",
+      "}",
+      ".rd-contact-support-btn:hover {",
+      "  opacity: 0.92;",
+      "  transform: translateY(-1px);",
+      "}",
+      ".rd-contact-support-btn:active {",
+      "  transform: translateY(0);",
+      "}",
       "/* Footer / Input Area */",
       ".rd-footer {",
       "  border-top: 1px solid var(--rd-surface-border);",
@@ -1384,35 +1414,73 @@
       return bubble;
     }
 
-    // Initialize messages stream
-    if (messages.length === 0) {
-      renderMessage("assistant", welcomeGreeting);
+    // Check if widget is active or offline
+    var isWidgetActive = config.is_active !== false;
+
+    if (!isWidgetActive) {
+      var statusDot = chatWindow.querySelector(".rd-status-dot");
+      var statusText = chatWindow.querySelector(".rd-status-text");
+      if (statusDot) statusDot.style.background = "#ef4444";
+      if (statusText) statusText.textContent = "Offline";
+
+      textInput.disabled = true;
+      textInput.placeholder = "Support is temporarily offline...";
+      sendBtn.disabled = true;
+
+      var contactEmail = config.support_email || "mabdullahqureshi583@gmail.com";
+
+      renderMessage(
+        "assistant",
+        "Support is temporarily offline. We are unable to accept new messages at this time. Please contact our support team directly for assistance."
+      );
+
+      var contactRow = document.createElement("div");
+      contactRow.className = "rd-message-row rd-assistant";
+      contactRow.innerHTML = [
+        '<div class="rd-contact-card">',
+        '  <a href="mailto:' + escapeHtml(contactEmail) + '" class="rd-contact-support-btn">',
+        '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+        '      <rect width="20" height="16" x="2" y="4" rx="2"/>',
+        '      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+        '    </svg>',
+        '    <span>Contact Support (' + escapeHtml(contactEmail) + ')</span>',
+        '  </a>',
+        '</div>',
+      ].join("");
+      messageContainer.appendChild(contactRow);
+      scrollToBottom();
     } else {
-      for (var i = 0; i < messages.length; i++) {
-        var m = messages[i];
-        renderMessage(m.role, m.content, m.citations, m.suggestEscalation);
-      }
-      if (ticketData) {
-        var tRow = document.createElement("div");
-        tRow.className = "rd-message-row rd-assistant";
-        tRow.innerHTML = [
-          '<div class="rd-ticket-card">',
-          '  <div class="rd-ticket-check">✓</div>',
-          '  <div class="rd-ticket-content">',
-          "    <strong>Ticket #" + escapeHtml(ticketData.ticket_id) + " Submitted</strong>",
-          "    <p>Our store support team will follow up at <em>" +
-          escapeHtml(ticketData.visitor_email) +
-          "</em>.</p>",
-          "  </div>",
-          "</div>",
-        ].join("");
-        messageContainer.appendChild(tRow);
+      // Initialize messages stream
+      if (messages.length === 0) {
+        renderMessage("assistant", welcomeGreeting);
+      } else {
+        for (var i = 0; i < messages.length; i++) {
+          var m = messages[i];
+          renderMessage(m.role, m.content, m.citations, m.suggestEscalation);
+        }
+        if (ticketData) {
+          var tRow = document.createElement("div");
+          tRow.className = "rd-message-row rd-assistant";
+          tRow.innerHTML = [
+            '<div class="rd-ticket-card">',
+            '  <div class="rd-ticket-check">✓</div>',
+            '  <div class="rd-ticket-content">',
+            "    <strong>Ticket #" + escapeHtml(ticketData.ticket_id) + " Submitted</strong>",
+            "    <p>Our store support team will follow up at <em>" +
+            escapeHtml(ticketData.visitor_email) +
+            "</em>.</p>",
+            "  </div>",
+            "</div>",
+          ].join("");
+          messageContainer.appendChild(tRow);
+        }
       }
     }
 
     // Submit user message and stream response via SSE
     inputForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (!isWidgetActive) return;
       var text = textInput.value.trim();
       if (!text || isSubmitting) return;
 
@@ -1460,7 +1528,15 @@
       })
         .then(function (response) {
           if (!response.ok) {
-            throw new Error("Chat request failed: " + response.status);
+            if (response.status === 403) {
+              var suspendErr = new Error("Support is temporarily offline.");
+              suspendErr.isSuspended = true;
+              suspendErr.status = 403;
+              throw suspendErr;
+            }
+            var reqErr = new Error("Chat request failed: " + response.status);
+            reqErr.status = response.status;
+            throw reqErr;
           }
           if (!response.body || !response.body.getReader) {
             throw new Error("Streaming not supported in this browser");
@@ -1640,8 +1716,55 @@
         })
         .catch(function (streamErr) {
           isSubmitting = false;
+
+          var isOfflineOrSuspended =
+            (streamErr && streamErr.isSuspended) ||
+            (streamErr && streamErr.status === 403) ||
+            (streamErr && streamErr.message && (
+              streamErr.message.indexOf("Support is temporarily offline") !== -1 ||
+              streamErr.message.indexOf("temporarily unavailable") !== -1 ||
+              streamErr.message.indexOf("suspended") !== -1 ||
+              streamErr.message.indexOf("403") !== -1
+            ));
+
+          if (isOfflineOrSuspended) {
+            isWidgetActive = false;
+            var statusDot = chatWindow.querySelector(".rd-status-dot");
+            var statusText = chatWindow.querySelector(".rd-status-text");
+            if (statusDot) statusDot.style.background = "#ef4444";
+            if (statusText) statusText.textContent = "Offline";
+
+            textInput.disabled = true;
+            textInput.placeholder = "Support is temporarily offline...";
+            sendBtn.disabled = true;
+
+            assistantBubble.textContent =
+              "Support is temporarily offline. We are unable to take messages at this time. Please contact our support team directly for assistance.";
+
+            var contactEmail = config.support_email || "mabdullahqureshi583@gmail.com";
+            var contactCard = document.createElement("div");
+            contactCard.className = "rd-contact-card";
+            contactCard.style.marginTop = "8px";
+            contactCard.innerHTML = [
+              '<a href="mailto:' + escapeHtml(contactEmail) + '" class="rd-contact-support-btn">',
+              '  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+              '    <rect width="20" height="16" x="2" y="4" rx="2"/>',
+              '    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+              '  </svg>',
+              '  <span>Contact Support (' + escapeHtml(contactEmail) + ')</span>',
+              '</a>',
+            ].join("");
+            assistantRow.appendChild(contactCard);
+            scrollToBottom();
+            return;
+          }
+
           sendBtn.disabled = false;
-          assistantBubble.textContent = "Connection interrupted. Please check your internet and retry.";
+          if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            assistantBubble.textContent = "Connection interrupted. Please check your internet connection and retry.";
+          } else {
+            assistantBubble.textContent = "Unable to connect to support assistant. Please try again shortly.";
+          }
 
           // Retry button
           var retryBtn = document.createElement("button");

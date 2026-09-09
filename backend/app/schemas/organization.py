@@ -7,6 +7,7 @@ class OwnerProfileResponse(BaseModel):
     id: str
     email: str
     full_name: str
+    role: Optional[str] = "owner"
     status: str
     organization_id: str
     organization_name: Optional[str] = None

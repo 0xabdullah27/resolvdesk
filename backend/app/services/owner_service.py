@@ -19,6 +19,7 @@ class OwnerService:
             id=str(owner.id),
             email=owner.email,
             full_name=owner.full_name,
+            role=owner.role,
             status=owner.status,
             organization_id=str(owner.organization_id),
             organization_name=org.display_name if org else None,

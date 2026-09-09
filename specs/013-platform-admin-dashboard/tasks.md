@@ -8,11 +8,11 @@
 
 **Purpose**: Database schema extensions, model definitions, and shared configuration for platform administration.
 
-- [ ] T001 Configure platform administrator settings in backend/app/core/config.py
-- [ ] T002 [P] Create Alembic migration for owner role column and audit logs in backend/alembic/versions/20260909_add_owner_role_and_audit_logs.py
-- [ ] T003 [P] Update Owner and OwnerBase SQLModel with role attribute in backend/app/models/owner.py
-- [ ] T004 [P] Create AdminAuditLog SQLModel in backend/app/models/admin_audit_log.py
-- [ ] T005 [P] Create Pydantic schemas for admin metrics, directory, and status in backend/app/schemas/admin.py
+- [X] T001 Configure platform administrator settings in backend/app/core/config.py
+- [X] T002 [P] Create Alembic migration for owner role column and audit logs in backend/alembic/versions/20260909_add_owner_role_and_audit_logs.py
+- [X] T003 [P] Update Owner and OwnerBase SQLModel with role attribute in backend/app/models/owner.py
+- [X] T004 [P] Create AdminAuditLog SQLModel in backend/app/models/admin_audit_log.py
+- [X] T005 [P] Create Pydantic schemas for admin metrics, directory, and status in backend/app/schemas/admin.py
 
 ---
 
@@ -22,14 +22,14 @@
 
 ⚠️ **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 Implement aggregated metrics and directory query methods in backend/app/repos/admin_repo.py
-- [ ] T007 [P] Implement audit logging persistence methods in backend/app/repos/admin_audit_log_repo.py
-- [ ] T008 Implement get_current_superadmin dependency in backend/app/core/auth.py
-- [ ] T009 Add superadmin account role bootstrap logic on startup in backend/app/main.py
-- [ ] T010 Implement AdminService business logic layer in backend/app/services/admin_service.py
-- [ ] T011 Create and register admin router endpoints in backend/app/routers/admin.py and mount in backend/app/main.py
-- [ ] T012 [P] Implement frontend Axios admin API client in frontend/lib/api/admin.ts
-- [ ] T013 Update edge route protection for admin paths in frontend/middleware.ts
+- [X] T006 Implement aggregated metrics and directory query methods in backend/app/repos/admin_repo.py
+- [X] T007 [P] Implement audit logging persistence methods in backend/app/repos/admin_audit_log_repo.py
+- [X] T008 Implement get_current_superadmin dependency in backend/app/core/auth.py
+- [X] T009 Add superadmin account role bootstrap logic on startup in backend/app/main.py
+- [X] T010 Implement AdminService business logic layer in backend/app/services/admin_service.py
+- [X] T011 Create and register admin router endpoints in backend/app/routers/admin.py and mount in backend/app/main.py
+- [X] T012 [P] Implement frontend Axios admin API client in frontend/lib/api/admin.ts
+- [X] T013 Update edge route protection for admin paths in frontend/middleware.ts
 
 **Checkpoint**: Foundation ready — superadmin authentication and database access established. User story implementation can now proceed.
 
@@ -43,16 +43,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T014 [P] [US1] Add integration tests for GET /api/v1/admin/metrics superadmin access and non-admin 403 in backend/tests/test_admin_router.py
+- [X] T014 [P] [US1] Add integration tests for GET /api/v1/admin/metrics superadmin access and non-admin 403 in backend/tests/test_admin_router.py
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement GET /api/v1/admin/metrics endpoint handler in backend/app/routers/admin.py
-- [ ] T016 [P] [US1] Create server layout with admin header and workspace switcher in frontend/app/(admin)/admin/layout.tsx
-- [ ] T017 [P] [US1] Create loading skeleton and error boundary in frontend/app/(admin)/admin/loading.tsx and frontend/app/(admin)/admin/error.tsx
-- [ ] T018 [P] [US1] Implement semantic KPI summary cards component in frontend/components/admin/metrics-overview.tsx
-- [ ] T019 [US1] Assemble platform metrics overview page in frontend/app/(admin)/admin/page.tsx
-- [ ] T020 [US1] Add Admin Console navigation entry for superadmins in frontend/components/navigation/user-menu.tsx
+- [X] T015 [US1] Implement GET /api/v1/admin/metrics endpoint handler in backend/app/routers/admin.py
+- [X] T016 [P] [US1] Create server layout with admin header and workspace switcher in frontend/app/(admin)/admin/layout.tsx
+- [X] T017 [P] [US1] Create loading skeleton and error boundary in frontend/app/(admin)/admin/loading.tsx and frontend/app/(admin)/admin/error.tsx
+- [X] T018 [P] [US1] Implement semantic KPI summary cards component in frontend/components/admin/metrics-overview.tsx
+- [X] T019 [US1] Assemble platform metrics overview page in frontend/app/(admin)/admin/page.tsx
+- [X] T020 [US1] Add Admin Console navigation entry for superadmins in frontend/components/navigation/user-menu.tsx
 
 **Checkpoint**: At this point, User Story 1 is fully functional and delivers an independently testable MVP.
 
@@ -66,14 +66,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Add integration tests for GET /api/v1/admin/users pagination, search, and status filtering in backend/tests/test_admin_router.py
+- [X] T021 [P] [US2] Add integration tests for GET /api/v1/admin/users pagination, search, and status filtering in backend/tests/test_admin_router.py
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Implement GET /api/v1/admin/users endpoint handler in backend/app/routers/admin.py
-- [ ] T023 [P] [US2] Create semantic status badge component in frontend/components/admin/user-status-badge.tsx
-- [ ] T024 [P] [US2] Implement searchable and filterable directory table component in frontend/components/admin/user-directory-table.tsx
-- [ ] T025 [US2] Integrate UserDirectoryTable below metrics cards in frontend/app/(admin)/admin/page.tsx
+- [X] T022 [US2] Implement GET /api/v1/admin/users endpoint handler in backend/app/routers/admin.py
+- [X] T023 [P] [US2] Create semantic status badge component in frontend/components/admin/user-status-badge.tsx
+- [X] T024 [P] [US2] Implement searchable and filterable directory table component in frontend/components/admin/user-directory-table.tsx
+- [X] T025 [US2] Integrate UserDirectoryTable below metrics cards in frontend/app/(admin)/admin/page.tsx
 
 **Checkpoint**: At this point, User Stories 1 and 2 are functional and allow complete observability across registered accounts.
 
@@ -87,16 +87,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Add integration tests for PATCH /api/v1/admin/users/{user_id}/status, self-suspension blocking, and widget deactivation in backend/tests/test_admin_router.py
+- [X] T026 [P] [US3] Add integration tests for PATCH /api/v1/admin/users/{user_id}/status, self-suspension blocking, and widget deactivation in backend/tests/test_admin_router.py
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement PATCH /api/v1/admin/users/{user_id}/status endpoint with session revocation in backend/app/routers/admin.py
-- [ ] T028 [US3] Update widget configuration endpoint to return is_active=False for suspended owners in backend/app/services/widget_service.py
-- [ ] T029 [US3] Update chat streaming access check to reject requests for suspended accounts in backend/app/services/chat_service.py
-- [ ] T030 [US3] Update embeddable widget to render offline notice and block message inputs on is_active=false in frontend/public/widget.js
-- [ ] T031 [P] [US3] Implement suspension confirmation modal with reason field in frontend/components/admin/suspend-user-modal.tsx
-- [ ] T032 [US3] Connect suspend and reactivate action triggers from directory table to modal and API client in frontend/components/admin/user-directory-table.tsx
+- [X] T027 [US3] Implement PATCH /api/v1/admin/users/{user_id}/status endpoint with session revocation in backend/app/routers/admin.py
+- [X] T028 [US3] Update widget configuration endpoint to return is_active=False for suspended owners in backend/app/services/widget_service.py
+- [X] T029 [US3] Update chat streaming access check to reject requests for suspended accounts in backend/app/services/chat_service.py
+- [X] T030 [US3] Update embeddable widget to render offline notice and block message inputs on is_active=false in frontend/public/widget.js
+- [X] T031 [P] [US3] Implement suspension confirmation modal with reason field in frontend/components/admin/suspend-user-modal.tsx
+- [X] T032 [US3] Connect suspend and reactivate action triggers from directory table to modal and API client in frontend/components/admin/user-directory-table.tsx
 
 **Checkpoint**: User Stories 1, 2, and 3 are functional; account governance and token drain protection are fully operational.
 
@@ -110,13 +110,13 @@
 
 ### Tests for User Story 4
 
-- [ ] T033 [P] [US4] Add integration test for GET /api/v1/admin/users/{user_id} workspace details endpoint in backend/tests/test_admin_router.py
+- [X] T033 [P] [US4] Add integration test for GET /api/v1/admin/users/{user_id} workspace details endpoint in backend/tests/test_admin_router.py
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Implement GET /api/v1/admin/users/{user_id} endpoint in backend/app/routers/admin.py
-- [ ] T035 [P] [US4] Create read-only workspace resource inspection modal in frontend/components/admin/workspace-metrics-modal.tsx
-- [ ] T036 [US4] Connect View Details row action in directory table to trigger inspection modal in frontend/components/admin/user-directory-table.tsx
+- [X] T034 [US4] Implement GET /api/v1/admin/users/{user_id} endpoint in backend/app/routers/admin.py
+- [X] T035 [P] [US4] Create read-only workspace resource inspection modal in frontend/components/admin/workspace-metrics-modal.tsx
+- [X] T036 [US4] Connect View Details row action in directory table to trigger inspection modal in frontend/components/admin/user-directory-table.tsx
 
 **Checkpoint**: All 4 user stories are fully implemented and functional.
 
@@ -126,10 +126,10 @@
 
 **Purpose**: Design token compliance audit, full test suite validation, production build verification, and end-to-end quickstart execution.
 
-- [ ] T037 [P] Audit all admin components to verify strict semantic theme token usage per Constitution Principle VII
-- [ ] T038 Run backend integration test suite via pytest in backend/tests/test_admin_router.py
-- [ ] T039 Validate frontend Next.js production build via npm run build in frontend/
-- [ ] T040 Execute manual end-to-end validation scenarios per specs/013-platform-admin-dashboard/quickstart.md
+- [X] T037 [P] Audit all admin components to verify strict semantic theme token usage per Constitution Principle VII
+- [X] T038 Run backend integration test suite via pytest in backend/tests/test_admin_router.py
+- [X] T039 Validate frontend Next.js production build via npm run build in frontend/
+- [X] T040 Execute manual end-to-end validation scenarios per specs/013-platform-admin-dashboard/quickstart.md
 
 ---
 

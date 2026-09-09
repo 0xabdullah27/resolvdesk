@@ -4,6 +4,7 @@ import { getOwnerContextAction } from "@/actions/auth-actions";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardProvider } from "@/providers/dashboard-provider";
+import { AccountSuspendedView } from "@/components/dashboard/account-suspended-view";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,16 @@ export default async function DashboardLayout({
 
   if (!owner) {
     redirect("/login?callbackUrl=/dashboard");
+  }
+
+  if (owner.status === "suspended") {
+    return (
+      <AccountSuspendedView
+        ownerEmail={owner.email}
+        ownerName={owner.name || owner.fullName}
+        organizationName={owner.organizationName}
+      />
+    );
   }
 
   return (
@@ -33,6 +44,7 @@ export default async function DashboardLayout({
             ownerName={owner.name || owner.fullName}
             ownerEmail={owner.email}
             organizationName={owner.organizationName}
+            role={owner.role}
           />
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
             <div className="mx-auto max-w-6xl">{children}</div>
