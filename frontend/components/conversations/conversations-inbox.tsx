@@ -88,11 +88,26 @@ export function ConversationsInbox({
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [currentPage, setCurrentPage] = React.useState<number>(1);
 
+  // In-memory cache for filter tabs ("all" vs "escalated") to avoid redundant network requests on tab switch
+  const filterCacheRef = React.useRef<Partial<Record<InboxFilterTab, { items: ConversationSummary[]; total: number }>>>({
+    all: cachedConversations.data
+      ? { items: cachedConversations.data.items, total: cachedConversations.data.total }
+      : initialConversations.length > 0
+      ? { items: initialConversations, total: initialTotal }
+      : undefined,
+  });
+
   // Keep local list in sync with cache updates (e.g. from refreshAll or lazy load)
   React.useEffect(() => {
-    if (cachedConversations.data && activeFilter === "all" && currentPage === 1 && !searchQuery) {
-      setConversations(cachedConversations.data.items);
-      setTotalCount(cachedConversations.data.total);
+    if (cachedConversations.data) {
+      filterCacheRef.current["all"] = {
+        items: cachedConversations.data.items,
+        total: cachedConversations.data.total,
+      };
+      if (activeFilter === "all" && currentPage === 1 && !searchQuery) {
+        setConversations(cachedConversations.data.items);
+        setTotalCount(cachedConversations.data.total);
+      }
     }
   }, [cachedConversations.data, activeFilter, currentPage, searchQuery]);
 
@@ -225,9 +240,17 @@ export function ConversationsInbox({
     }
   }, [selectedId, loadTranscript]);
 
-  // Fetch list on filter or page change
+  // Fetch list on filter or page change with in-memory cache to avoid refetching on tab switch
   const fetchConversationsList = React.useCallback(
-    async (page: number, filter: InboxFilterTab) => {
+    async (page: number, filter: InboxFilterTab, force: boolean = false) => {
+      // Use cached data on page 1 when switching tabs unless explicit force refresh
+      if (!force && page === 1 && filterCacheRef.current[filter]) {
+        const cached = filterCacheRef.current[filter]!;
+        setConversations(cached.items);
+        setTotalCount(cached.total);
+        return;
+      }
+
       try {
         setIsLoadingList(true);
         const offset = (page - 1) * PAGE_SIZE;
@@ -237,6 +260,12 @@ export function ConversationsInbox({
         if (res.success && res.data) {
           setConversations(res.data.items);
           setTotalCount(res.data.total);
+          if (page === 1) {
+            filterCacheRef.current[filter] = {
+              items: res.data.items,
+              total: res.data.total,
+            };
+          }
         }
       } catch (err) {
         console.error("Failed to list conversations:", err);
@@ -250,18 +279,20 @@ export function ConversationsInbox({
   const handleFilterChange = (newFilter: InboxFilterTab) => {
     setActiveFilter(newFilter);
     setCurrentPage(1);
-    fetchConversationsList(1, newFilter);
+    fetchConversationsList(1, newFilter, false);
   };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    fetchConversationsList(newPage, activeFilter);
+    fetchConversationsList(newPage, activeFilter, true);
   };
 
-  // Manual Refresh
+  // Manual Refresh: fetches fresh data from backend and updates cache
   const handleManualRefresh = async () => {
     try {
       setIsRefreshing(true);
+      // Invalidate filter cache so fresh data is loaded
+      filterCacheRef.current = {};
       const isEscalatedParam = activeFilter === "escalated" ? true : undefined;
       const offset = (currentPage - 1) * PAGE_SIZE;
 
@@ -273,6 +304,12 @@ export function ConversationsInbox({
       if (listRes.success && listRes.data) {
         setConversations(listRes.data.items);
         setTotalCount(listRes.data.total);
+        if (currentPage === 1) {
+          filterCacheRef.current[activeFilter] = {
+            items: listRes.data.items,
+            total: listRes.data.total,
+          };
+        }
       }
       if (statsRes.success && statsRes.data) {
         setStats(statsRes.data);
@@ -348,6 +385,19 @@ export function ConversationsInbox({
       prev.map((c) => (c.id === selectedId ? { ...c, ticket_status: newStatus } : c))
     );
 
+    // Also update in-memory tab caches
+    Object.keys(filterCacheRef.current).forEach((key) => {
+      const tab = key as InboxFilterTab;
+      if (filterCacheRef.current[tab]) {
+        filterCacheRef.current[tab] = {
+          ...filterCacheRef.current[tab]!,
+          items: filterCacheRef.current[tab]!.items.map((c) =>
+            c.id === selectedId ? { ...c, ticket_status: newStatus } : c
+          ),
+        };
+      }
+    });
+
     // 2. Persist via DashboardProvider optimistic mutation (synchronizes KPIs and handles toast/rollback)
     const success = await optimisticUpdateTicketStatus(selectedId, newStatus);
     if (!success) {
@@ -356,6 +406,17 @@ export function ConversationsInbox({
       setConversations((prev) =>
         prev.map((c) => (c.id === selectedId ? { ...c, ticket_status: previousStatus } : c))
       );
+      Object.keys(filterCacheRef.current).forEach((key) => {
+        const tab = key as InboxFilterTab;
+        if (filterCacheRef.current[tab]) {
+          filterCacheRef.current[tab] = {
+            ...filterCacheRef.current[tab]!,
+            items: filterCacheRef.current[tab]!.items.map((c) =>
+              c.id === selectedId ? { ...c, ticket_status: previousStatus } : c
+            ),
+          };
+        }
+      });
     }
   };
 
