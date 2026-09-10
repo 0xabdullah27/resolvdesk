@@ -13,6 +13,7 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   citations?: CitationItem[] | null;
+  metadata?: Record<string, any> | null;
 }
 
 export interface ConversationSummary {

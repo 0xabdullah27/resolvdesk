@@ -95,6 +95,7 @@ class ConversationRepository:
         role: str,
         content: str,
         citations: Optional[List[dict]] = None,
+        metadata: Optional[dict] = None,
     ) -> Message:
         """Append a message to an existing conversation and update conversation updated_at."""
         message = Message(
@@ -102,6 +103,7 @@ class ConversationRepository:
             role=role,
             content=content,
             citations=citations,
+            metadata_json=metadata,
             created_at=utc_now(),
         )
         session.add(message)
