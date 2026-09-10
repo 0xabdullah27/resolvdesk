@@ -48,14 +48,28 @@ IDENTITY_REGEXES = [
     r"\bwho\s+(created|made|built)\s+you\b",
 ]
 
+FRUSTRATION_REGEXES = [
+    r"\bfrustrat(ed|ing|ion)\b",
+    r"\btired\s+(of|to)\s+(you|this|talking)\b",
+    r"\btired\s+(of|to)\b",
+    r"\bannoy(ed|ing)\b",
+    r"\birritat(ed|ing)\b",
+    r"\b(angry|furious|upset|mad)\b",
+    r"\bwaste\s+of\s+time\b",
+    r"\b(ridiculous|pathetic|horrible|terrible|awful|garbage|nonsense|stupid|dumb)\b",
+    r"\b(you\s+are|you're)\s+(so\s+)?(useless|not\s+helping|frustrating|annoying|unhelpful|stupid|bad|dumb)\b",
+    r"\b(this\s+is|this\s+bot\s+is)\s+(so\s+)?(useless|unhelpful|terrible|broken|frustrating|annoying)\b",
+    r"\bstop\s+answering\s+with\s+(a\s+)?(bot|ai|robot)\b",
+]
+
 ESCALATION_REGEXES = [
-    r"\b(speak|talk)\s+to\s+(a\s+)?(human|person|agent|representative|manager)\b",
-    r"\b(real\s+person|human\s+agent|human\s+support|live\s+agent)\b",
-    r"\bconnect\s+(me\s+)?with\s+(a\s+)?(human|person|agent)\b",
-    r"\bi\s+want\s+(a\s+)?human\b",
-    r"\bthis\s+is\s+(useless|unhelpful|terrible|broken)\b",
-    r"\b(you\s+are|you're)\s+(useless|not\s+helping)\b",
-    r"\bstop\s+answering\s+with\s+a\s+bot\b",
+    r"\b(speak|talk)\s+to\s+(a\s+)?(human|person|agent|representative|manager|someone|real\s+person)\b",
+    r"\b(real\s+person|human\s+agent|human\s+support|live\s+agent|live\s+support|real\s+human)\b",
+    r"\bconnect\s+(me\s+)?(to|with)\s+(a\s+)?(human|person|agent|someone)\b",
+    r"\bi\s+(want|need)\s+(a\s+)?(human|person|agent|real\s+person|someone\s+else)\b",
+    r"\btransfer\s+(me\s+)?to\s+(a\s+)?(human|agent|person|representative)\b",
+    r"\b(give\s+me|get\s+me)\s+(a\s+)?(human|person|agent|manager)\b",
+    r"\b(call|contact)\s+(a\s+)?(human|person|agent|manager|support\s+team)\b",
 ]
 
 # Business domain question signals that disqualify a turn from being a pure greeting
@@ -102,7 +116,19 @@ class IntentService:
                 response_override=f"Hello! How can I help you with {business_name} today?",
             )
 
-        # 1. Explicit Human Escalation Check (highest priority for safety net)
+        # 1. Negative Sentiment & Frustration Detection (safety net priority)
+        for pattern in FRUSTRATION_REGEXES:
+            if re.search(pattern, clean):
+                return IntentClassificationResult(
+                    intent=MessageIntent.HUMAN_ESCALATION,
+                    tier=1,
+                    confidence=1.0,
+                    is_chitchat=False,
+                    suggest_escalation=True,
+                    response_override=cls.generate_escalation_response(is_frustrated=True),
+                )
+
+        # 2. Explicit Human Escalation Request
         for pattern in ESCALATION_REGEXES:
             if re.search(pattern, clean):
                 return IntentClassificationResult(
@@ -111,7 +137,7 @@ class IntentService:
                     confidence=1.0,
                     is_chitchat=False,
                     suggest_escalation=True,
-                    response_override=cls.generate_escalation_response(),
+                    response_override=cls.generate_escalation_response(is_frustrated=False),
                 )
 
         # 2. Check for Bot Identity / Capability Inquiry
@@ -207,7 +233,12 @@ class IntentService:
         )
 
     @staticmethod
-    def generate_escalation_response() -> str:
+    def generate_escalation_response(is_frustrated: bool = False) -> str:
+        if is_frustrated:
+            return (
+                "I apologize for the frustration. Let's connect you with our team right away. "
+                "Please share your contact details below so a representative can assist you directly:"
+            )
         return (
             "I understand you would like to speak with a human team member. "
             "Please provide your contact details below so our team can follow up directly:"

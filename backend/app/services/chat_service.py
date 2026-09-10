@@ -301,10 +301,14 @@ class ChatService:
                 )
 
             clean_msg = intent_service.clean_text(message)
-            is_off_topic = top_score < 0.2 or any(
-                term in clean_msg
-                for term in ["python", "code", "poem", "weather", "recipe", "math", "joke", "capital", "movie", "translate", "write"]
-            )
+            off_topic_patterns = [
+                r"\b(code|coding|python|javascript|java|c\+\+|html|css|sql|script)\b",
+                r"\b(poem|story|song|essay|joke|riddle)\b",
+                r"\b(weather|recipe|cooking|movie|celebrity|news)\b",
+                r"\b(math|calculate|calculator|\d+\s*[\+\-\*\/]\s*\d+)\b",
+                r"\b(translate|translation|write\s+me)\b",
+            ]
+            is_off_topic = any(re.search(pat, clean_msg) for pat in off_topic_patterns)
 
             if is_off_topic:
                 classified_intent = MessageIntent.OUT_OF_SCOPE.value
