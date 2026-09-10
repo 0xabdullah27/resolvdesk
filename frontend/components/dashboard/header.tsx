@@ -6,12 +6,6 @@ import { RefreshCw, PanelLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/dashboard/user-menu";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
@@ -43,13 +37,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const {
-    refreshAll,
-    isRefreshing,
-    lastRefreshedAt,
-    isSidebarCollapsed,
-    toggleSidebar,
-  } = useDashboard();
+  const { refreshAll, isRefreshing, lastRefreshedAt } = useDashboard();
   const [relativeTime, setRelativeTime] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -97,29 +85,7 @@ export function DashboardHeader({
           </SheetContent>
         </Sheet>
 
-        {/* Desktop ChatGPT-style Sidebar Toggle Button */}
-        <TooltipProvider delay={100}>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={toggleSidebar}
-                  className="hidden md:flex size-8 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 focus-visible:ring-ring rounded-lg"
-                  aria-label={isSidebarCollapsed ? "Open sidebar" : "Close sidebar"}
-                >
-                  <PanelLeft className="size-4.5" />
-                </Button>
-              }
-            />
-            <TooltipContent side="right" align="center" className="text-xs font-medium">
-              {isSidebarCollapsed ? "Open sidebar" : "Close sidebar"}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        {/* Clean Route Title (without redundant 'Dashboard /') */}
+        {/* Clean Route Title */}
         <h1 className="font-heading font-semibold text-foreground text-sm sm:text-base">
           {routeTitle}
         </h1>
