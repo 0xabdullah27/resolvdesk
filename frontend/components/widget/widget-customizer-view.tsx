@@ -16,11 +16,15 @@ import {
   rotateWidgetKeyAction,
 } from "@/actions/widget-actions";
 
+import { Code2, Check, FileCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 import { WidgetAppearanceForm } from "./widget-appearance-form";
 import { WidgetLivePreview } from "./widget-live-preview";
 import { WidgetEmbedCard } from "./widget-embed-card";
 import { WidgetResetDialog } from "./widget-reset-dialog";
 import { WidgetRotateDialog } from "./widget-rotate-dialog";
+import { WidgetScriptDialog } from "./widget-script-dialog";
 
 interface WidgetCustomizerViewProps {
   initialConfig: WidgetConfig;
@@ -39,6 +43,23 @@ export function WidgetCustomizerView({
   const [isResetDialogOpen, setIsResetDialogOpen] = React.useState(false);
   const [isRotateDialogOpen, setIsRotateDialogOpen] = React.useState(false);
   const [isRotating, setIsRotating] = React.useState(false);
+  const [isScriptDialogOpen, setIsScriptDialogOpen] = React.useState(false);
+  const [copiedTopScript, setCopiedTopScript] = React.useState(false);
+
+  const cleanSnippet =
+    currentConfig.embed_snippet ||
+    `<script src="${typeof window !== "undefined" ? window.location.origin : "https://resolvdesk.online"}/widget.js" data-widget-key="${currentConfig.widget_key}" defer></script>`;
+
+  const handleQuickCopyScript = async () => {
+    try {
+      await navigator.clipboard.writeText(cleanSnippet);
+      setCopiedTopScript(true);
+      toast.success("Embed script copied to clipboard!");
+      setTimeout(() => setCopiedTopScript(false), 2000);
+    } catch {
+      toast.error("Failed to copy embed script.");
+    }
+  };
 
   // Initialize form with existing configuration
   const initialDomains =
@@ -227,14 +248,49 @@ export function WidgetCustomizerView({
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-          Widget Customizer
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Customize your autonomous AI assistant&apos;s brand appearance, welcome greeting, placement, and retrieve your live embed code.
-        </p>
+      {/* Page Header with Top Action Buttons */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            Widget Customizer
+          </h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Customize your autonomous AI assistant&apos;s brand appearance, welcome greeting, placement, and retrieve your live embed code.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsScriptDialogOpen(true)}
+            className="cursor-pointer gap-2 h-9 text-xs font-medium"
+          >
+            <FileCode className="size-4 text-primary" />
+            <span>Script Notes</span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            onClick={handleQuickCopyScript}
+            className="cursor-pointer gap-2 h-9 text-xs font-medium shadow-xs"
+          >
+            {copiedTopScript ? (
+              <>
+                <Check className="size-4 text-primary-foreground" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Code2 className="size-4" />
+                <span>Copy Script</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Main 2-Column Responsive Layout */}
@@ -282,6 +338,13 @@ export function WidgetCustomizerView({
         onClose={() => setIsRotateDialogOpen(false)}
         onConfirm={handleConfirmRotate}
         isRotating={isRotating}
+      />
+
+      <WidgetScriptDialog
+        isOpen={isScriptDialogOpen}
+        onClose={() => setIsScriptDialogOpen(false)}
+        widgetKey={currentConfig.widget_key}
+        embedSnippet={currentConfig.embed_snippet}
       />
     </div>
   );
