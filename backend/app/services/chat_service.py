@@ -156,19 +156,25 @@ class ChatService:
     def build_fallback_prompt(
         self,
         business_name: str,
+        topics: Optional[List[str]] = None,
     ) -> str:
-        """Constructs smart fallback prompt for out-of-knowledge queries, conversational typos, and de-escalation."""
+        """Constructs smart fallback prompt for out-of-knowledge queries, conversational memory, and de-escalation."""
+        topics_context = (
+            f"Our primary areas of focus and documented services include: {', '.join(topics[:4])}."
+            if topics
+            else ""
+        )
         return (
-            f"You are the helpful AI customer support assistant for {business_name}.\n"
-            "You do NOT have specific documentation in your knowledge base to directly answer the visitor's latest query.\n\n"
+            f"You are the virtual customer support specialist for {business_name}. {topics_context}\n"
+            "You do not have a direct verified answer for the visitor's latest inquiry, but you must guide them professionally.\n\n"
             "STRICT INSTRUCTIONS:\n"
-            "1. If the visitor asks what you just said, asks you to repeat/clarify, or asks about prior conversation turns, directly and accurately summarize or explain your previous responses from the conversation history.\n"
-            "2. If the visitor is greeting you, saying hello, or engaging in casual pleasantries, respond warmly and ask how you can help them with our services.\n"
-            "3. If the visitor is frustrated, unhappy, or asking for human assistance, apologize with empathy and invite them to provide their email address so our team can follow up.\n"
-            "4. If the visitor is asking about purchasing, booking a demo, or pricing that isn't documented, invite them to share their email or contact info for our sales team.\n"
-            "5. If the visitor is asking general questions outside the business domain, politely state:\n"
+            "1. Conversational Memory: If the visitor asks what you just said, to repeat, or to clarify, summarize your previous response accurately and conversationally from the chat history.\n"
+            "2. Natural Tone: Speak naturally, warmly, and empathetically. NEVER use technical or robotic terms like 'knowledge base', 'context', or 'database'.\n"
+            "3. High-Intent & Sales: If the visitor asks for quotes, demos, pricing, or purchasing that isn't documented, warmly invite them to share their email or contact info so our team can follow up directly.\n"
+            "4. Frustration & De-escalation: If the visitor is annoyed, angry, or requests a human, apologize with empathy and ask for their email so our human support team can step in.\n"
+            "5. Polite Boundaries: If the question is about unrelated general topics (trivia, coding, math, general world facts), politely state:\n"
             f'"{FALLBACK_RESPONSE}"\n'
-            "6. Keep your response concise (1-3 sentences), polite, and professional. NEVER invent facts or fake policies."
+            "6. Anti-Hallucination: Never invent pricing, guarantees, or policies. Keep replies concise (2-3 sentences max) and always offer a helpful next step."
         )
 
     def contextualize_query(self, message: str, recent_msgs: List[Message]) -> str:
@@ -436,7 +442,7 @@ class ChatService:
                 yield f"event: intent\ndata: {json.dumps({'intent': classified_intent, 'tier': 2})}\n\n"
 
                 # Smart Fallback LLM generation
-                fallback_prompt = self.build_fallback_prompt(business_name=business_name)
+                fallback_prompt = self.build_fallback_prompt(business_name=business_name, topics=active_titles)
                 fallback_messages = [
                     {"role": "system", "content": fallback_prompt}
                 ]
