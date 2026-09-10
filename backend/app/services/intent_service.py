@@ -64,11 +64,11 @@ FRUSTRATION_REGEXES = [
 
 ESCALATION_REGEXES = [
     r"\b(speak|talk)\s+to\s+(a\s+)?(human|person|agent|representative|manager|someone|real\s+person)\b",
-    r"\b(real\s+person|human\s+agent|human\s+support|live\s+agent|live\s+support|real\s+human)\b",
-    r"\bconnect\s+(me\s+)?(to|with)\s+(a\s+)?(human|person|agent|someone)\b",
+    r"\b(human\s+agent|human\s+support|live\s+agent|live\s+support|real\s+human)\b",
+    r"\bconnect\s+(me\s+)?(to|with)\s+(a\s+)?(human|person|agent|someone|real\s+person)\b",
     r"\bi\s+(want|need)\s+(a\s+)?(human|person|agent|real\s+person|someone\s+else)\b",
-    r"\btransfer\s+(me\s+)?to\s+(a\s+)?(human|agent|person|representative)\b",
-    r"\b(give\s+me|get\s+me)\s+(a\s+)?(human|person|agent|manager)\b",
+    r"\btransfer\s+(me\s+)?to\s+(a\s+)?(human|agent|person|representative|real\s+person)\b",
+    r"\b(give\s+me|get\s+me)\s+(a\s+)?(human|person|agent|manager|real\s+person)\b",
     r"\b(call|contact)\s+(a\s+)?(human|person|agent|manager|support\s+team)\b",
 ]
 
@@ -128,18 +128,6 @@ class IntentService:
                     response_override=cls.generate_escalation_response(is_frustrated=True),
                 )
 
-        # 2. Explicit Human Escalation Request
-        for pattern in ESCALATION_REGEXES:
-            if re.search(pattern, clean):
-                return IntentClassificationResult(
-                    intent=MessageIntent.HUMAN_ESCALATION,
-                    tier=1,
-                    confidence=1.0,
-                    is_chitchat=False,
-                    suggest_escalation=True,
-                    response_override=cls.generate_escalation_response(is_frustrated=False),
-                )
-
         # 2. Check for Bot Identity / Capability Inquiry
         for pattern in IDENTITY_REGEXES:
             if re.search(pattern, clean):
@@ -150,6 +138,18 @@ class IntentService:
                     is_chitchat=True,
                     suggest_escalation=False,
                     response_override=cls.generate_identity_response(business_name),
+                )
+
+        # 3. Explicit Human Escalation Request
+        for pattern in ESCALATION_REGEXES:
+            if re.search(pattern, clean):
+                return IntentClassificationResult(
+                    intent=MessageIntent.HUMAN_ESCALATION,
+                    tier=1,
+                    confidence=1.0,
+                    is_chitchat=False,
+                    suggest_escalation=True,
+                    response_override=cls.generate_escalation_response(is_frustrated=False),
                 )
 
         # 3. Check for Farewell
