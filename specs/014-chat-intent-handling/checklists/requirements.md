@@ -31,6 +31,11 @@
 
 ## Notes
 
-- All 16 validation criteria passed on initial assessment.
-- The specification cleanly isolates business requirements and user conversational journeys from backend architecture and transport mechanisms (such as webhooks, websockets, or API endpoints).
-- Ready for planning via `/speckit-plan` or clarification refinement via `/speckit-clarify`.
+- All 16 validation criteria passing (16/16).
+- Completed 5 targeted clarifications:
+  1. Two-tier intent classification architecture (heuristic fast-path for greetings + LLM for complex turns).
+  2. Intent tagging persisted in message metadata JSON for Owner Inbox badging and analytics.
+  3. Immediate in-chat contact capture prompt (Name, Email, Message) upon human escalation or severe frustration.
+  4. Smart default greeting referencing the organization's business name with optional custom copy override in Widget Settings.
+  5. Out-of-scope deflection offering 2-3 helpful inquiry topic suggestions derived from the organization's indexed knowledge base documents.
+- Specification is 100% ready for the implementation planning phase via `/speckit-plan`.

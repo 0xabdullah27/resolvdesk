@@ -8,6 +8,15 @@
 
 **Input**: User description: "I want to create the spec where detail about the user message to the chatbot maybe greeting and anything so create the spec from what we just discussed."
 
+## Clarifications
+
+### Session 2026-09-10
+- Q: How should the system classify visitor intent to distinguish greetings and chit-chat from knowledge inquiries? → A: Option A (Two-Tier: Fast heuristic pattern classification for immediate greetings and pleasantries with 0 token cost, falling back to semantic retrieval and the LLM for domain queries).
+- Q: How should the system persist and expose the classified intent of visitor messages for business owners? → A: Option A (Persist the classified intent within the message's metadata JSON for inbox badges and analytics without database schema changes).
+- Q: How should the assistant respond when explicit human escalation or severe customer frustration is detected? → A: Option A (Direct In-Chat Ticket Capture: Empathetically acknowledge frustration and immediately present the in-chat contact capture prompt to file a support ticket without leaving the stream).
+- Q: How should the assistant determine its greeting template and bot identity? → A: Option A (Smart Default + Custom Override: Automatically generate greetings using the organization name by default, with an optional field in Widget Settings for custom greeting text).
+- Q: How should the assistant formulate its response when an out-of-scope question is detected? → A: Option A (Deflection with Knowledge-Derived Topic Suggestions: Politely state the assistant's business focus and suggest 2-3 sample topics derived from the organization's uploaded knowledge base documents).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Pleasantries, Greetings & Chit-Chat Without Erroneous Fallback (Priority: P1)
@@ -22,7 +31,7 @@ When an anonymous website visitor sends a standard greeting or conversational pl
 
 1. **Given** a visitor initiates a chat session with a standalone greeting (e.g., *"Hi"*, *"Hello"*),  
    **When** the message is processed,  
-   **Then** the assistant responds with a polite welcome message introducing its role and asking how it can assist with the organization's offerings.
+   **Then** the assistant responds with a polite welcome message introducing its role (using the organization name or custom greeting if configured) and asking how it can assist with the organization's offerings.
 
 2. **Given** an ongoing conversation where the visitor expresses gratitude (e.g., *"Thank you so much, that helped!"*),  
    **When** the message is received,  
@@ -56,17 +65,17 @@ Visitors frequently combine greetings with concrete business questions in a sing
 
 ### User Story 3 - Out-of-Scope Query Deflection (Priority: P2)
 
-When a visitor asks questions completely unrelated to the organization, business domain, or customer support (e.g., general world knowledge, math riddles, creative writing prompts, coding help, or competitor comparisons), the assistant must recognize the inquiry as out-of-scope. Rather than hallucinating an answer or confusingly searching business documents, the assistant must politely deflect and guide the visitor back to topics related to the organization.
+When a visitor asks questions completely unrelated to the organization, business domain, or customer support (e.g., general world knowledge, math riddles, creative writing prompts, coding help, or competitor comparisons), the assistant must recognize the inquiry as out-of-scope. Rather than hallucinating an answer or confusingly searching business documents, the assistant must politely deflect and guide the visitor back to topics related to the organization, suggesting 2–3 relevant topic areas derived from the organization's uploaded documents.
 
 **Why this priority**: Prevents assistant abuse, brand reputation risk, and irrelevant escalation tickets submitted to business owners.
 
-**Independent Test**: Ask an off-topic question (e.g., *"Can you write a poem about space?"* or *"What is the capital of France?"*); verify the assistant declines politely and reminds the visitor of its purpose to assist with the business.
+**Independent Test**: Ask an off-topic question (e.g., *"Can you write a poem about space?"* or *"What is the capital of France?"*); verify the assistant declines politely, states its business focus, and suggests 2–3 topics based on the organization's uploaded knowledge base.
 
 **Acceptance Scenarios**:
 
 1. **Given** a visitor submits an irrelevant or general-knowledge question,  
    **When** the message is processed,  
-   **Then** the assistant politely states that it can only assist with inquiries regarding the organization's services, policies, and products.
+   **Then** the assistant politely states that it can only assist with inquiries regarding the organization's services, policies, and products, offering 2–3 inquiry topics derived from the organization's indexed documents.
 
 2. **Given** an out-of-scope query,  
    **When** the deflection message is returned,  
@@ -76,21 +85,21 @@ When a visitor asks questions completely unrelated to the organization, business
 
 ### User Story 4 - Emotion, Frustration & Explicit Escalation Intent (Priority: P2)
 
-When a visitor expresses frustration (e.g., *"This is useless"*, *"You are not answering my question"*, *"I want to talk to a real person"*), the assistant must detect escalation intent immediately. The assistant must empathize, de-escalate, and offer a clear, one-click or streamlined form for the visitor to leave their contact details so an agent can follow up.
+When a visitor expresses frustration (e.g., *"This is useless"*, *"You are not answering my question"*, *"I want to talk to a real person"*), the assistant must detect escalation intent immediately. The assistant must empathize, de-escalate, and immediately present the in-chat contact capture prompt (Name, Email, Note/Message) so an agent can follow up with a formal support ticket.
 
 **Why this priority**: Adheres to Principle III (Continuous Human Safety Net). Trapping frustrated customers in automated loops damages customer retention.
 
-**Independent Test**: Send *"I need to speak with a human agent right now"*; verify the assistant acknowledges the request and immediately presents the contact form / ticket submission prompt without re-running knowledge search.
+**Independent Test**: Send *"I need to speak with a human agent right now"*; verify the assistant acknowledges the request with empathy and immediately presents the in-chat contact capture prompt without re-running knowledge search.
 
 **Acceptance Scenarios**:
 
 1. **Given** an ongoing conversation where the visitor explicitly demands human contact,  
    **When** the message is evaluated,  
-   **Then** the assistant acknowledges the request with empathy and presents the contact capture prompt to file a support ticket.
+   **Then** the assistant acknowledges the request with empathy and presents the in-chat contact capture prompt to file a support ticket.
 
 2. **Given** strong negative sentiment or repeated dissatisfaction,  
    **When** the sentiment threshold is reached,  
-   **Then** the assistant gracefully transitions to offering human support escalation.
+   **Then** the assistant gracefully transitions to presenting the in-chat contact capture prompt.
 
 ---
 
@@ -128,24 +137,24 @@ When a visitor asks meta-questions about the assistant itself (e.g., *"Who are y
 
 ### Functional Requirements
 
-- **FR-001**: System MUST categorize each incoming visitor message into conversational intents (including Greeting/Pleasantry, Gratitude/Closing, Capability/Identity Inquiry, Domain Knowledge Inquiry, Out-of-Scope Request, and Escalation Request).
-- **FR-002**: System MUST bypass knowledge base retrieval and fallback generation when a message is classified strictly as a standalone Greeting, Gratitude, or Closing pleasantry.
-- **FR-003**: System MUST respond to standalone Greetings with a polite welcome message contextualized with the organization's name, inviting the visitor to ask questions.
+- **FR-001**: System MUST implement a two-tier intent classification strategy: Tier 1 executes fast heuristic pattern evaluation (<50ms, 0 external AI token cost) to recognize immediate standalone greetings, pleasantries, gratitude, and farewells; Tier 2 engages semantic retrieval and LLM processing for domain inquiries, hybrid queries, and complex conversational interactions.
+- **FR-002**: System MUST bypass knowledge base retrieval and fallback generation when a message is classified under Tier 1 strictly as a standalone Greeting, Gratitude, or Closing pleasantry.
+- **FR-003**: System MUST respond to standalone Greetings with a polite welcome message incorporating the organization's business name by default, while supporting an optional custom greeting override configured in Widget Settings.
 - **FR-004**: System MUST respond to Gratitude and Closing pleasantries with courteous closure and an invitation to return if further help is needed.
 - **FR-005**: For hybrid messages containing both pleasantries and a domain inquiry, the system MUST execute knowledge retrieval for the domain inquiry while incorporating natural conversational politeness in the streamed response.
-- **FR-006**: System MUST detect Out-of-Scope queries and provide a polite deflection that clarifies the assistant's scope and redirects the visitor to the organization's services.
+- **FR-006**: System MUST detect Out-of-Scope queries and provide a polite deflection that clarifies the assistant's scope, suggesting 2–3 sample inquiry topics derived from the organization's indexed knowledge base documents to redirect the visitor effectively.
 - **FR-007**: Out-of-Scope deflections MUST NOT trigger automatic human ticket creation prompts unless the visitor explicitly asks for human assistance.
-- **FR-008**: System MUST detect explicit human escalation requests (e.g., *"speak to a human"*, *"real person"*, *"manager"*) and immediately present the support ticket creation option without performing redundant document searches.
+- **FR-008**: System MUST detect explicit human escalation requests (e.g., *"speak to a human"*, *"real person"*, *"manager"*) or severe customer frustration, empathetically acknowledge the sentiment, and immediately present the in-chat contact capture prompt (Name, Email, Message) to file a support ticket without performing redundant document searches.
 - **FR-009**: System MUST support multilingual greetings, matching the language of the visitor's greeting in the initial response.
 - **FR-010**: All conversational intent responses MUST stream progressively to the visitor interface to uphold real-time responsiveness targets (< 2 seconds time-to-first-token).
-- **FR-011**: System MUST record the classified intent category in the conversation turn metadata for analytics, reporting, and owner inbox inspection.
+- **FR-011**: System MUST persist the classified intent category as a structured property within the message record's metadata JSON, allowing the Conversations Inbox to display intent badge tags and enabling intent filtering without altering the underlying relational schema.
 - **FR-012**: The intent categorization and response generation MUST strictly adhere to tenant isolation, ensuring organization configuration and knowledge remain isolated.
 
 ### Key Entities *(include if feature involves data)*
 
 - **Visitor Turn**: An individual message submitted by a website visitor within an active chat session.
-- **Intent Classification**: The identified conversational goal of the turn (e.g., `GREETING`, `CHITCHAT_COURTESY`, `BOT_CAPABILITY`, `KNOWLEDGE_INQUIRY`, `OUT_OF_SCOPE`, `HUMAN_ESCALATION`).
-- **Organization Identity Context**: High-level metadata (such as organization business name, business type, and primary support topics) used to customize greetings and capability descriptions.
+- **Intent Classification**: The identified conversational goal of the turn (e.g., `GREETING`, `CHITCHAT_COURTESY`, `BOT_CAPABILITY`, `KNOWLEDGE_INQUIRY`, `OUT_OF_SCOPE`, `HUMAN_ESCALATION`), stored in the message's JSON metadata payload.
+- **Organization Identity Context**: High-level metadata (such as organization business name, business type, available knowledge document topics/titles, and optional custom greeting override from Widget Settings) used to customize greetings, capability descriptions, and out-of-scope redirect suggestions.
 - **Intent Response Template / Policy**: The structured conversational guidelines determining how each non-knowledge intent is formulated and delivered.
 
 ---
@@ -155,7 +164,7 @@ When a visitor asks meta-questions about the assistant itself (e.g., *"Who are y
 ### Measurable Outcomes
 
 - **SC-001**: 100% of standalone greetings (e.g., *"Hello"*, *"Hi"*, *"Good morning"*) receive a welcoming response without false "document not found" notices or premature ticket creation prompts.
-- **SC-002**: First-token response latency for chit-chat and greeting messages is under 1.5 seconds.
+- **SC-002**: First-token response latency for heuristic chit-chat and greeting messages is under 500ms (near-instantaneous), and under 1.5 seconds for LLM-assisted responses.
 - **SC-003**: Irrelevant fallback and false escalation ticket prompts decrease by at least 40% across all visitor conversation sessions.
 - **SC-004**: 95% of hybrid messages (greeting + question) correctly retrieve relevant knowledge base answers while preserving conversational warmth.
 - **SC-005**: Explicit human escalation requests immediately deliver the contact capture form in under 1 second without redundant knowledge search queries.
