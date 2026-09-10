@@ -160,21 +160,26 @@ class ChatService:
     ) -> str:
         """Constructs smart fallback prompt for out-of-knowledge queries, conversational memory, and de-escalation."""
         topics_context = (
-            f"Our primary areas of focus and documented services include: {', '.join(topics[:4])}."
+            f"You represent ONLY {business_name} (documented areas: {', '.join(topics[:4])})."
             if topics
-            else ""
+            else f"You represent ONLY {business_name}."
         )
         return (
-            f"You are the virtual customer support specialist for {business_name}. {topics_context}\n"
-            "You do not have a direct verified answer for the visitor's latest inquiry, but you must guide them professionally.\n\n"
+            f"You are the virtual customer support specialist for {business_name}.\n"
+            f"{topics_context}\n\n"
+            "CRITICAL BOUNDARY:\n"
+            "- You have NO knowledge base documents matching the visitor's message.\n"
+            f"- You are NOT a general-purpose AI assistant. You must NEVER answer questions about world politics, historical figures, celebrities, external people, science, trivia, or general world knowledge.\n"
+            f"- If the visitor asks about ANY external topic or person (e.g., 'who is X?', political questions, history, etc.), you must politely refuse and state EXACTLY:\n"
+            f'"{FALLBACK_RESPONSE}"\n\n'
             "STRICT INSTRUCTIONS:\n"
             "1. Conversational Memory: If the visitor asks what you just said, to repeat, or to clarify, summarize your previous response accurately and conversationally from the chat history.\n"
-            "2. Natural Tone: Speak naturally, warmly, and empathetically. NEVER use technical or robotic terms like 'knowledge base', 'context', or 'database'.\n"
+            "2. Natural Tone: Speak naturally and warmly for business greetings. NEVER use technical terms like 'knowledge base' or 'database' in chat.\n"
             "3. High-Intent & Sales: If the visitor asks for quotes, demos, pricing, or purchasing that isn't documented, warmly invite them to share their email or contact info so our team can follow up directly.\n"
             "4. Frustration & De-escalation: If the visitor is annoyed, angry, or requests a human, apologize with empathy and ask for their email so our human support team can step in.\n"
-            "5. Polite Boundaries: If the question is about unrelated general topics (trivia, coding, math, general world facts), politely state:\n"
+            "5. External Knowledge & Unrelated Topics: For any question about anything outside {business_name}, respond EXACTLY with:\n"
             f'"{FALLBACK_RESPONSE}"\n'
-            "6. Anti-Hallucination: Never invent pricing, guarantees, or policies. Keep replies concise (2-3 sentences max) and always offer a helpful next step."
+            "6. Anti-Hallucination: Never invent pricing, guarantees, or policies. Keep replies concise (2-3 sentences max)."
         )
 
     def contextualize_query(self, message: str, recent_msgs: List[Message]) -> str:
@@ -425,6 +430,8 @@ class ChatService:
                 r"\b(weather|recipe|cooking|movie|celebrity|news)\b",
                 r"\b(math|calculate|calculator|\d+\s*[\+\-\*\/]\s*\d+)\b",
                 r"\b(translate|translation|write\s+me)\b",
+                r"\b(president|prime minister|politics|political|government|capital of|who was)\b",
+                r"\bwho is [a-zA-Z]{3,}\s+[a-zA-Z]{3,}\b",
             ]
             is_off_topic = any(re.search(pat, clean_msg) for pat in off_topic_patterns)
 
