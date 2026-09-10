@@ -197,7 +197,7 @@ class ChatService:
         yield f"event: start\ndata: {json.dumps({'conversation_id': conv_id_str})}\n\n"
 
         # 3.5 Intent Evaluation (Tier 1 Heuristic Fast-Path)
-        business_name = org.business_name or widget.bot_display_name or "ResolvDesk"
+        business_name = getattr(org, "display_name", None) or getattr(widget, "bot_display_name", None) or "ResolvDesk"
         custom_greeting = getattr(widget, "welcome_message", None)
         fast_intent = intent_service.classify_fast_tier(
             text=message,
