@@ -132,7 +132,7 @@ class DocumentRepository:
             select(Document.title)
             .where(
                 Document.organization_id == organization_id,
-                Document.status == DocumentStatus.COMPLETED.value,
+                Document.status == DocumentStatus.READY.value,
             )
             .order_by(Document.created_at.desc())
             .limit(limit)
