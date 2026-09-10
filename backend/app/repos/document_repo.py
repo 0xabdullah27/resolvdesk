@@ -121,5 +121,24 @@ class DocumentRepository:
         await session.flush()
         return True
 
+    async def get_active_document_titles(
+        self,
+        session: AsyncSession,
+        organization_id: uuid.UUID,
+        limit: int = 5,
+    ) -> List[str]:
+        """Retrieves active completed document titles belonging strictly to the organization."""
+        statement = (
+            select(Document.title)
+            .where(
+                Document.organization_id == organization_id,
+                Document.status == DocumentStatus.READY.value,
+            )
+            .order_by(Document.created_at.desc())
+            .limit(limit)
+        )
+        result = await session.exec(statement)
+        return [row for row in result.all() if row]
+
 
 document_repo = DocumentRepository()

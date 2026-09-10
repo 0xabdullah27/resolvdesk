@@ -13,6 +13,10 @@ class OrganizationBase(SQLModel):
     display_name: str = Field(max_length=200, nullable=False)
     website_url: Optional[str] = Field(default=None, max_length=500, nullable=True)
 
+    @property
+    def business_name(self) -> str:
+        return self.display_name
+
 
 class Organization(OrganizationBase, table=True):
     __tablename__ = "organizations"

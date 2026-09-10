@@ -73,6 +73,11 @@ class MessageBase(SQLModel):
         sa_column=Column(sa.JSON, nullable=True),
         description="List of document citations used in assistant response",
     )
+    metadata_json: Optional[dict] = Field(
+        default=None,
+        sa_column=Column("metadata", sa.JSON, nullable=True),
+        description="Turn metadata including classified intent",
+    )
 
 
 class Message(MessageBase, table=True):

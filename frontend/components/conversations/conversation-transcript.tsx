@@ -343,6 +343,15 @@ export function ConversationTranscript({
                     </div>
                   )}
 
+                  {/* Intent tag for assistant messages */}
+                  {isAssistant && msg.metadata?.intent && (
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                        {String(msg.metadata.intent).replace(/_/g, " ")}
+                      </span>
+                    </div>
+                  )}
+
                   <div
                     className={`text-[10px] ${
                       isVisitor ? "text-primary-foreground/75 text-right" : "text-muted-foreground"

@@ -44,6 +44,9 @@ class ChatMessageRead(BaseModel):
     content: str
     created_at: datetime
     citations: Optional[List[CitationItem]] = None
+    metadata: Optional[dict] = Field(default=None, alias="metadata_json")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 
 class ConversationHistoryResponse(BaseModel):
