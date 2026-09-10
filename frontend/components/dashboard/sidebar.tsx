@@ -165,9 +165,13 @@ export function DashboardSidebar({
                   </div>
                 }
               />
-              <TooltipContent side="right" align="center" className="font-medium text-xs max-w-xs">
-                <span className="text-[10px] uppercase block text-muted-foreground">Workspace</span>
-                <span className="font-semibold text-foreground">{organizationName}</span>
+              <TooltipContent side="right" align="center" className="text-xs max-w-xs flex flex-col items-start gap-0.5 py-1.5 px-2.5">
+                <span className="text-[10px] uppercase font-semibold opacity-70 tracking-wider">
+                  Organization
+                </span>
+                <span className="font-bold">
+                  {organizationName || "My Workspace"}
+                </span>
               </TooltipContent>
             </Tooltip>
           ) : (
