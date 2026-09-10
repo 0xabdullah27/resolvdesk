@@ -9,6 +9,7 @@ import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 import { LandingCodeSnippet } from "@/components/landing/landing-code-snippet";
 import { LandingFAQ } from "@/components/landing/landing-faq";
 import { LandingCTA } from "@/components/landing/landing-cta";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function HomePage() {
   const owner = await getOwnerContextAction();
@@ -44,6 +45,7 @@ export default async function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {owner ? (
               <>
                 <span className="text-xs text-muted-foreground hidden sm:inline font-medium">
