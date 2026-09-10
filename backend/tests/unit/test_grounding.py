@@ -51,3 +51,40 @@ def test_is_origin_allowed_whitelisting():
     assert is_origin_allowed("http://localhost:3000", allowed) is True
     assert is_origin_allowed("https://store1.myshopify.com", allowed) is True
     assert is_origin_allowed("https://phishing.com", allowed) is False
+
+
+def test_build_fallback_prompt_structure():
+    """Verify smart fallback prompt instructs LLM on greetings, frustration, and anti-hallucination boundaries."""
+    prompt = chat_service.build_fallback_prompt(business_name="Acme Corp")
+    assert "Acme Corp" in prompt
+    assert "STRICT INSTRUCTIONS" in prompt
+    assert FALLBACK_RESPONSE in prompt
+    assert "apologize with empathy" in prompt.lower()
+
+
+def test_contextualize_query_enrichment():
+    """Verify short follow-up messages are contextualized with preceding visitor question."""
+    from app.models.conversation import Message
+    import uuid
+
+    conv_id = uuid.uuid4()
+    history = [
+        Message(id=uuid.uuid4(), conversation_id=conv_id, role="visitor", content="What is your return policy?"),
+        Message(id=uuid.uuid4(), conversation_id=conv_id, role="assistant", content="Returns are free within 30 days."),
+    ]
+
+    # Short follow-up question
+    enriched_short = chat_service.contextualize_query("How much does it cost?", history)
+    assert "What is your return policy?" in enriched_short
+    assert "How much does it cost?" in enriched_short
+
+    # Pronoun follow-up question
+    enriched_pronoun = chat_service.contextualize_query("Does it apply to international orders?", history)
+    assert "What is your return policy?" in enriched_pronoun
+    assert "Does it apply to international orders?" in enriched_pronoun
+
+    # Long independent question should NOT be modified
+    long_query = "Can you provide the comprehensive quarterly financial report breakdown for the enterprise tier?"
+    independent = chat_service.contextualize_query(long_query, history)
+    assert independent == long_query
+

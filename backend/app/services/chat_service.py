@@ -1,4 +1,4 @@
-import json
+    import json
 import re
 import uuid
 from typing import AsyncGenerator, Dict, List, Optional, Tuple
@@ -31,6 +31,7 @@ FALLBACK_RESPONSE = (
     "Would you like me to connect you with a human who can help?"
 )
 SIMILARITY_THRESHOLD = settings.RAG_SIMILARITY_THRESHOLD
+EMAIL_REGEX = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
 
 
 def is_origin_allowed(request_origin: Optional[str], allowed_origins_str: str) -> bool:
@@ -152,6 +153,51 @@ class ChatService:
             f"Context:\n{context_str}"
         )
 
+    def build_fallback_prompt(
+        self,
+        business_name: str,
+    ) -> str:
+        """Constructs smart fallback prompt for out-of-knowledge queries, conversational typos, and de-escalation."""
+        return (
+            f"You are the helpful AI customer support assistant for {business_name}.\n"
+            "You do NOT have specific documentation in your knowledge base to directly answer the visitor's latest query.\n\n"
+            "STRICT INSTRUCTIONS:\n"
+            "1. If the visitor is greeting you, saying hello, or engaging in casual pleasantries, respond warmly and ask how you can help them with our services.\n"
+            "2. If the visitor is frustrated, unhappy, or asking for human assistance, apologize with empathy and invite them to provide their email address so our team can follow up.\n"
+            "3. If the visitor is asking about purchasing, booking a demo, or pricing that isn't documented, invite them to share their email or contact info for our sales team.\n"
+            "4. If the visitor is asking general questions outside the business domain, politely state:\n"
+            f'"{FALLBACK_RESPONSE}"\n'
+            "5. Keep your response concise (1-3 sentences), polite, and professional. NEVER invent facts or fake policies."
+        )
+
+    def contextualize_query(self, message: str, recent_msgs: List[Message]) -> str:
+        """Enriches brief follow-up queries with previous visitor question context to resolve pronouns in vector search."""
+        if not recent_msgs:
+            return message
+
+        # Find the most recent visitor question prior to this message
+        last_visitor_query = next(
+            (m.content for m in reversed(recent_msgs) if m.role == "visitor"),
+            None,
+        )
+        if not last_visitor_query:
+            return message
+
+        words = message.lower().split()
+        follow_up_cues = {
+            "it", "this", "that", "they", "them", "these", "those",
+            "cost", "price", "also", "and", "how about", "what about",
+            "why", "where", "how long", "can i", "does it", "is it",
+        }
+        has_cue = any(cue in message.lower() for cue in follow_up_cues)
+
+        if len(words) <= 7 or has_cue:
+            enriched = f"{last_visitor_query} {message}"
+            logger.info("rag_query_contextualized", raw=message, enriched=enriched)
+            return enriched
+
+        return message
+
     async def stream_chat(
         self,
         widget_key: str,
@@ -161,8 +207,15 @@ class ChatService:
     ) -> AsyncGenerator[str, None]:
         """Primary generator yielding SSE formatted events (start, token, done).
 
-        Uses its own database session to guarantee clean transaction lifecycle during async streaming.
+        Optimized to use exactly two database sessions (one pre-stream, one post-stream)
+        to prevent database connection pool exhaustion under high concurrency.
         """
+        email_match = re.search(EMAIL_REGEX, message)
+        extracted_email = email_match.group(0).lower() if email_match else None
+
+        # ---------------------------------------------------------------------
+        # Session 1: Pre-stream setup (Validate, fetch context, persist message)
+        # ---------------------------------------------------------------------
         async with async_session_factory() as session:
             try:
                 # 1. Validate widget, tenant status, and domain origin
@@ -179,15 +232,45 @@ class ChatService:
                     conversation_id=conversation_id,
                 )
 
-                # 3. Persist visitor message
+                # 3. Fetch recent messages before appending new turn (for history & contextualization)
+                recent_msgs = await ConversationRepository.get_recent_messages(
+                    session=session,
+                    conversation_id=conversation.id,
+                    limit=10,
+                )
+
+                # 4. If visitor provided an email directly in the chat, capture as escalated lead
+                if extracted_email:
+                    await ConversationRepository.mark_escalated(
+                        session=session,
+                        conversation_id=conversation.id,
+                        organization_id=org.id,
+                        visitor_email=extracted_email,
+                        ticket_status="open",
+                    )
+
+                # 5. Persist visitor message
                 await ConversationRepository.append_message(
                     session=session,
                     conversation_id=conversation.id,
                     role="visitor",
                     content=message,
                 )
+
+                # 6. Fetch active document titles for out-of-scope deflection if needed
+                active_titles = await document_repo.get_active_document_titles(
+                    session=session,
+                    organization_id=org.id,
+                    limit=3,
+                )
                 await session.commit()
+
                 conv_id_str = str(conversation.id)
+                conv_uuid = conversation.id
+                org_id = org.id
+                bot_name = getattr(widget, "bot_display_name", None) or "ResolvDesk"
+                business_name = getattr(org, "display_name", None) or bot_name
+                custom_greeting = getattr(widget, "welcome_message", None)
 
             except Exception as e:
                 logger.error("chat_prestream_setup_error", error=str(e))
@@ -197,9 +280,37 @@ class ChatService:
         # Emit initial SSE start event
         yield f"event: start\ndata: {json.dumps({'conversation_id': conv_id_str})}\n\n"
 
-        # 3.5 Intent Evaluation (Tier 1 Heuristic Fast-Path)
-        business_name = getattr(org, "display_name", None) or getattr(widget, "bot_display_name", None) or "ResolvDesk"
-        custom_greeting = getattr(widget, "welcome_message", None)
+        # ---------------------------------------------------------------------
+        # Inline Lead Capture Fast-Path: If user solely/primarily provided an email
+        # ---------------------------------------------------------------------
+        if extracted_email and len(message.strip().split()) <= 6:
+            ack_response = (
+                f"Thank you! I have recorded your email ({extracted_email}). Our team has been notified and "
+                "will get back to you shortly. Is there anything else I can help you with today?"
+            )
+            yield f"event: intent\ndata: {json.dumps({'intent': MessageIntent.HUMAN_ESCALATION.value, 'tier': 1})}\n\n"
+            for word in ack_response.split(" "):
+                yield f"event: token\ndata: {json.dumps({'token': word + ' '})}\n\n"
+
+            # Post-stream persist
+            async with async_session_factory() as session:
+                assistant_msg = await ConversationRepository.append_message(
+                    session=session,
+                    conversation_id=conv_uuid,
+                    role="assistant",
+                    content=ack_response,
+                    citations=None,
+                    metadata={"intent": MessageIntent.HUMAN_ESCALATION.value, "tier": 1, "lead_email": extracted_email},
+                )
+                await session.commit()
+                message_id_str = str(assistant_msg.id)
+
+            yield f"event: done\ndata: {json.dumps({'conversation_id': conv_id_str, 'message_id': message_id_str, 'intent': MessageIntent.HUMAN_ESCALATION.value})}\n\n"
+            return
+
+        # ---------------------------------------------------------------------
+        # Intent Evaluation (Tier 1 Heuristic Fast-Path: Greetings, Gratitude, Farewell)
+        # ---------------------------------------------------------------------
         fast_intent = intent_service.classify_fast_tier(
             text=message,
             business_name=business_name,
@@ -221,7 +332,7 @@ class ChatService:
             async with async_session_factory() as session:
                 assistant_msg = await ConversationRepository.append_message(
                     session=session,
-                    conversation_id=conversation.id,
+                    conversation_id=conv_uuid,
                     role="assistant",
                     content=full_response,
                     citations=None,
@@ -244,10 +355,13 @@ class ChatService:
 
         is_hybrid = bool(fast_intent and fast_intent.intent == MessageIntent.HYBRID_INQUIRY)
 
-        # 4. Semantic vector retrieval with tenant isolation
-        query_vector = await embedding_service.get_embedding(message)
+        # ---------------------------------------------------------------------
+        # Tier 2: Query Contextualization + Semantic Vector Retrieval
+        # ---------------------------------------------------------------------
+        search_query = self.contextualize_query(message, recent_msgs)
+        query_vector = await embedding_service.get_embedding(search_query)
         scored_chunks = await vector_repo.search_tenant_chunks(
-            organization_id=org.id,
+            organization_id=org_id,
             query_vector=query_vector,
             limit=settings.RAG_TOP_K,
         )
@@ -264,6 +378,7 @@ class ChatService:
         logger.info(
             "rag_retrieval_evaluated",
             query=message[:80],
+            search_query=search_query[:80],
             chunks_found=len(scored_chunks),
             top_score=round(top_score, 4),
             threshold=threshold,
@@ -292,15 +407,10 @@ class ChatService:
         full_response = ""
         classified_intent = MessageIntent.KNOWLEDGE_INQUIRY.value
 
+        # ---------------------------------------------------------------------
+        # Branch 3A / 3B: Generation or Fallback
+        # ---------------------------------------------------------------------
         if not is_grounded or not relevant_chunks:
-            # Query active document titles for out-of-scope deflection
-            async with async_session_factory() as session:
-                active_titles = await document_repo.get_active_document_titles(
-                    session=session,
-                    organization_id=org.id,
-                    limit=3,
-                )
-
             clean_msg = intent_service.clean_text(message)
             off_topic_patterns = [
                 r"\b(code|coding|python|javascript|java|c\+\+|html|css|sql|script)\b",
@@ -322,25 +432,42 @@ class ChatService:
                     yield f"event: token\ndata: {json.dumps({'token': word + ' '})}\n\n"
             else:
                 classified_intent = MessageIntent.FALLBACK.value
-                full_response = FALLBACK_RESPONSE
                 yield f"event: intent\ndata: {json.dumps({'intent': classified_intent, 'tier': 2})}\n\n"
-                for word in FALLBACK_RESPONSE.split(" "):
-                    yield f"event: token\ndata: {json.dumps({'token': word + ' '})}\n\n"
+
+                # Smart Fallback LLM generation
+                fallback_prompt = self.build_fallback_prompt(business_name=business_name)
+                fallback_messages = [
+                    {"role": "system", "content": fallback_prompt}
+                ]
+                for m in recent_msgs[-4:]:
+                    fallback_messages.append({
+                        "role": "assistant" if m.role == "assistant" else "user",
+                        "content": m.content,
+                    })
+                fallback_messages.append({"role": "user", "content": message})
+
+                tokens_accumulated = []
+                try:
+                    async for token in llm_service.stream_completion(fallback_messages):
+                        tokens_accumulated.append(token)
+                        yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
+                    full_response = "".join(tokens_accumulated)
+                    if not full_response.strip() or "trouble connecting" in full_response:
+                        full_response = FALLBACK_RESPONSE
+                        for word in FALLBACK_RESPONSE.split(" "):
+                            yield f"event: token\ndata: {json.dumps({'token': word + ' '})}\n\n"
+                except Exception:
+                    full_response = FALLBACK_RESPONSE
+                    for word in FALLBACK_RESPONSE.split(" "):
+                        yield f"event: token\ndata: {json.dumps({'token': word + ' '})}\n\n"
+
                 yield f"event: escalate_suggestion\ndata: {json.dumps({'suggest_escalation': True, 'reason': 'low_confidence'})}\n\n"
         else:
             classified_intent = MessageIntent.HYBRID_INQUIRY.value if is_hybrid else MessageIntent.KNOWLEDGE_INQUIRY.value
             yield f"event: intent\ndata: {json.dumps({'intent': classified_intent, 'tier': 2})}\n\n"
 
-            # 5. Build prompt with history and retrieved context
-            async with async_session_factory() as session:
-                recent_msgs = await ConversationRepository.get_recent_messages(
-                    session=session,
-                    conversation_id=conversation.id,
-                    limit=10,
-                )
-
             system_prompt = self.build_system_prompt(
-                bot_name=widget.bot_display_name,
+                bot_name=bot_name,
                 retrieved_chunks=relevant_chunks,
                 is_hybrid=is_hybrid,
             )
@@ -349,15 +476,15 @@ class ChatService:
                 {"role": "system", "content": system_prompt}
             ]
 
-            # Append historical messages (excluding the last visitor turn which is added fresh)
-            for m in recent_msgs[:-1]:
+            # Append historical messages for conversational memory
+            for m in recent_msgs:
                 llm_role = "assistant" if m.role == "assistant" else "user"
                 llm_messages.append({"role": llm_role, "content": m.content})
 
             # Append current visitor message
             llm_messages.append({"role": "user", "content": message})
 
-            # 6. Stream tokens from LLM
+            # Stream tokens from LLM
             tokens_accumulated = []
             async for token in llm_service.stream_completion(llm_messages):
                 tokens_accumulated.append(token)
@@ -369,11 +496,13 @@ class ChatService:
             if citations:
                 yield f"event: citation\ndata: {json.dumps({'citations': citations})}\n\n"
 
-        # 7. Persist assistant response turn
+        # ---------------------------------------------------------------------
+        # Session 2: Post-stream persist assistant turn & commit
+        # ---------------------------------------------------------------------
         async with async_session_factory() as session:
             assistant_msg = await ConversationRepository.append_message(
                 session=session,
-                conversation_id=conversation.id,
+                conversation_id=conv_uuid,
                 role="assistant",
                 content=full_response,
                 citations=citations if citations else None,
@@ -386,7 +515,7 @@ class ChatService:
             await session.commit()
             message_id_str = str(assistant_msg.id)
 
-        # 8. Emit SSE done event
+        # Emit SSE done event
         done_payload = {
             "conversation_id": conv_id_str,
             "message_id": message_id_str,

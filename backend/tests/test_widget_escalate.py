@@ -160,3 +160,42 @@ async def test_visitor_escalation_conversation_not_found(
     )
     assert response.status_code == 404
     assert "Conversation not found" in response.text
+
+
+@pytest.mark.asyncio
+async def test_visitor_inline_email_escalation(
+    client: AsyncClient,
+    db_session: AsyncSession,
+):
+    """Verify visitor providing email in chat message automatically triggers escalation and lead capture."""
+    org_id = uuid.uuid4()
+    widget_key = f"rd_live_{uuid.uuid4().hex}"
+
+    org = Organization(id=org_id, display_name="Inline Lead Store")
+    widget = WidgetConfiguration(
+        id=uuid.uuid4(),
+        organization_id=org_id,
+        widget_key=widget_key,
+        allowed_origins="*",
+    )
+    db_session.add(org)
+    db_session.add(widget)
+    await db_session.commit()
+
+    payload = {
+        "widget_key": widget_key,
+        "message": "My email is buyer@example.com",
+    }
+    response = await client.post("/api/v1/widget/chat", json=payload)
+    assert response.status_code == 200
+    body = response.text
+    assert "event: token" in body
+    assert "buyer@example.com" in body
+
+    # Verify conversation in database is marked as escalated with visitor_email
+    stmt = select(Conversation).where(Conversation.organization_id == org_id)
+    conv = (await db_session.exec(stmt)).first()
+    assert conv is not None
+    assert conv.is_escalated is True
+    assert conv.visitor_email == "buyer@example.com"
+
