@@ -16,7 +16,7 @@ import {
   rotateWidgetKeyAction,
 } from "@/actions/widget-actions";
 
-import { Code2, Check, FileCode } from "lucide-react";
+import { Code2, Check, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { WidgetAppearanceForm } from "./widget-appearance-form";
@@ -24,7 +24,6 @@ import { WidgetLivePreview } from "./widget-live-preview";
 import { WidgetEmbedCard } from "./widget-embed-card";
 import { WidgetResetDialog } from "./widget-reset-dialog";
 import { WidgetRotateDialog } from "./widget-rotate-dialog";
-import { WidgetScriptDialog } from "./widget-script-dialog";
 
 interface WidgetCustomizerViewProps {
   initialConfig: WidgetConfig;
@@ -43,8 +42,16 @@ export function WidgetCustomizerView({
   const [isResetDialogOpen, setIsResetDialogOpen] = React.useState(false);
   const [isRotateDialogOpen, setIsRotateDialogOpen] = React.useState(false);
   const [isRotating, setIsRotating] = React.useState(false);
-  const [isScriptDialogOpen, setIsScriptDialogOpen] = React.useState(false);
   const [copiedTopScript, setCopiedTopScript] = React.useState(false);
+  const embedCardRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToEmbedSection = () => {
+    if (embedCardRef.current) {
+      embedCardRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      document.getElementById("widget-embed-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const cleanSnippet =
     currentConfig.embed_snippet ||
@@ -264,11 +271,11 @@ export function WidgetCustomizerView({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setIsScriptDialogOpen(true)}
-            className="cursor-pointer gap-2 h-9 text-xs font-medium"
+            onClick={scrollToEmbedSection}
+            className="cursor-pointer gap-1.5 h-9 text-xs font-medium"
           >
-            <FileCode className="size-4 text-primary" />
-            <span>Script Notes</span>
+            <ArrowDown className="size-3.5 text-muted-foreground" />
+            <span>How to Embed</span>
           </Button>
 
           <Button
@@ -304,13 +311,15 @@ export function WidgetCustomizerView({
             isSaving={isSaving}
           />
 
-          <WidgetEmbedCard
-            widgetKey={currentConfig.widget_key}
-            embedSnippet={currentConfig.embed_snippet}
-            hasGraceKey={currentConfig.has_grace_key}
-            graceExpiresAt={currentConfig.grace_expires_at}
-            onRequestRotate={() => setIsRotateDialogOpen(true)}
-          />
+          <div ref={embedCardRef} id="widget-embed-card" className="scroll-mt-6">
+            <WidgetEmbedCard
+              widgetKey={currentConfig.widget_key}
+              embedSnippet={currentConfig.embed_snippet}
+              hasGraceKey={currentConfig.has_grace_key}
+              graceExpiresAt={currentConfig.grace_expires_at}
+              onRequestRotate={() => setIsRotateDialogOpen(true)}
+            />
+          </div>
         </div>
 
         {/* Right Column: Sticky Live Interactive Preview Sandbox */}
@@ -338,13 +347,6 @@ export function WidgetCustomizerView({
         onClose={() => setIsRotateDialogOpen(false)}
         onConfirm={handleConfirmRotate}
         isRotating={isRotating}
-      />
-
-      <WidgetScriptDialog
-        isOpen={isScriptDialogOpen}
-        onClose={() => setIsScriptDialogOpen(false)}
-        widgetKey={currentConfig.widget_key}
-        embedSnippet={currentConfig.embed_snippet}
       />
     </div>
   );
