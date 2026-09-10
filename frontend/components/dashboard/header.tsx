@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Menu, RefreshCw } from "lucide-react";
+import { Menu, RefreshCw, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -37,7 +37,13 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { refreshAll, isRefreshing, lastRefreshedAt } = useDashboard();
+  const {
+    refreshAll,
+    isRefreshing,
+    lastRefreshedAt,
+    isSidebarCollapsed,
+    toggleSidebar,
+  } = useDashboard();
   const [relativeTime, setRelativeTime] = React.useState<string>("");
 
   React.useEffect(() => {
@@ -80,9 +86,26 @@ export function DashboardHeader({
             <DashboardSidebar
               organizationName={organizationName}
               onNavigate={() => setMobileOpen(false)}
+              collapsed={false}
             />
           </SheetContent>
         </Sheet>
+
+        {/* Desktop Sidebar Collapse / Expand Toggle */}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={toggleSidebar}
+          className="hidden md:flex cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 focus-visible:ring-ring"
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSidebarCollapsed ? (
+            <PanelLeftOpen className="size-4.5" />
+          ) : (
+            <PanelLeftClose className="size-4.5" />
+          )}
+        </Button>
 
         {/* Dynamic Route Title & Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">

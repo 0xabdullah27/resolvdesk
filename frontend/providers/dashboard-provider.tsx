@@ -70,6 +70,46 @@ export function DashboardProvider({
   const [selectedConversationId, setSelectedConversationId] = React.useState<string | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = React.useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState<boolean>(false);
+
+  // Hydrate sidebar collapse preference from localStorage safely on client mount
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("resolvdesk_sidebar_collapsed");
+      if (saved !== null) {
+        setIsSidebarCollapsed(saved === "true");
+      }
+    } catch {
+      // Ignore storage access errors in private/restricted environments
+    }
+  }, []);
+
+  const toggleSidebar = React.useCallback(() => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("resolvdesk_sidebar_collapsed", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  }, []);
+
+  const setSidebarCollapsed = React.useCallback(
+    (action: boolean | ((prev: boolean) => boolean)) => {
+      setIsSidebarCollapsed((prev) => {
+        const next = typeof action === "function" ? action(prev) : action;
+        try {
+          localStorage.setItem("resolvdesk_sidebar_collapsed", String(next));
+        } catch {
+          // Ignore storage errors
+        }
+        return next;
+      });
+    },
+    []
+  );
 
   // Loaders
   const loadOverview = React.useCallback(async (force = false): Promise<AnalyticsOverview | null> => {
@@ -514,6 +554,9 @@ export function DashboardProvider({
     owner: owner || null,
     lastRefreshedAt,
     isRefreshing,
+    isSidebarCollapsed,
+    setSidebarCollapsed,
+    toggleSidebar,
     loadOverview,
     loadTrends,
     loadKnowledgeGaps,

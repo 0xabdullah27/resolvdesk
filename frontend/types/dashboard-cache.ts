@@ -52,9 +52,14 @@ export interface DashboardState {
   owner: OwnerProfile | null;
   lastRefreshedAt: Date | null;
   isRefreshing: boolean;
+  isSidebarCollapsed: boolean;
 }
 
 export interface DashboardContextValue extends DashboardState {
+  // Sidebar State
+  setSidebarCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
+  toggleSidebar: () => void;
+
   // Loaders
   loadOverview: (force?: boolean) => Promise<AnalyticsOverview | null>;
   loadTrends: (rangeDays?: TrendRange, force?: boolean) => Promise<AnalyticsTrends | null>;
