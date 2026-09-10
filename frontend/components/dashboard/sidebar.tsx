@@ -98,15 +98,22 @@ export function DashboardSidebar({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
+                  <button
+                    type="button"
                     onClick={handleToggle}
-                    className="size-8 cursor-pointer text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-lg"
+                    className="group relative flex size-9 items-center justify-center rounded-lg cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label="Open sidebar"
                   >
-                    <PanelLeft className="size-4.5" />
-                  </Button>
+                    {/* Default state: ResolvDesk Logo */}
+                    <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm transition-all duration-200 group-hover:scale-75 group-hover:opacity-0">
+                      <Bot className="size-4" />
+                    </div>
+
+                    {/* Hover state: PanelLeft open sidebar icon */}
+                    <div className="absolute inset-0 flex items-center justify-center rounded-lg text-sidebar-foreground transition-all duration-200 scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100 group-hover:bg-sidebar-accent/70">
+                      <PanelLeft className="size-4.5" />
+                    </div>
+                  </button>
                 }
               />
               <TooltipContent side="right" align="center" className="font-medium text-xs">
