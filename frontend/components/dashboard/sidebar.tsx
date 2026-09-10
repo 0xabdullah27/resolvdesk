@@ -10,8 +10,7 @@ import {
   MessageSquare,
   Sliders,
   Building2,
-  PanelLeftClose,
-  PanelLeftOpen,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -88,7 +87,7 @@ export function DashboardSidebar({
           className
         )}
       >
-        {/* Brand & Toggle Header */}
+        {/* Brand & Toggle Header (ChatGPT Style) */}
         <div
           className={cn(
             "flex h-16 shrink-0 items-center border-b border-sidebar-border transition-all duration-300",
@@ -99,18 +98,19 @@ export function DashboardSidebar({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <Link
-                    href="/"
-                    className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm transition-opacity hover:opacity-85"
-                    onClick={onNavigate}
-                    aria-label="ResolvDesk Home"
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={handleToggle}
+                    className="size-8 cursor-pointer text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-lg"
+                    aria-label="Open sidebar"
                   >
-                    <Bot className="size-5" />
-                  </Link>
+                    <PanelLeft className="size-4.5" />
+                  </Button>
                 }
               />
               <TooltipContent side="right" align="center" className="font-medium text-xs">
-                ResolvDesk Home
+                Open sidebar
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -123,7 +123,7 @@ export function DashboardSidebar({
                 <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                   <Bot className="size-4" />
                 </div>
-                <span className="tracking-tight truncate">ResolvDesk</span>
+                <span className="tracking-tight truncate font-bold">ResolvDesk</span>
               </Link>
               <Tooltip>
                 <TooltipTrigger
@@ -132,15 +132,15 @@ export function DashboardSidebar({
                       variant="ghost"
                       size="icon-xs"
                       onClick={handleToggle}
-                      className="cursor-pointer text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-                      aria-label="Collapse sidebar"
+                      className="size-8 cursor-pointer text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-lg"
+                      aria-label="Close sidebar"
                     >
-                      <PanelLeftClose className="size-4" />
+                      <PanelLeft className="size-4.5" />
                     </Button>
                   }
                 />
                 <TooltipContent side="right" align="center" className="font-medium text-xs">
-                  Collapse sidebar
+                  Close sidebar
                 </TooltipContent>
               </Tooltip>
             </>
@@ -243,15 +243,15 @@ export function DashboardSidebar({
                     variant="ghost"
                     size="icon-sm"
                     onClick={handleToggle}
-                    className="flex size-10 mx-auto items-center justify-center text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground cursor-pointer rounded-lg"
-                    aria-label="Expand sidebar"
+                    className="flex size-9 mx-auto items-center justify-center text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground cursor-pointer rounded-lg"
+                    aria-label="Open sidebar"
                   >
-                    <PanelLeftOpen className="size-4.5" />
+                    <PanelLeft className="size-4.5" />
                   </Button>
                 }
               />
               <TooltipContent side="right" align="center" className="font-medium text-xs">
-                Expand sidebar
+                Open sidebar
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -261,10 +261,10 @@ export function DashboardSidebar({
                 size="sm"
                 onClick={handleToggle}
                 className="w-full justify-start gap-2.5 text-xs text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground cursor-pointer h-8.5 px-2.5 rounded-lg"
-                title="Collapse sidebar"
+                title="Close sidebar"
               >
-                <PanelLeftClose className="size-4 shrink-0" />
-                <span className="truncate">Collapse sidebar</span>
+                <PanelLeft className="size-4 shrink-0" />
+                <span className="truncate">Close sidebar</span>
               </Button>
               <div className="px-1 text-[11px] text-sidebar-foreground/50 text-center truncate">
                 ResolvDesk v0.1.0 • Autonomous Support
